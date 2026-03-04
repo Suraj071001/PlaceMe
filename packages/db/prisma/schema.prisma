@@ -14,3 +14,300 @@ datasource db {
 }
 
 
+
+model Company {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  domain      String?       @unique
+  createdAt   DateTime      @default(now())
+  deletedAt   DateTime?
+  status      CompanyStatus
+  tier        TIER          @default(BASIC)
+
+  departments Department[]  @relation("CompanyToDepartment")
+  jobs        Job[]         @relation("CompanyToJob")
+  pipeline    Pipeline[]    @relation("CompanyToPipeline")
+  offers      Offer[]       @relation("CompanyToOffer")
+  hrContacts  HRContact[]
+  locations   Location[]    @relation("CompanyToLocation")
+}
+
+model HRContact {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  phone       String?
+  designation HRDesignation
+  linkedin    String?
+  createdAt   DateTime @default(now())
+
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+}
+
+model User {
+  id            String         @id @default(uuid())
+
+  student       Student?      
+    
+  ic            IC?           
+  email         String         @unique
+  firstName     String?
+  lastName      String?
+  role          Role           @default(READ_ONLY)
+  isActive      Boolean        @default(true)
+  phone         String?
+  createdAt     DateTime       @default(now())
+  deletedAt     DateTime?
+  notifications Notification[] @relation("NotificationToUser")
+
+  
+}
+
+model IC {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  companyId String
+
+  name      String
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company  @relation("CompanyToDepartment", fields: [companyId], references: [id])
+  jobs      Job[]    @relation("DepartmentToJob")
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  address   String?
+  deletedAt DateTime?
+
+  company   Company  @relation("CompanyToLocation", fields: [companyId], references: [id])
+  jobs      Job[]
+}
+
+model Job {
+  id           String         @id @default(uuid())
+  companyId    String
+  title        String
+  slug         String?        @unique
+  description  String?
+  departmentId String?
+  locationId   String?
+  employmentType EmploymentType @default(FULL_TIME)
+  isOpen       Boolean        @default(true)
+  status       jobStatus      @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  openAt       DateTime       @default(now())
+  closeAt      DateTime
+  role         String
+  tier         TIER           @default(BASIC)
+
+  company      Company        @relation("CompanyToJob", fields: [companyId], references: [id])
+  department   Department?    @relation("DepartmentToJob", fields: [departmentId], references: [id])
+  location     Location?      @relation(fields: [locationId], references: [id])
+
+  applications Application[]  @relation("ApplicationToJob")
+  offers       Offer[]
+}
+
+model Student {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+
+  enrollment String
+  address    String
+  registration String
+  branch     String
+  email      String?
+  createdAt  DateTime @default(now())
+  deletedAt  DateTime?
+
+  applications Application[]
+}
+
+model Application {
+  id         String            @id @default(uuid())
+  studentId  String
+  jobId      String
+  pipelineId String?
+  stageId    String?
+  status     ApplicationStatus @default(APPLIED)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  deletedAt  DateTime?
+  metadata   Json?
+
+  student    Student   @relation(fields: [studentId], references: [id])
+  job        Job       @relation("ApplicationToJob", fields: [jobId], references: [id])
+  pipeline   Pipeline? @relation(fields: [pipelineId], references: [id])
+  stage      Stage?    @relation(fields: [stageId], references: [id])
+
+  @@unique([studentId, jobId])
+  offers Offer[]
+}
+
+model Pipeline {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  company   Company  @relation("CompanyToPipeline", fields: [companyId], references: [id])
+  stages    Stage[]
+  applications Application[]
+}
+
+model Stage {
+  id         String   @id @default(uuid())
+  name       String
+  sortOrder  Int
+  pipelineId String
+  createdAt  DateTime @default(now())
+
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id])
+  applications Application[]
+}
+
+model Offer {
+  id            String      @id @default(uuid())
+  applicationId String
+  companyId     String
+  status        OfferStatus @default(DRAFT)
+  sentAt        DateTime?
+  signedAt      DateTime?
+  declinedAt    DateTime?
+  declineReason String?
+  sentById      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  deletedAt     DateTime?
+  jobId         String
+  job           Job         @relation(fields: [jobId], references: [id])
+
+  company     Company     @relation("CompanyToOffer", fields: [companyId], references: [id])
+  application Application @relation(fields: [applicationId], references: [id])
+
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?
+  type      String
+  payload   Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User?    @relation("NotificationToUser", fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  companyId String
+  action    String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+
+}
+
+
+model Activity {
+  id            String   @id @default(uuid())
+  companyId     String
+  type          String
+  body          String?
+  userId        String?
+  applicationId String?
+  metadata      Json?
+  projectId     String?
+  createdAt     DateTime @default(now())
+}
+
+enum CompanyStatus {
+  CONTACTED
+  INTERESTED
+  NOT_INTERESTED
+  DRIVE_COMPLETED
+  OFFER_RELEASED
+  ON_HOLD
+  BLACKLISTED
+}
+
+enum TIER {
+  BASIC
+  STANDARD
+  DREAM
+}
+
+enum HRDesignation {
+  HR
+  TALENT_ACQUISITION
+  RECRUITER
+  SENIOR_RECRUITER
+  HR_MANAGER
+  HR_HEAD
+  CAMPUS_RECRUITER
+  TECH_RECRUITER
+  OTHER
+}
+
+enum Role {
+  ADMIN
+  RECRUITER
+  HIRING_MANAGER
+  INTERVIEWER
+  SOURCER
+  COORDINATOR
+  READ_ONLY
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERNSHIP
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  PHONE_SCREEN
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+  ARCHIVED
+}
+
+enum jobStatus {
+  ACTIVE
+  CLOSED
+  DRAFT
+  PAUSED
+  ARCHIVED
+}
+
+enum OfferStatus {
+  DRAFT
+  SENT
+  SIGNED
+  DECLINED
+  HIRED
+  WITHDRAWN
+  CANCELED
+}
