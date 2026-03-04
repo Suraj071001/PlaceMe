@@ -9,6 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: "postgresql://postgres:Nitesh130902@localhost:5432/placeMe",
+    url: "postgresql://postgres:jay12345@localhost:5432/PlaceMe",
   },
 });

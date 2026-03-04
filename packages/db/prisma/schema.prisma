@@ -52,6 +52,7 @@ model User {
     
   ic            IC?           
   email         String         @unique
+  password      String
   firstName     String?
   lastName      String?
   role          Role           @default(READ_ONLY)
