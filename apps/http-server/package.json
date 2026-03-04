@@ -14,10 +14,11 @@
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "@repo/db" : "*"
   },
   "scripts": {
-    "dev": "bun --watch server.ts",
+    "dev": "bun --watch src/server.ts",
     "start": "bun server.ts"
   }
 }
