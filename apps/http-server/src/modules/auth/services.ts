@@ -16,8 +16,7 @@ export const signupService = async (payload: SignupPayload) => {
   }
 
   const hashedPassword = await Bun.password.hash(payload.password, {
-    algorithm: "bcrypt",
-    cost: 10,
+    algorithm: "bcrypt"
   });
 
   const user = await createUser({
