@@ -13,5 +13,9 @@ export const ROUTES = {
     HR_CONTACT: {
         BASE: "/hrcontact",
         BY_ID: "/hrcontact/:id",
+    },
+    JOB: {
+        BASE: "/job",
+        BY_ID: "/job/:id",
     }
 };

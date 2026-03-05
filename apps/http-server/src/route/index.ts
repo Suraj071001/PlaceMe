@@ -4,7 +4,7 @@ import { API_VERSION } from "../constants/routes";
 import { authRoutes } from "../modules/auth/handler";
 import { companyRoutes } from "../modules/company/handler";
 import { hrcontactRoutes } from "../modules/hrcontact/handler";
-
+import { jobRoutes } from "../modules/job/handler";
 
 const initV1Routes = (): express.Router => {
     const router = express.Router();
@@ -12,6 +12,7 @@ const initV1Routes = (): express.Router => {
     authRoutes(routerAsApp);
     companyRoutes(routerAsApp);
     hrcontactRoutes(routerAsApp);
+    jobRoutes(routerAsApp);
     return router;
 }
 
