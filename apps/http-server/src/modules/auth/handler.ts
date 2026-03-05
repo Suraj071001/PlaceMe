@@ -6,6 +6,6 @@ import { SignupSchema, LoginSchema } from "@repo/zod";
 const router = Router();
 
 router.post("/signup", zodValidator(SignupSchema), signupController);
-router.post("/login", zodValidator(LoginSchema), loginController);
+router.post("/signin", zodValidator(LoginSchema), loginController);
 
 export default router;

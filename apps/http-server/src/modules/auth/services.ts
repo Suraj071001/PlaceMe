@@ -3,8 +3,8 @@ import { findUserByEmail, createUser } from "./dao";
 import type { SignupPayload, LoginPayload } from "@repo/zod";
 import { ERROR, LOG } from "../../constants";
 import logger from "../../utils/logger";
+import JWT_SECRET from "../../config/auth";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 export const signupService = async (payload: SignupPayload) => {
   logger.info(LOG.AUTH_REGISTER_START, { email: payload.email });
@@ -24,14 +24,16 @@ export const signupService = async (payload: SignupPayload) => {
     password: hashedPassword,
   });
 
+
+
   const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
-    JWT_SECRET,
-    { expiresIn: "7d" },
+    { id: user.id,  role: user.role },
+    JWT_SECRET as string,
+    { expiresIn: "1D" },
   );
 
   logger.info(LOG.AUTH_REGISTER_SUCCESS, { userId: user.id });
-  return { user, token };
+  return  token ;
 };
 
 export const loginService = async (payload: LoginPayload) => {
@@ -48,11 +50,11 @@ export const loginService = async (payload: LoginPayload) => {
     logger.warn(LOG.AUTH_LOGIN_FAILED, { email: payload.email, reason: ERROR.INVALID_CREDENTIALS });
     throw new Error(ERROR.INVALID_CREDENTIALS);
   }
-
+  // add permssion in this jwt token 
   const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
-    JWT_SECRET,
-    { expiresIn: "7d" },
+    { id: user.id , role: user.role },
+    JWT_SECRET as string ,
+    { expiresIn: "1D" },
   );
 
   logger.info(LOG.AUTH_LOGIN_SUCCESS, { userId: user.id });
