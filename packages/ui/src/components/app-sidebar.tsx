@@ -1,14 +1,9 @@
 import * as React from "react";
 import { GalleryVerticalEnd } from "lucide-react";
 
-import { NavMain } from "./nav-main";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "./sidebar";
+import { NavMain, type NavItem } from "./nav-main";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "./sidebar";
 import { Button } from "./button";
-
-type NavItem = {
-  title: string;
-  url: string;
-};
 
 export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof Sidebar> & { navItems: NavItem[] }) {
   return (
