@@ -1,135 +1,204 @@
-# Turborepo starter
+# PlaceMe
 
-This Turborepo starter is maintained by the Turborepo core team.
+A **placement and recruitment platform** for connecting students with companies. Built as a Turborepo monorepo with separate apps for students, admins, and a shared API.
 
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
+---
 
 ## What's inside?
 
-This Turborepo includes the following packages/apps:
+PlaceMe helps manage:
 
-### Apps and Packages
+- **Companies** — Company profiles, departments, locations, HR contacts  
+- **Jobs** — Openings with departments, locations, employment types, and pipelines  
+- **Students** — Profiles, applications, and offer tracking  
+- **Applications** — Student applications tied to jobs and pipeline stages  
+- **Pipelines & stages** — Custom hiring workflows per company  
+- **Offers** — Offer lifecycle (draft, sent, signed, declined)  
+- **Notifications & audit logs** — User notifications and company audit trails  
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+---
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## Tech stack
 
-### Utilities
+| Layer        | Technology                          |
+|-------------|--------------------------------------|
+| Monorepo    | [Turborepo](https://turborepo.dev)   |
+| Package manager | [Bun](https://bun.sh)           |
+| Backend API | Express (Bun runtime)                |
+| Frontend    | Next.js 16, React 19                 |
+| Database    | PostgreSQL + [Prisma](https://prisma.io) (driver adapter `@prisma/adapter-pg`) |
+| Validation  | [Zod](https://zod.dev)               |
+| Styling     | Tailwind CSS 4                      |
+| Language    | TypeScript 5                         |
 
-This Turborepo has some additional tools already setup for you:
+---
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Project structure
 
 ```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+PlaceMe/
+├── apps/
+│   ├── admin/          # Next.js app — admin dashboard (port 3001)
+│   ├── http-server/    # Express API — auth & business logic (Bun)
+│   └── student/        # Next.js app — student portal (port 3000)
+├── packages/
+│   ├── db/             # Prisma schema, client, migrations
+│   ├── zod/            # Shared Zod schemas (e.g. Signup, Login)
+│   ├── ui/             # Shared React components
+│   ├── tailwind-config/# Shared Tailwind config
+│   ├── eslint-config/  # Shared ESLint config
+│   └── typescript-config/ # Shared tsconfig
+├── package.json
+├── turbo.json
+└── README.md
 ```
 
-### Develop
+---
 
-To develop all apps and packages, run the following command:
+## Prerequisites
 
-```
-cd my-turborepo
+- **Node.js** ≥ 18  
+- **Bun** (recommended; project uses `bun` as `packageManager`)  
+- **PostgreSQL** (local or remote instance)
 
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+---
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+## Getting started
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 1. Clone and install
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+git clone <repo-url>
+cd PlaceMe
+bun install
 ```
 
-### Remote Caching
+### 2. Environment variables
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+Create env files from the examples (note: repo has `.env.exampale` — copy to `.env`).
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+**Root / API (`apps/http-server/`):**
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```bash
+# apps/http-server/.env
+PORT=5501
+DATABASE_URL="postgres://USER:PASSWORD@HOST:PORT/DATABASE"
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+**Database package (`packages/db/`)** — used for Prisma CLI (migrate, generate):
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```bash
+# packages/db/.env
+DATABASE_URL="postgres://postgres:mysecretpassword@localhost:5432/placeme"
 ```
 
-## Useful Links
+Use the same `DATABASE_URL` format for your PostgreSQL instance.
 
-Learn more about the power of Turborepo:
+### 3. Database setup
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Create the database (e.g. `placeme`) in PostgreSQL, then run migrations:
+
+```bash
+# From repo root, with DATABASE_URL set (e.g. in packages/db/.env)
+bun --env-file=packages/db/.env bunx prisma migrate dev --schema=packages/db/prisma/schema.prisma
+```
+
+Or from the `db` package:
+
+```bash
+cd packages/db
+bunx prisma migrate dev
+```
+
+Generate the Prisma client after schema changes:
+
+```bash
+cd packages/db && bunx prisma generate
+```
+
+### 4. Run the apps
+
+**All apps (recommended):**
+
+```bash
+bun run dev
+```
+
+**Single app:**
+
+```bash
+# API server (default port in env, e.g. 5501)
+bun run dev --filter=http-server
+
+# Student app — http://localhost:3000
+bun run dev --filter=student
+
+# Admin app — http://localhost:3001
+bun run dev --filter=admin
+```
+
+---
+
+## Scripts
+
+| Command | Description |
+|--------|-------------|
+| `bun run dev` | Run all apps in dev mode (Turbo) |
+| `bun run build` | Build all apps and packages |
+| `bun run lint` | Lint all workspaces |
+| `bun run format` | Format code with Prettier |
+| `bun run check-types` | Type-check all workspaces |
+
+---
+
+## API (http-server)
+
+- **Health:** `GET /health`  
+- **Auth:**  
+  - `POST /api/auth/signup` — body validated with `SignupSchema` (from `@repo/zod`)  
+  - `POST /api/auth/login` — body validated with `LoginSchema`  
+
+The server uses `@repo/db` (Prisma + PostgreSQL adapter) and `@repo/zod` for validation.
+
+---
+
+## Packages
+
+| Package | Purpose |
+|--------|--------|
+| `@repo/db` | Prisma client, schema, and migrations (PostgreSQL via `@prisma/adapter-pg`) |
+| `@repo/zod` | Shared Zod schemas (auth, etc.) |
+| `@repo/ui` | Shared React UI components |
+| `@repo/tailwind-config` | Shared Tailwind configuration |
+| `@repo/eslint-config` | Shared ESLint config |
+| `@repo/typescript-config` | Shared TypeScript configs |
+
+---
+
+## Database overview
+
+Main entities:
+
+- **Company** — status, tier, departments, jobs, pipelines, offers, locations, HR contacts  
+- **User** — email, password, role, linked to **Student** or **IC**  
+- **Job** — company, department, location, employment type, open/close dates, applications  
+- **Application** — student, job, pipeline/stage, status  
+- **Pipeline / Stage** — company hiring workflow  
+- **Offer** — application, company, job, status (draft/sent/signed/declined)  
+- **Notification**, **AuditLog**  
+
+Enums include: `CompanyStatus`, `TIER`, `HRDesignation`, `Role`, `EmploymentType`, `ApplicationStatus`, `jobStatus`, `OfferStatus`.
+
+---
+
+## Useful links
+
+- [Turborepo docs](https://turborepo.dev/docs) — tasks, caching, filters  
+- [Prisma docs](https://www.prisma.io/docs) — schema, migrations, client  
+- [Bun](https://bun.sh/docs) — runtime and package manager  
+
+---
+
+## License
+
+Private — see repository settings.
