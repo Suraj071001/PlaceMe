@@ -1,4 +1,4 @@
-import { request, type Request, type Response } from "express";
+import { type Request, type Response } from "express";
 import { signupService, loginService } from "./services";
 import { SignupSchema, LoginSchema } from "@repo/zod";
 import { ERROR, SUCCESS, LOG } from "../../constants";

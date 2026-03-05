@@ -29,7 +29,7 @@ export const signupService = async (payload: SignupPayload) => {
   const token = jwt.sign(
     { id: user.id,  role: user.role },
     JWT_SECRET as string,
-    { expiresIn: "1D" },
+    { expiresIn: "1d" },
   );
 
   logger.info(LOG.AUTH_REGISTER_SUCCESS, { userId: user.id });
@@ -54,9 +54,9 @@ export const loginService = async (payload: LoginPayload) => {
   const token = jwt.sign(
     { id: user.id , role: user.role },
     JWT_SECRET as string ,
-    { expiresIn: "1D" },
+    { expiresIn: "1d" },
   );
 
   logger.info(LOG.AUTH_LOGIN_SUCCESS, { userId: user.id });
-  return { user, token };
+  return { user: { id: user.id, email: user.email, role: user.role }, token };
 };
