@@ -160,7 +160,7 @@ export default function JobsPage() {
     }, [filters]);
 
     return (
-        <div className="mx-auto max-w-3xl space-y-4 pb-10">
+        <div className="mx-auto max-w-6xl space-y-4 pb-10">
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">Job Opportunities</h1>
                 <p className="text-muted-foreground">Discover and apply for placement opportunities</p>
