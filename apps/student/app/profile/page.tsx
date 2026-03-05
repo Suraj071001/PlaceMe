@@ -26,7 +26,12 @@ const notificationPreferences = [
 
 export default function ProfilePage() {
     return (
-        <div className="mx-auto max-w-3xl space-y-6 pb-10">
+        <div className="mx-auto max-w-6xl space-y-6 pb-10">
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Profile Settings</h1>
+                <p className="text-muted-foreground">Manage your account information and preferences</p>
+            </div>
+
             <ProfilePhotoSection />
             <PersonalInfoSection data={personalInfo} />
             <SkillsSection initialSkills={initialSkills} />
