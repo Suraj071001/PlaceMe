@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { StatsCards } from "./components/StatsCards";
-import { FilterAnalytics, type FilterKeys } from "./components/FilterAnalytics";
+import { FilterAnalytics } from "./components/FilterAnalytics";
 import { EmptyAnalytics } from "./components/EmptyAnalytics";
 import { ViewToggle } from "./components/ViewToggle";
 import { DepartmentChart } from "./components/DepartmentChart";
@@ -10,6 +10,7 @@ import { DepartmentTable } from "./components/DepartmentTable";
 import { PerformanceSummary } from "./components/PerformanceSummary";
 import { RecentActivity } from "./components/RecentActivity";
 import { UpcomingEvents } from "./components/UpcomingEvents";
+import { FilterKeys } from "./components/data";
 
 export default function Page() {
   const [filters, setFilters] = useState<Record<FilterKeys, string[]>>({

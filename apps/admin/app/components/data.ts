@@ -2,6 +2,142 @@
 import { Users, CheckCircle2, Target, Building2, DollarSign } from "lucide-react";
 import { BarChart3, Cpu, Zap, Wrench } from "lucide-react";
 
+export type FilterKeys = "dateRange" | "department" | "jobType" | "placementTier" | "compareYears";
+
+export type Integration = {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  lastSync?: string;
+  connected: boolean;
+};
+
+export const integrations: Integration[] = [
+  {
+    id: "google-chat",
+    name: "Google Chat",
+    description: "Send placement announcements and updates directly to Google Chat groups.",
+    category: "Communication",
+    lastSync: "5 minutes ago",
+    connected: true,
+  },
+  {
+    id: "microsoft-teams",
+    name: "Microsoft Teams",
+    description: "Send placement drive alerts and interview schedules to Teams channels.",
+    category: "Communication",
+    connected: false,
+  },
+];
+
+export const filterOptions: Record<FilterKeys, string[]> = {
+  dateRange: ["Select Range", "Last 7 Days", "Last 30 Days", "Last 3 Months", "Last 6 Months", "Last Year"],
+  department: ["All Departments", "Computer Science", "Electronics", "Electrical", "Mechanical", "Civil"],
+  jobType: ["All Types", "Full Time", "Internship", "Part Time", "Contract"],
+  placementTier: ["All Tiers", "Tier 1 (20+ LPA)", "Tier 2 (10-20 LPA)", "Tier 3 (<10 LPA)"],
+  compareYears: ["No Comparison", "2023 vs 2022", "2024 vs 2023", "2025 vs 2024"],
+};
+
+export const reports = [
+  {
+    id: 1,
+    title: "Placement Summary Report",
+    description: "Overall placement statistics and trends",
+    generatedAt: "March 1, 2026",
+    type: "Placement",
+    file: "/reports/placement-summary.pdf",
+  },
+  {
+    id: 2,
+    title: "Branch-wise Analysis",
+    description: "Department-specific placement performance",
+    generatedAt: "March 1, 2026",
+    type: "Department",
+    file: "/reports/branch-analysis.pdf",
+  },
+  {
+    id: 3,
+    title: "Company-wise Report",
+    description: "Recruiter engagement and hiring statistics",
+    generatedAt: "February 28, 2026",
+    type: "Company",
+    file: "/reports/company-report.pdf",
+  },
+];
+
+export const defaultQuestions = [
+  {
+    id: 1,
+    label: "Name",
+    type: "short",
+    required: true,
+  },
+  {
+    id: 2,
+    label: "Email",
+    type: "email",
+    required: true,
+  },
+  {
+    id: 3,
+    label: "Resume",
+    type: "file",
+    required: true,
+  },
+];
+
+export const jobs = [
+  {
+    company: "Amazon",
+    role: "SDE Intern",
+    branch: "CSE, ECE",
+    package: "₹50k/month",
+    applicants: "120 / 420",
+    deadline: "10 Apr",
+    status: "Open",
+    type: "Internship",
+    tier: "Dream",
+    workMode: "On-Site",
+  },
+  {
+    company: "Microsoft",
+    role: "Software Engineer",
+    branch: "CSE",
+    package: "₹24 LPA",
+    applicants: "180 / 350",
+    deadline: "15 Apr",
+    status: "Open",
+    type: "Placement",
+    tier: "Dream",
+    workMode: "Hybrid",
+  },
+  {
+    company: "Infosys",
+    role: "System Engineer",
+    branch: "All",
+    package: "₹3.6 LPA",
+    applicants: "320 / 600",
+    deadline: "20 Apr",
+    status: "Open",
+    type: "Placement",
+    tier: "Basic",
+    workMode: "On-Site",
+  },
+  {
+    company: "Google",
+    role: "Data Scientist Intern",
+    branch: "CSE, Data",
+    package: "₹80k/month",
+    applicants: "95 / 300",
+    deadline: "12 Apr",
+    status: "Draft",
+    type: "Internship",
+    tier: "Dream",
+    workMode: "Remote",
+  },
+];
+
 export const stats = [
   {
     title: "Eligible Students",

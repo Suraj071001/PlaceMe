@@ -2,18 +2,11 @@
 
 import { Funnel, BarChart3, FileText } from "lucide-react";
 import { MultiSelectDropdown } from "./MultiSelectDropdown";
+import { useState } from "react";
+import GenerateReportDialog from "./GenerateReportDialog";
+import { FilterKeys, filterOptions } from "./data";
 
-export type FilterKeys = "dateRange" | "department" | "jobType" | "placementTier" | "compareYears";
-
-export const filterOptions: Record<FilterKeys, string[]> = {
-  dateRange: ["Select Range", "Last 7 Days", "Last 30 Days", "Last 3 Months", "Last 6 Months", "Last Year"],
-  department: ["All Departments", "Computer Science", "Electronics", "Electrical", "Mechanical", "Civil"],
-  jobType: ["All Types", "Full Time", "Internship", "Part Time", "Contract"],
-  placementTier: ["All Tiers", "Tier 1 (20+ LPA)", "Tier 2 (10-20 LPA)", "Tier 3 (<10 LPA)"],
-  compareYears: ["No Comparison", "2023 vs 2022", "2024 vs 2023", "2025 vs 2024"],
-};
-
-export const defaultFilterValues: Record<FilterKeys, string> = {
+const defaultFilterValues: Record<FilterKeys, string> = {
   dateRange: "Select Range",
   department: "All Departments",
   jobType: "All Types",
@@ -39,6 +32,7 @@ interface FilterAnalyticsProps {
 }
 
 export function FilterAnalytics({ filters, appliedFilters, onFilterChange, onApply, onClearAll, onRemoveFilter }: FilterAnalyticsProps) {
+  const [openReportDialog, setOpenReportDialog] = useState(false);
   return (
     <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 24, margin: "0 2px 24px" }}>
       {/* Header */}
@@ -48,6 +42,8 @@ export function FilterAnalytics({ filters, appliedFilters, onFilterChange, onApp
         </h3>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button
+            onClick={() => setOpenReportDialog(true)}
+            disabled={Object.keys(appliedFilters).length === 0}
             style={{
               background: "#e0e7ff",
               display: "flex",
@@ -167,6 +163,7 @@ export function FilterAnalytics({ filters, appliedFilters, onFilterChange, onApp
       >
         <BarChart3 size={16} /> Apply Filters & View Analytics
       </button>
+      <GenerateReportDialog open={openReportDialog} setOpen={setOpenReportDialog} filters={appliedFilters} />
     </div>
   );
 }

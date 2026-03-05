@@ -1,9 +1,11 @@
 "use client";
 
-import { Save, Plus } from "lucide-react";
+import { Save, Plus, ArrowLeft } from "lucide-react";
 import ActionBtn from "./ActionBtn";
+import { useRouter } from "next/navigation";
 
 export default function CreateJobHeader() {
+  const router = useRouter();
   return (
     <div
       style={{
@@ -25,27 +27,45 @@ export default function CreateJobHeader() {
         }}
       >
         {/* Title Section */}
-        <div>
-          <h1
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <button
+            onClick={() => router.back()}
             style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: "#0f172a",
-              margin: 0,
-            }}
-          >
-            Create Job Posting
-          </h1>
-
-          <p
-            style={{
-              fontSize: 13,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: "#fff",
+              cursor: "pointer",
               color: "#64748b",
-              margin: "4px 0 0",
             }}
           >
-            Define your role and start receiving applications
-          </p>
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1
+              style={{
+                fontSize: 20,
+                fontWeight: 600,
+                color: "#0f172a",
+                margin: 0,
+              }}
+            >
+              Create Job Posting
+            </h1>
+
+            <p
+              style={{
+                fontSize: 13,
+                color: "#64748b",
+                margin: "4px 0 0",
+              }}
+            >
+              Define your role and start receiving applications
+            </p>
+          </div>
         </div>
 
         {/* Right Actions */}
@@ -66,6 +86,7 @@ export default function CreateJobHeader() {
               fontWeight: 600,
               cursor: "pointer",
             }}
+            onClick={() => router.push("/application-form")}
           >
             <Plus size={15} /> Next Application Form
           </button>
