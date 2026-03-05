@@ -5,10 +5,22 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@repo/ui/componen
 import { PageTitle } from "@repo/ui/components/page-title";
 
 import "./globals.css";
+
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 const navItems = [
   { title: "Dashboard", url: "/" },
-  { title: "Users", url: "/users" },
-  { title: "Settings", url: "/settings" },
+  { title: "Create Jobs", url: "/create-jobs" },
+  { title: "All Jobs", url: "/all-jobs" },
+  { title: "Candidates", url: "/candidates-pipeline" },
+  { title: "Reports", url: "/reports" },
+  { title: "Integrations", url: "/integrations" },
+  { title: "Admin-Roles", url: "/admin" },
 ];
 
 export const metadata: Metadata = {
@@ -23,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <SidebarProvider>
           <AppSidebar navItems={navItems} />
           <SidebarInset className="text-black">
@@ -32,9 +44,7 @@ export default function RootLayout({
               <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
               <PageTitle navItems={navItems} />
             </header>
-            <main className="flex-1 p-4">
-              {children}
-            </main>
+            <main className="flex-1 bg-[#f5f7fb]">{children}</main>
           </SidebarInset>
         </SidebarProvider>
       </body>

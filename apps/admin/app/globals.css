@@ -2,3 +2,8 @@
 @import "../../../packages/ui/src/styles/globals.css";
 
 @source "../../../packages/ui/src/**/*.tsx";
+
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  background: #f5f7fb;
+}
