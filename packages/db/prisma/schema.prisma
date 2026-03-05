@@ -15,7 +15,6 @@ datasource db {
 }
 
 
-
 model Company {
   id          String        @id @default(uuid())
   name        String        @unique
@@ -49,28 +48,61 @@ model HRContact {
 model User {
   id            String         @id @default(uuid())
 
-  student       Student?      
-    
-  ic            IC?           
+  student       Student?
+  ic            IC?
+
   email         String         @unique
   password      String
   firstName     String?
   lastName      String?
-  role          Role           @default(READ_ONLY)
+
+  roleId        String?
+  role          Role?          @relation(fields: [roleId], references: [id])
+
   isActive      Boolean        @default(true)
   phone         String?
+
   createdAt     DateTime       @default(now())
   deletedAt     DateTime?
-  notifications Notification[] @relation("NotificationToUser")
 
-  
+  notifications Notification[] @relation("NotificationToUser")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String      @id @default(uuid())
+  roleId       String
+  permissionId String
+
+  role         Role        @relation(fields: [roleId], references: [id])
+  permission   Permission  @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
 }
 
 model IC {
   id     String @id @default(uuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
-
 }
 
 model Department {
@@ -98,44 +130,44 @@ model Location {
 }
 
 model Job {
-  id           String         @id @default(uuid())
-  companyId    String
-  title        String
-  slug         String?        @unique
-  description  String?
-  departmentId String?
-  locationId   String?
+  id             String         @id @default(uuid())
+  companyId      String
+  title          String
+  slug           String?        @unique
+  description    String?
+  departmentId   String?
+  locationId     String?
   employmentType EmploymentType @default(FULL_TIME)
-  isOpen       Boolean        @default(true)
-  status       jobStatus      @default(ACTIVE)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deletedAt    DateTime?
-  openAt       DateTime       @default(now())
-  closeAt      DateTime
-  role         String
-  tier         TIER           @default(BASIC)
+  isOpen         Boolean        @default(true)
+  status         jobStatus      @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+  openAt         DateTime       @default(now())
+  closeAt        DateTime
+  role           String
+  tier           TIER           @default(BASIC)
 
-  company      Company        @relation("CompanyToJob", fields: [companyId], references: [id])
-  department   Department?    @relation("DepartmentToJob", fields: [departmentId], references: [id])
-  location     Location?      @relation(fields: [locationId], references: [id])
+  company        Company        @relation("CompanyToJob", fields: [companyId], references: [id])
+  department     Department?    @relation("DepartmentToJob", fields: [departmentId], references: [id])
+  location       Location?      @relation(fields: [locationId], references: [id])
 
-  applications Application[]  @relation("ApplicationToJob")
-  offers       Offer[]
+  applications   Application[]  @relation("ApplicationToJob")
+  offers         Offer[]
 }
 
 model Student {
-  id         String   @id @default(uuid())
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id])
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
 
-  enrollment String
-  address    String
+  enrollment   String
+  address      String
   registration String
-  branch     String
-  email      String?
-  createdAt  DateTime @default(now())
-  deletedAt  DateTime?
+  branch       String
+  email        String?
+  createdAt    DateTime @default(now())
+  deletedAt    DateTime?
 
   applications Application[]
 }
@@ -158,6 +190,7 @@ model Application {
   stage      Stage?    @relation(fields: [stageId], references: [id])
 
   @@unique([studentId, jobId])
+
   offers Offer[]
 }
 
@@ -168,8 +201,8 @@ model Pipeline {
   createdAt DateTime @default(now())
   deletedAt DateTime?
 
-  company   Company  @relation("CompanyToPipeline", fields: [companyId], references: [id])
-  stages    Stage[]
+  company      Company      @relation("CompanyToPipeline", fields: [companyId], references: [id])
+  stages       Stage[]
   applications Application[]
 }
 
@@ -180,7 +213,7 @@ model Stage {
   pipelineId String
   createdAt  DateTime @default(now())
 
-  pipeline   Pipeline @relation(fields: [pipelineId], references: [id])
+  pipeline     Pipeline      @relation(fields: [pipelineId], references: [id])
   applications Application[]
 }
 
@@ -198,11 +231,10 @@ model Offer {
   updatedAt     DateTime    @updatedAt
   deletedAt     DateTime?
   jobId         String
-  job           Job         @relation(fields: [jobId], references: [id])
 
+  job         Job         @relation(fields: [jobId], references: [id])
   company     Company     @relation("CompanyToOffer", fields: [companyId], references: [id])
   application Application @relation(fields: [applicationId], references: [id])
-
 }
 
 model Notification {
@@ -222,10 +254,7 @@ model AuditLog {
   action    String
   meta      Json?
   createdAt DateTime @default(now())
-
-
 }
-
 
 model Activity {
   id            String   @id @default(uuid())
@@ -265,16 +294,6 @@ enum HRDesignation {
   CAMPUS_RECRUITER
   TECH_RECRUITER
   OTHER
-}
-
-enum Role {
-  ADMIN
-  RECRUITER
-  HIRING_MANAGER
-  INTERVIEWER
-  SOURCER
-  COORDINATOR
-  READ_ONLY
 }
 
 enum EmploymentType {
