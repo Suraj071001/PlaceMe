@@ -1,5 +1,17 @@
 import type { NextFunction, Request, Response } from "express";
 import Jwt, { type JwtPayload } from "jsonwebtoken";
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: {
+                id: string;
+                role: string;
+            };
+        }
+    }
+}
+
 import JWT_SECRET from "../config/auth";
 import logger from "../utils/logger";
 import { LOG } from "../constants";

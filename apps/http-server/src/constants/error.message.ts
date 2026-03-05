@@ -2,6 +2,8 @@ export const ERROR = {
     USER_EXISTS: "User already exists",
     USER_DOESNT_EXISTS: "User doesn't exist",
     USER_NOT_FOUND: "User not found",
+    COMPANY_EXISTS: "Company already exists",
+    COMPANY_NOT_FOUND: "Company not found",
     INVALID_CREDENTIALS: "Invalid credentials",
     UNAUTHORIZED: "Unauthorized access",
     FORBIDDEN: "Forbidden access",
