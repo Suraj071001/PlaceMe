@@ -28,7 +28,7 @@ export const loginController = async (req: Request, res: Response) => {
     const result = await loginService(payload);
 
     // const role  = req.user.role;
-    
+
     logger.info(LOG.AUTH_LOGIN_SUCCESS, { userId: result.user.id });
     res
       .status(200)
