@@ -1,8 +1,8 @@
 import * as React from "react";
-import { GalleryVerticalEnd } from "lucide-react";
+import { GalleryVerticalEnd, LogOut } from "lucide-react";
 
 import { NavMain, type NavItem } from "./nav-main";
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "./sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "./sidebar";
 import { Button } from "./button";
 
 export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof Sidebar> & { navItems: NavItem[] }) {
@@ -28,7 +28,23 @@ export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof S
       <SidebarContent>
         <NavMain items={navItems} />
       </SidebarContent>
-      <Button className="m-4">Logout</Button>
+      <SidebarFooter
+        className={`border-t-2 bg-white`}
+      >
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" asChild>
+            <div>
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <LogOut className="size-4" />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none">
+                <span className="font-medium">Logout</span>
+              </div>
+            </div>
+
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
