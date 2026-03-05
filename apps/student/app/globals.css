@@ -2,3 +2,25 @@
 @import "../../../packages/ui/src/styles/globals.css";
 
 @source "../../../packages/ui/src/**/*.tsx";
+
+/* Minimal Scrollbar */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    /* gray-400 */
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+    /* gray-500 */
+}
