@@ -26,14 +26,16 @@ export const signupService = async (payload: SignupPayload) => {
 
 
 
+  const permissions = (user.role as any)?.permissions?.map((rp: any) => rp.permission.name) || [];
+
   const token = jwt.sign(
-    { id: user.id,  role: user.role },
+    { id: user.id, role: (user.role as any)?.name, permissions },
     JWT_SECRET as string,
     { expiresIn: "1d" },
   );
 
   logger.info(LOG.AUTH_REGISTER_SUCCESS, { userId: user.id });
-  return  token ;
+  return token;
 };
 
 export const loginService = async (payload: LoginPayload) => {
@@ -50,13 +52,14 @@ export const loginService = async (payload: LoginPayload) => {
     logger.warn(LOG.AUTH_LOGIN_FAILED, { email: payload.email, reason: ERROR.INVALID_CREDENTIALS });
     throw new Error(ERROR.INVALID_CREDENTIALS);
   }
-  // add permssion in this jwt token 
+  const permissions = (user.role as any)?.permissions?.map((rp: any) => rp.permission.name) || [];
+
   const token = jwt.sign(
-    { id: user.id , role: user.role },
-    JWT_SECRET as string ,
+    { id: user.id, role: (user.role as any)?.name, permissions },
+    JWT_SECRET as string,
     { expiresIn: "1d" },
   );
 
   logger.info(LOG.AUTH_LOGIN_SUCCESS, { userId: user.id });
-  return { user: { id: user.id, email: user.email, role: user.role }, token };
+  return { user: { id: user.id, email: user.email, role: (user.role as any)?.name, permissions }, token };
 };
