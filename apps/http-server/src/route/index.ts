@@ -5,6 +5,7 @@ import { authRoutes } from "../modules/auth/handler";
 import { companyRoutes } from "../modules/company/handler";
 import { hrcontactRoutes } from "../modules/hrcontact/handler";
 import { jobRoutes } from "../modules/job/handler";
+import { applicationFormRoutes } from "../modules/application-form/handler";
 
 const initV1Routes = (): express.Router => {
     const router = express.Router();
@@ -13,6 +14,7 @@ const initV1Routes = (): express.Router => {
     companyRoutes(routerAsApp);
     hrcontactRoutes(routerAsApp);
     jobRoutes(routerAsApp);
+    applicationFormRoutes(routerAsApp);
     return router;
 }
 

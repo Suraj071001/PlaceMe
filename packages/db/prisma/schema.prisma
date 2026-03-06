@@ -116,6 +116,7 @@ model Department {
   company   Company  @relation("CompanyToDepartment", fields: [companyId], references: [id])
   jobs      Job[]    @relation("DepartmentToJob")
   batches   Batch[]
+  applicationForms ApplicationForm[]
 }
 
 
@@ -132,8 +133,6 @@ model Job {
 
   employmentType EmploymentType @default(FULL_TIME)
   workMode       String 
-
-  openings       Int?
   ctc            String?
 
   minimumCGPA    Float?
@@ -164,6 +163,7 @@ model Job {
   applications   Application[]  @relation("ApplicationToJob")
   offers         Offer[]
   batches        Batch[]
+  applicationForms ApplicationForm[] @relation("JobApplicationForm")
 }
 
 model Batch {
@@ -306,6 +306,74 @@ model Activity {
   projectId     String?
   createdAt     DateTime @default(now())
 }
+
+
+model ApplicationForm {
+  id        String  @id @default(uuid())
+  title     String
+  isDefault Boolean @default(false)
+
+  sections FormSection[]
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  jobs Job[] @relation("JobApplicationForm")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FormSection {
+  id          String  @id @default(uuid())
+  title       String
+  order       Int
+  description String?
+
+  formId String
+  form   ApplicationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  questions FormQuestion[]
+}
+
+model FormQuestion {
+  id          String       @id @default(uuid())
+  label       String
+  type        QuestionType
+  order       Int
+  required    Boolean      @default(false)
+  isPrivate   Boolean      @default(false)
+  description String?
+  systemNote  String?
+
+  sectionId String
+  section   FormSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  options QuestionOption[]
+}
+
+model QuestionOption {
+  id    String @id @default(uuid())
+  label String
+  value String
+
+  questionId String
+  question   FormQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+enum QuestionType {
+  SHORT_TEXT
+  LONG_TEXT
+  EMAIL
+  PHONE
+  YES_NO
+  CHECKBOX
+  MULTIPLE_CHOICE
+  DATE
+  FILE_UPLOAD
+  URL
+}
+
 
 enum CompanyStatus {
   CONTACTED
