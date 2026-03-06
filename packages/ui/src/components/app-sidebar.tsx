@@ -13,7 +13,7 @@ export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof S
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
                   <GalleryVerticalEnd className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
@@ -34,7 +34,7 @@ export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof S
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" asChild>
             <div>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
                 <LogOut className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
