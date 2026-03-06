@@ -121,16 +121,6 @@ export function SettingsTab() {
   const [googleChat, setGoogleChat] = useState(false);
   const [email, setEmail] = useState(false);
 
-  /* Application settings */
-  const [acceptApps, setAcceptApps] = useState(true);
-  const [requireResume, setRequireResume] = useState(true);
-  const [requireCover, setRequireCover] = useState(false);
-  const [enableAI, setEnableAI] = useState(true);
-
-  /* Privacy */
-  const [collectEEOC, setCollectEEOC] = useState(true);
-  const [confidential, setConfidential] = useState(false);
-
   return (
     <div
       style={{
@@ -159,26 +149,6 @@ export function SettingsTab() {
         enabled={email}
         onToggle={() => setEmail(!email)}
       />
-
-      {/* ── Divider ── */}
-      <hr style={{ border: "none", borderTop: "1px solid #f1f5f9", margin: "28px 0" }} />
-
-      {/* ── Application Settings ── */}
-      <SectionTitle>Application Settings</SectionTitle>
-
-      <CheckboxRow label="Accept applications" checked={acceptApps} onChange={() => setAcceptApps(!acceptApps)} />
-      <CheckboxRow label="Require resume upload" checked={requireResume} onChange={() => setRequireResume(!requireResume)} />
-      <CheckboxRow label="Require cover letter" checked={requireCover} onChange={() => setRequireCover(!requireCover)} />
-      <CheckboxRow label="Enable AI-assisted review" checked={enableAI} onChange={() => setEnableAI(!enableAI)} />
-
-      {/* ── Divider ── */}
-      <hr style={{ border: "none", borderTop: "1px solid #f1f5f9", margin: "28px 0" }} />
-
-      {/* ── Privacy & Compliance ── */}
-      <SectionTitle>Privacy &amp; Compliance</SectionTitle>
-
-      <CheckboxRow label="Collect EEOC data (optional for candidates)" checked={collectEEOC} onChange={() => setCollectEEOC(!collectEEOC)} />
-      <CheckboxRow label="Confidential job posting" checked={confidential} onChange={() => setConfidential(!confidential)} />
     </div>
   );
 }

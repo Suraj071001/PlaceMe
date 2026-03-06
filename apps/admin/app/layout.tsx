@@ -17,6 +17,7 @@ const navItems = [
   { title: "Create Jobs", url: "/create-jobs" },
   { title: "All Jobs", url: "/all-jobs" },
   { title: "Candidates", url: "/candidates-pipeline" },
+  { title: "Company List", url: "/company-list" },
   { title: "Reports", url: "/reports" },
   { title: "Integrations", url: "/integrations" },
   { title: "Admin-Roles", url: "/admin-users" },

@@ -118,7 +118,6 @@ export function JobDetailsTab() {
   const [jobType, setJobType] = useState("Full-Time");
   const [location, setLocation] = useState("");
   const [workMode, setWorkMode] = useState("On-Site");
-  const [openings, setOpenings] = useState("");
   const [ctcStipend, setCtcStipend] = useState("");
   const [eligibleDepts, setEligibleDepts] = useState<string[]>([]);
   const [minCGPA, setMinCGPA] = useState("");
@@ -164,15 +163,9 @@ export function JobDetailsTab() {
           <SelectField value={workMode} onChange={setWorkMode} options={["On-Site", "Remote", "Hybrid"]} />
         </div>
         <div>
-          <Label required>Openings</Label>
-          <InputField placeholder="e.g., 5" value={openings} onChange={setOpenings} type="number" />
+          <Label required>CTC / Stipend</Label>
+          <InputField placeholder="e.g., ₹6 LPA or ₹25,000/month" value={ctcStipend} onChange={setCtcStipend} />
         </div>
-      </div>
-
-      {/* CTC / Stipend */}
-      <div style={{ marginBottom: 20 }}>
-        <Label required>CTC / Stipend</Label>
-        <InputField placeholder="e.g., ₹6 LPA or ₹25,000/month" value={ctcStipend} onChange={setCtcStipend} />
       </div>
 
       {/* Divider */}
