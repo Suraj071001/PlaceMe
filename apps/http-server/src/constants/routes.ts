@@ -17,5 +17,9 @@ export const ROUTES = {
     JOB: {
         BASE: "/job",
         BY_ID: "/job/:id",
+    },
+    DEPARTMENT: {
+        BASE: "/department",
+        BY_ID: "/department/:id",
     }
 };
