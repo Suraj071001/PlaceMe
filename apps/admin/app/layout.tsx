@@ -19,7 +19,7 @@ const navItems = [
   { title: "Candidates", url: "/candidates-pipeline" },
   { title: "Reports", url: "/reports" },
   { title: "Integrations", url: "/integrations" },
-  { title: "Admin-Roles", url: "/admin" },
+  { title: "Admin-Roles", url: "/admin-users" },
 ];
 
 export const metadata: Metadata = {

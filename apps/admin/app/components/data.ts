@@ -1,8 +1,52 @@
 // All mock/static data used across dashboard components
 import { Users, CheckCircle2, Target, Building2, DollarSign } from "lucide-react";
 import { BarChart3, Cpu, Zap, Wrench } from "lucide-react";
+import { getDefaultPermissions } from "../admin-users/components/permissions";
 
 export type FilterKeys = "dateRange" | "department" | "jobType" | "placementTier" | "compareYears";
+
+export const initialUsers = [
+  {
+    id: 1,
+    name: "Dr Sharma",
+    email: "sharma@college.edu",
+    role: "Director",
+    responsibility: "Placement Oversight",
+    department: "All",
+    branch: "All",
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "Rahul Gupta",
+    email: "rahul@college.edu",
+    role: "Faculty Coordinator",
+    responsibility: "Campus Drives",
+    department: "Placement Cell",
+    branch: "MCA",
+    status: "Active",
+  },
+  {
+    id: 3,
+    name: "Neha Singh",
+    email: "neha@college.edu",
+    role: "IC",
+    responsibility: "Internship Coordination",
+    department: "CSE",
+    branch: "B Tech",
+    status: "Active",
+  },
+  {
+    id: 4,
+    name: "Prof. Kumar",
+    email: "kumar@college.edu",
+    role: "PC",
+    responsibility: "Student Placement",
+    department: "Mechanical",
+    branch: "B Tech",
+    status: "Active",
+  },
+].map((u) => ({ ...u, permissions: getDefaultPermissions(u.role) }));
 
 export const stages = [
   {
@@ -70,7 +114,6 @@ export const students = [
     status: "Waiting",
     date: "Dec 20",
   },
-  
 ];
 
 export const stageOrder = ["applied", "shortlisted", "interview", "final", "selected", "rejected"];
