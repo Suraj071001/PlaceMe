@@ -116,13 +116,13 @@ export function JobDetailsTab() {
   const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [jobType, setJobType] = useState("Full-Time");
-  const [location, setLocation] = useState("");
   const [workMode, setWorkMode] = useState("On-Site");
   const [ctcStipend, setCtcStipend] = useState("");
   const [eligibleDepts, setEligibleDepts] = useState<string[]>([]);
   const [minCGPA, setMinCGPA] = useState("");
   const [passingYear, setPassingYear] = useState("2026");
   const [deadline, setDeadline] = useState("");
+  const [companyTier, setCompanyTier] = useState("Basic");
 
   const row: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 20 };
 
@@ -150,9 +150,10 @@ export function JobDetailsTab() {
           <Label required>Job Type</Label>
           <SelectField value={jobType} onChange={setJobType} options={["Full-Time", "Internship", "Part-Time", "Contract", "Freelance"]} />
         </div>
-        <div>
-          <Label required>Location</Label>
-          <InputField placeholder="e.g., Bangalore, Mumbai, Remote" value={location} onChange={setLocation} />
+        {/* Company Tier */}
+        <div style={{ marginBottom: 20 }}>
+          <Label required>Company Tier</Label>
+          <SelectField value={companyTier} onChange={setCompanyTier} options={["Basic", "Standard", "Dream"]} />
         </div>
       </div>
 
