@@ -4,16 +4,17 @@ import logger from "../utils/logger";
 
 export const zodValidator =
   (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
+
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
-      logger.warn({
+      logger.warn(JSON.stringify({
         reason: "validation_failed",
         errors: result.error.flatten().fieldErrors,
-      });
+      }));
       return res.status(400).json({
         message: "Validation error",
-        errors: result.error.flatten().fieldErrors,
+        errors: result.error.message,
       });
     }
 

@@ -1,42 +1,66 @@
 import client from "@repo/db/index";
 import type { CreateJobPayload, UpdateJobPayload } from "@repo/zod";
-
+import redisClient from "@repo/redis-config/redisClient";
+import { STREAM_ID as JOB_STREAM_ID } from "@repo/redis-config/STREAM";
 export const createJob = async (data: CreateJobPayload) => {
-    return await client.job.create({
-        data,
+  return await client.$transaction(async (tx) => {
+    const job = await tx.job.create({
+      data,
     });
+
+    await redisClient.xAdd(JOB_STREAM_ID, "*", {
+      role: job.role,
+      companyId: job.companyId,
+      title: job.title,
+      slug: job.slug as string,
+      description: job.description as string,
+      locationId: job.locationId as string,
+      departmentId: job.departmentId as string,
+      employmentType: job.employmentType,
+      closeAt: JSON.stringify(job.closeAt),
+    },
+    {
+    TRIM : {
+        strategy : "MAXLEN",
+        threshold : 1000,
+        strategyModifier : "~"
+    }
+    });
+
+    return job;
+  });
 };
 
 export const getJobById = async (id: string) => {
-    return await client.job.findFirst({
-        where: { id },
-        include: { company: true, department: true, location: true },
-    });
+  return await client.job.findFirst({
+    where: { id },
+    include: { company: true, department: true, location: true },
+  });
 };
 
 export const getJobs = async () => {
-    return await client.job.findMany({
-        orderBy: { createdAt: "desc" },
-        include: { company: true },
-    });
+  return await client.job.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { company: true },
+  });
 };
 
 export const getJobsByCompanyId = async (companyId: string) => {
-    return await client.job.findMany({
-        where: { companyId },
-        orderBy: { createdAt: "desc" },
-    });
+  return await client.job.findMany({
+    where: { companyId },
+    orderBy: { createdAt: "desc" },
+  });
 };
 
 export const updateJob = async (id: string, data: UpdateJobPayload) => {
-    return await client.job.update({
-        where: { id },
-        data,
-    });
+  return await client.job.update({
+    where: { id },
+    data,
+  });
 };
 
 export const deleteJob = async (id: string) => {
-    return await client.job.delete({
-        where: { id },
-    });
+  return await client.job.delete({
+    where: { id },
+  });
 };
