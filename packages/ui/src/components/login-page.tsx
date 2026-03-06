@@ -1,17 +1,23 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { Input } from "./input";
 import { Button } from "./button";
 
 interface LoginPageProps {
     role: "Student" | "Admin";
     signupHref: string;
-    onLogin?: (e: React.FormEvent<HTMLFormElement>) => void;
+    onLogin?: (data: { email: string; password: string }) => Promise<void>;
     brandingColor?: "indigo" | "emerald" | "slate";
 }
 
 export function LoginPage({ role, signupHref, onLogin, brandingColor = "indigo" }: LoginPageProps) {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
     const gradientClasses = {
         indigo: "from-indigo-400 to-indigo-600",
         emerald: "from-emerald-400 to-emerald-600",
@@ -34,12 +40,31 @@ export function LoginPage({ role, signupHref, onLogin, brandingColor = "indigo" 
     const selectedText = textClasses[brandingColor];
     const selectedBg = bgClasses[brandingColor];
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+        if (!email || !password) {
+            setError("Email and Password are required");
+            return;
+        }
+
+        if (onLogin) {
+            setLoading(true);
+            try {
+                await onLogin({ email, password });
+            } catch (err: any) {
+                setError(err.message || "Failed to login");
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
     return (
         <div className="flex min-h-screen">
             {/* ── Left branding panel ─────────────────────────────── */}
             <div className={`hidden lg:flex lg:w-1/2 flex-col justify-center p-12 bg-gradient-to-b ${selectedGradient} text-white lg:px-20`}>
                 <div>
-                    {/* Graduation cap icon */}
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="mb-6 h-16 w-16"
@@ -71,24 +96,37 @@ export function LoginPage({ role, signupHref, onLogin, brandingColor = "indigo" 
                         Login as {role}
                     </p>
 
-                    <form className="space-y-4" onSubmit={onLogin || ((e) => e.preventDefault())}>
-                        {/* Email Address */}
+                    {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         <div>
                             <label htmlFor="email" className="mb-1 block text-sm font-semibold text-gray-700">
                                 Email Address
                             </label>
-                            <Input id="email" type="email" placeholder="your.email@example.com" className="h-10" />
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="your.email@example.com"
+                                className="h-10"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
                         </div>
 
-                        {/* Password */}
                         <div>
                             <label htmlFor="password" className="mb-1 block text-sm font-semibold text-gray-700">
                                 Password
                             </label>
-                            <Input id="password" type="password" placeholder="Enter your password" className="h-10" />
+                            <Input
+                                id="password"
+                                type="password"
+                                placeholder="Enter your password"
+                                className="h-10"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
                         </div>
 
-                        {/* Remember me + Forgot password */}
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 text-sm text-gray-600">
                                 <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />
@@ -99,22 +137,15 @@ export function LoginPage({ role, signupHref, onLogin, brandingColor = "indigo" 
                             </a>
                         </div>
 
-                        {/* Submit */}
-                        <Button type="submit" className={`w-full h-10 text-white rounded-full ${selectedBg}`}>
-                            Sign In
+                        <Button type="submit" disabled={loading} className={`w-full h-10 text-white rounded-full ${selectedBg}`}>
+                            {loading ? "Signing in..." : "Sign In"}
                         </Button>
                     </form>
 
                     <p className="mt-5 text-center text-sm text-gray-500">
-                        Don&apos;t have an account?{" "}
+                        Don&apos;t have an active account?{" "}
                         <a href={signupHref} className={`font-medium ${selectedText}`}>
-                            Sign up
-                        </a>
-                    </p>
-
-                    <p className="mt-2 text-center text-sm text-gray-400">
-                        <a href="#" className="hover:text-gray-600">
-                            ← Back to role selection
+                            Activate using OTP
                         </a>
                     </p>
                 </div>

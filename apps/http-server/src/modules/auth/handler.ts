@@ -1,10 +1,11 @@
 import type { Application } from "express";
-import { signupController, loginController } from "./controller";
+import { otpRequestController, otpVerifyController, loginController } from "./controller";
 import { zodValidator } from "../../middlewares/zodValidator";
-import { SignupSchema, LoginSchema } from "@repo/zod";
+import { OtpRequestSchema, OtpVerifySchema, LoginSchema } from "@repo/zod";
 import { ROUTES } from "../../constants/routes";
+
 export const authRoutes = (app: Application) => {
-    app.post(ROUTES.AUTH.SIGNUP, zodValidator(SignupSchema), signupController);
+    app.post(ROUTES.AUTH.SIGNUP + "/request-otp", zodValidator(OtpRequestSchema), otpRequestController);
+    app.post(ROUTES.AUTH.SIGNUP + "/verify", zodValidator(OtpVerifySchema), otpVerifyController);
     app.post(ROUTES.AUTH.SIGNIN, zodValidator(LoginSchema), loginController);
 }
-

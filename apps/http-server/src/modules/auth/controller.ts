@@ -1,19 +1,33 @@
 import { type Request, type Response } from "express";
-import { signupService, loginService } from "./services";
-import { SignupSchema, LoginSchema } from "@repo/zod";
+import { otpRequestService, otpVerifyService, loginService } from "./services";
+import { OtpRequestSchema, OtpVerifySchema, LoginSchema } from "@repo/zod";
 import { ERROR, SUCCESS, LOG } from "../../constants";
 import logger from "../../utils/logger";
 
-export const signupController = async (req: Request, res: Response) => {
+export const otpRequestController = async (req: Request, res: Response) => {
   try {
-    const payload = SignupSchema.parse(req.body);
+    const payload = OtpRequestSchema.parse(req.body);
+    const result = await otpRequestService(payload);
 
-    const token = await signupService(payload);
-
-    logger.info(LOG.AUTH_REGISTER_SUCCESS, { result: "created" });
-    res.status(201).json({ message: SUCCESS.USER_REGISTERED, token });
+    res.status(200).json(result);
   } catch (error: any) {
-    logger.error(LOG.AUTH_REGISTER_FAILED, {
+    logger.error("OTP request failed", {
+      error: error.message || ERROR.INTERNAL_SERVER_ERROR,
+    });
+    return res
+      .status(400)
+      .json({ error: error.message || ERROR.INTERNAL_SERVER_ERROR });
+  }
+};
+
+export const otpVerifyController = async (req: Request, res: Response) => {
+  try {
+    const payload = OtpVerifySchema.parse(req.body);
+    const token = await otpVerifyService(payload);
+
+    res.status(200).json({ message: "Account activated successfully", token });
+  } catch (error: any) {
+    logger.error("OTP verify failed", {
       error: error.message || ERROR.INTERNAL_SERVER_ERROR,
     });
     return res
@@ -42,7 +56,3 @@ export const loginController = async (req: Request, res: Response) => {
       .json({ error: error.message || ERROR.INTERNAL_SERVER_ERROR });
   }
 };
-
-
-
-

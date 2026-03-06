@@ -1,30 +1,49 @@
 import jwt from "jsonwebtoken";
-import { findUserByEmail, createUser } from "./dao";
-import type { SignupPayload, LoginPayload } from "@repo/zod";
+import { findUserByEmail, createUser, createOTP, verifyOTP, activateUserAndSetPassword } from "./dao";
+import type { OtpRequestPayload, OtpVerifyPayload, LoginPayload } from "@repo/zod";
 import { ERROR, LOG } from "../../constants";
 import logger from "../../utils/logger";
 import JWT_SECRET from "../../config/auth";
 
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-export const signupService = async (payload: SignupPayload) => {
-  logger.info(LOG.AUTH_REGISTER_START, { email: payload.email });
+export const otpRequestService = async (payload: OtpRequestPayload) => {
+  logger.info("OTP request start", { email: payload.email });
 
-  const existingUser = await findUserByEmail(payload.email);
-  if (existingUser) {
-    logger.warn(LOG.AUTH_REGISTER_FAILED, { email: payload.email, reason: ERROR.USER_EXISTS });
-    throw new Error(ERROR.USER_EXISTS);
+  const user = await findUserByEmail(payload.email);
+  if (!user) {
+    logger.warn("OTP request failed", { email: payload.email, reason: ERROR.USER_NOT_FOUND });
+    throw new Error(ERROR.USER_NOT_FOUND);
+  }
+
+  if (user.isActive) {
+    logger.warn("OTP request failed", { email: payload.email, reason: "User is already active" });
+    throw new Error("User is already active. Please login.");
+  }
+
+  const otp = generateOTP();
+  await createOTP(payload.email, otp);
+
+  // TODO: Integrate actual email sending logic here
+  logger.info(`[MOCK EMAIL] To: ${payload.email} | OTP: ${otp}`);
+
+  return { message: "OTP sent successfully" };
+};
+
+export const otpVerifyService = async (payload: OtpVerifyPayload) => {
+  logger.info("OTP verify start", { email: payload.email });
+
+  const isValidOtp = await verifyOTP(payload.email, payload.otp);
+  if (!isValidOtp) {
+    logger.warn("OTP verify failed", { email: payload.email, reason: "Invalid or expired OTP" });
+    throw new Error("Invalid or expired OTP");
   }
 
   const hashedPassword = await Bun.password.hash(payload.password, {
     algorithm: "bcrypt"
   });
 
-  const user = await createUser({
-    ...payload,
-    password: hashedPassword,
-  });
-
-
+  const user = await activateUserAndSetPassword(payload.email, hashedPassword);
 
   const permissions = (user.role as any)?.permissions?.map((rp: any) => rp.permission.name) || [];
 
@@ -45,6 +64,11 @@ export const loginService = async (payload: LoginPayload) => {
   if (!user) {
     logger.warn(LOG.AUTH_LOGIN_FAILED, { email: payload.email, reason: ERROR.USER_NOT_FOUND });
     throw new Error(ERROR.USER_NOT_FOUND);
+  }
+
+  if (!user.isActive) {
+    logger.warn(LOG.AUTH_LOGIN_FAILED, { email: payload.email, reason: "User is not active" });
+    throw new Error("Account is not active. Please sign up to verify your email first.");
   }
 
   const isPasswordValid = await Bun.password.verify(payload.password, user.password);
