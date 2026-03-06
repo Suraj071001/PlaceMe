@@ -1,5 +1,5 @@
 import { type Request, type Response } from "express";
-import { CreateJobSchema, UpdateJobSchema } from "@repo/zod";
+import { CreateJobSchema, UpdateJobSchema, JobQuerySchema, PaginationQuerySchema } from "@repo/zod";
 import { ERROR, SUCCESS } from "../../constants";
 import logger from "../../utils/logger";
 import {
@@ -28,8 +28,10 @@ export const createJobController = async (req: Request, res: Response) => {
 
 export const getJobsController = async (req: Request, res: Response) => {
     try {
-        const jobs = await getJobsService();
-        return res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: jobs });
+        const pagination = PaginationQuerySchema.parse(req.query);
+        const filters = JobQuerySchema.parse(req.query);
+        const result = await getJobsService({ ...pagination, ...filters });
+        return res.status(200).json({ message: SUCCESS.DATA_FETCHED, ...result });
     } catch (error: any) {
         return res
             .status(400)

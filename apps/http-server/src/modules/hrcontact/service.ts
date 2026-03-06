@@ -6,7 +6,7 @@ import {
     deleteHRContact,
     getHRContactsByCompanyId
 } from "./dao";
-import type { CreateHRContactPayload, UpdateHRContactPayload } from "@repo/zod";
+import type { CreateHRContactPayload, UpdateHRContactPayload, HRContactQuery, PaginationQuery } from "@repo/zod";
 import { ERROR, LOG } from "../../constants";
 import logger from "../../utils/logger";
 
@@ -18,11 +18,24 @@ export const createHRContactService = async (payload: CreateHRContactPayload) =>
     return contact;
 };
 
-export const getHRContactsService = async () => {
+export const getHRContactsService = async (query: HRContactQuery & PaginationQuery) => {
     logger.info("HR_CONTACT_FETCH_START");
-    const contacts = await getHRContacts();
-    logger.info("HR_CONTACT_FETCH_SUCCESS", { count: contacts.length });
-    return contacts;
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const { data, total } = await getHRContacts(skip, limit, query);
+    logger.info("HR_CONTACT_FETCH_SUCCESS", { count: data.length });
+
+    return {
+        data,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 };
 
 export const getHRContactByIdService = async (id: string) => {

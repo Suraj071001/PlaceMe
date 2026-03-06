@@ -19,11 +19,30 @@ export const getCompanyByDomain = async (domain: string) => {
     });
 };
 
-export const getCompanies = async () => {
-    return await client.company.findMany({
-        where: { deletedAt: null },
-        orderBy: { createdAt: "desc" },
-    });
+export const getCompanies = async (skip: number, take: number, filters: any = {}) => {
+    const where: any = { deletedAt: null };
+
+    if (filters.name) {
+        where.name = { contains: filters.name, mode: "insensitive" };
+    }
+    if (filters.status) {
+        where.status = filters.status;
+    }
+    if (filters.tier) {
+        where.tier = filters.tier;
+    }
+
+    const [data, total] = await Promise.all([
+        client.company.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            skip,
+            take,
+        }),
+        client.company.count({ where }),
+    ]);
+
+    return { data, total };
 };
 
 export const updateCompany = async (id: string, data: UpdateCompanyPayload) => {

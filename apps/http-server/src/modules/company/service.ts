@@ -6,7 +6,7 @@ import {
     deleteCompany,
     getCompanyByDomain,
 } from "./dao";
-import type { CreateCompanyPayload, UpdateCompanyPayload } from "@repo/zod";
+import type { CreateCompanyPayload, UpdateCompanyPayload, CompanyQuery, PaginationQuery } from "@repo/zod";
 import { ERROR, LOG } from "../../constants";
 import logger from "../../utils/logger";
 
@@ -26,11 +26,24 @@ export const createCompanyService = async (payload: CreateCompanyPayload) => {
     return company;
 };
 
-export const getCompaniesService = async () => {
+export const getCompaniesService = async (query: CompanyQuery & PaginationQuery) => {
     logger.info(LOG.COMPANY_FETCH_START);
-    const companies = await getCompanies();
-    logger.info(LOG.COMPANY_FETCH_SUCCESS, { count: companies.length });
-    return companies;
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const { data, total } = await getCompanies(skip, limit, query);
+    logger.info(LOG.COMPANY_FETCH_SUCCESS, { count: data.length });
+
+    return {
+        data,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 };
 
 export const getCompanyByIdService = async (id: string) => {

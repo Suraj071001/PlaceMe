@@ -32,3 +32,10 @@ export const UpdateHRContactSchema = z.object({
 
 export type CreateHRContactPayload = z.infer<typeof CreateHRContactSchema>;
 export type UpdateHRContactPayload = z.infer<typeof UpdateHRContactSchema>;
+
+export const HRContactQuerySchema = z.object({
+    companyId: z.string().uuid("Invalid company ID").optional(),
+    designation: HRDesignationEnum.optional(),
+});
+
+export type HRContactQuery = z.infer<typeof HRContactQuerySchema>;

@@ -1,5 +1,5 @@
 import { type Request, type Response } from "express";
-import { CreateCompanySchema, UpdateCompanySchema } from "@repo/zod";
+import { CreateCompanySchema, UpdateCompanySchema, CompanyQuerySchema, PaginationQuerySchema } from "@repo/zod";
 import { ERROR, SUCCESS, LOG } from "../../constants";
 import logger from "../../utils/logger";
 import {
@@ -28,8 +28,10 @@ export const createCompanyController = async (req: Request, res: Response) => {
 
 export const getCompaniesController = async (req: Request, res: Response) => {
     try {
-        const companies = await getCompaniesService();
-        return res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: companies });
+        const pagination = PaginationQuerySchema.parse(req.query);
+        const filters = CompanyQuerySchema.parse(req.query);
+        const result = await getCompaniesService({ ...pagination, ...filters });
+        return res.status(200).json({ message: SUCCESS.DATA_FETCHED, ...result });
     } catch (error: any) {
         return res
             .status(400)

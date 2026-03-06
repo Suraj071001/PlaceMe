@@ -14,11 +14,28 @@ export const getHRContactById = async (id: string) => {
     });
 };
 
-export const getHRContacts = async () => {
-    return await client.hRContact.findMany({
-        orderBy: { createdAt: "desc" },
-        include: { company: true },
-    });
+export const getHRContacts = async (skip: number, take: number, filters: any = {}) => {
+    const where: any = {};
+
+    if (filters.companyId) {
+        where.companyId = filters.companyId;
+    }
+    if (filters.designation) {
+        where.designation = filters.designation;
+    }
+
+    const [data, total] = await Promise.all([
+        client.hRContact.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            include: { company: true },
+            skip,
+            take,
+        }),
+        client.hRContact.count({ where }),
+    ]);
+
+    return { data, total };
 };
 
 export const getHRContactsByCompanyId = async (companyId: string) => {

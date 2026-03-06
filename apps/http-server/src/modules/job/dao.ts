@@ -55,11 +55,41 @@ export const getJobById = async (id: string) => {
   });
 };
 
-export const getJobs = async () => {
-  return await client.job.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { company: true },
-  });
+export const getJobs = async (
+  skip: number,
+  take: number,
+  filters: any = {},
+) => {
+  const where: any = {};
+
+  if (filters.companyId) {
+    where.companyId = filters.companyId;
+  }
+  if (filters.status) {
+    where.status = filters.status;
+  }
+  if (filters.employmentType) {
+    where.employmentType = filters.employmentType;
+  }
+  if (filters.role) {
+    where.role = { contains: filters.role, mode: "insensitive" };
+  }
+  if (filters.tier) {
+    where.tier = filters.tier;
+  }
+
+  const [data, total] = await Promise.all([
+    client.job.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { company: true },
+      skip,
+      take,
+    }),
+    client.job.count({ where }),
+  ]);
+
+  return { data, total };
 };
 
 export const getJobsByCompanyId = async (companyId: string) => {

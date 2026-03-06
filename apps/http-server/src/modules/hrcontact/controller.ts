@@ -1,5 +1,5 @@
 import { type Request, type Response } from "express";
-import { CreateHRContactSchema, UpdateHRContactSchema } from "@repo/zod";
+import { CreateHRContactSchema, UpdateHRContactSchema, HRContactQuerySchema, PaginationQuerySchema } from "@repo/zod";
 import { ERROR, SUCCESS, LOG } from "../../constants";
 import logger from "../../utils/logger";
 import {
@@ -28,8 +28,10 @@ export const createHRContactController = async (req: Request, res: Response) => 
 
 export const getHRContactsController = async (req: Request, res: Response) => {
     try {
-        const contacts = await getHRContactsService();
-        return res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: contacts });
+        const pagination = PaginationQuerySchema.parse(req.query);
+        const filters = HRContactQuerySchema.parse(req.query);
+        const result = await getHRContactsService({ ...pagination, ...filters });
+        return res.status(200).json({ message: SUCCESS.DATA_FETCHED, ...result });
     } catch (error: any) {
         return res
             .status(400)

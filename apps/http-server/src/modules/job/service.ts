@@ -6,7 +6,7 @@ import {
     deleteJob,
     getJobsByCompanyId,
 } from "./dao";
-import type { CreateJobPayload, UpdateJobPayload } from "@repo/zod";
+import type { CreateJobPayload, UpdateJobPayload, JobQuery, PaginationQuery } from "@repo/zod";
 import logger from "../../utils/logger";
 
 export const createJobService = async (payload: CreateJobPayload) => {
@@ -17,11 +17,24 @@ export const createJobService = async (payload: CreateJobPayload) => {
     return job;
 };
 
-export const getJobsService = async () => {
+export const getJobsService = async (query: JobQuery & PaginationQuery) => {
     logger.info("JOB_FETCH_START");
-    const jobs = await getJobs();
-    logger.info("JOB_FETCH_SUCCESS", { count: jobs.length });
-    return jobs;
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const { data, total } = await getJobs(skip, limit, query);
+    logger.info("JOB_FETCH_SUCCESS", { count: data.length });
+
+    return {
+        data,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 };
 
 export const getJobByIdService = async (id: string) => {

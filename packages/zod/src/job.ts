@@ -58,3 +58,13 @@ export const UpdateJobSchema = z.object({
 
 export type CreateJobPayload = z.infer<typeof CreateJobSchema>;
 export type UpdateJobPayload = z.infer<typeof UpdateJobSchema>;
+
+export const JobQuerySchema = z.object({
+    companyId: z.string().uuid("Invalid company ID").optional(),
+    status: JobStatusEnum.optional(),
+    employmentType: EmploymentTypeEnum.optional(),
+    role: z.string().optional(),
+    tier: TierEnum.optional(),
+});
+
+export type JobQuery = z.infer<typeof JobQuerySchema>;

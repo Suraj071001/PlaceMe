@@ -28,3 +28,11 @@ export const UpdateCompanySchema = z.object({
 
 export type CreateCompanyPayload = z.infer<typeof CreateCompanySchema>;
 export type UpdateCompanyPayload = z.infer<typeof UpdateCompanySchema>;
+
+export const CompanyQuerySchema = z.object({
+    name: z.string().optional(),
+    status: CompanyStatusEnum.optional(),
+    tier: CompanyTierEnum.optional(),
+});
+
+export type CompanyQuery = z.infer<typeof CompanyQuerySchema>;
