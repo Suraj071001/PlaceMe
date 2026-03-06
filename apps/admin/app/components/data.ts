@@ -147,10 +147,10 @@ export const integrations: Integration[] = [
 
 export const filterOptions: Record<FilterKeys, string[]> = {
   dateRange: ["Select Range", "Last 7 Days", "Last 30 Days", "Last 3 Months", "Last 6 Months", "Last Year"],
-  department: ["All Departments", "Computer Science", "Electronics", "Electrical", "Mechanical", "Civil"],
+  department: ["All Departments", "Computer Science", "Electronics", "Electrical", "Mechanical", "Civil", "MCA", "MSc", "MBA"],
   jobType: ["All Types", "Full Time", "Internship", "Part Time", "Contract"],
-  placementTier: ["All Tiers", "Tier 1 (20+ LPA)", "Tier 2 (10-20 LPA)", "Tier 3 (<10 LPA)"],
-  compareYears: ["No Comparison", "2023 vs 2022", "2024 vs 2023", "2025 vs 2024"],
+  placementTier: ["Select Tier", "ALL", "BASIC", "STANDARD", "DREAM"],
+  compareYears: ["Select Year", ...Array.from({ length: 10 }, (_, i) => String(new Date().getFullYear() - i))],
 };
 
 export const reports = [

@@ -92,6 +92,7 @@ export default function Page() {
       <FilterAnalytics
         filters={filters}
         appliedFilters={appliedFilters}
+        showGenerateReport={filtersApplied}
         onFilterChange={handleFilterChange}
         onApply={handleApplyFilters}
         onClearAll={handleClearAll}

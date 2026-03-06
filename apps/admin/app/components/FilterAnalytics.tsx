@@ -10,8 +10,8 @@ const defaultFilterValues: Record<FilterKeys, string> = {
   dateRange: "Select Range",
   department: "All Departments",
   jobType: "All Types",
-  placementTier: "All Tiers",
-  compareYears: "No Comparison",
+  placementTier: "Select Tier",
+  compareYears: "Select Year",
 };
 
 const filterLabels: Record<FilterKeys, string> = {
@@ -19,19 +19,20 @@ const filterLabels: Record<FilterKeys, string> = {
   department: "Department",
   jobType: "Job Type",
   placementTier: "Placement Tier",
-  compareYears: "Compare Years",
+  compareYears: "Year",
 };
 
 interface FilterAnalyticsProps {
   filters: Record<FilterKeys, string[]>;
   appliedFilters: Record<string, string[]>;
+  showGenerateReport: boolean;
   onFilterChange: (key: FilterKeys, value: string) => void;
   onApply: () => void;
   onClearAll: () => void;
   onRemoveFilter: (key: string, value: string) => void;
 }
 
-export function FilterAnalytics({ filters, appliedFilters, onFilterChange, onApply, onClearAll, onRemoveFilter }: FilterAnalyticsProps) {
+export function FilterAnalytics({ filters, appliedFilters, showGenerateReport, onFilterChange, onApply, onClearAll, onRemoveFilter }: FilterAnalyticsProps) {
   const [openReportDialog, setOpenReportDialog] = useState(false);
   return (
     <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 24, margin: "0 2px 24px" }}>
@@ -41,27 +42,29 @@ export function FilterAnalytics({ filters, appliedFilters, onFilterChange, onApp
           <Funnel size={16} color="#6366f1" /> Filter Analytics Data
         </h3>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <button
-            onClick={() => setOpenReportDialog(true)}
-            disabled={Object.keys(appliedFilters).length === 0}
-            style={{
-              background: "#e0e7ff",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              color: "#4338ca",
-              border: "none",
-              borderRadius: 10,
-              padding: "10px 14px",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(67, 56, 202, 0.15)",
-            }}
-          >
-            <FileText size={16} />
-            Generate Report
-          </button>
+          {showGenerateReport && (
+            <button
+              onClick={() => setOpenReportDialog(true)}
+              disabled={Object.keys(appliedFilters).length === 0}
+              style={{
+                background: "#e0e7ff",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                color: "#4338ca",
+                border: "none",
+                borderRadius: 10,
+                padding: "10px 14px",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(67, 56, 202, 0.15)",
+              }}
+            >
+              <FileText size={16} />
+              Generate Report
+            </button>
+          )}
           {Object.keys(appliedFilters).length > 0 && (
             <button
               onClick={onClearAll}

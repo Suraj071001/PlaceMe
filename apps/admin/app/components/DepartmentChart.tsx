@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { departments, tabs, type Department } from "./data";
+import { tabs, type Department } from "./data";
 import { DepartmentBarChart } from "./DepartmentBarChart";
 import { DepartmentPieChart } from "./DepartmentPiChart";
+import { getFilteredDepartmentData } from "./analyticsFilters";
 
 export function DepartmentChart({ appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
   const [activeTab, setActiveTab] = useState("overall");
@@ -14,46 +15,31 @@ export function DepartmentChart({ appliedFilters }: { appliedFilters?: Record<st
     return Number.isFinite(n) ? n : 0;
   };
 
-  const selectedDepartments = appliedFilters?.department || [];
-  const filteredByDropdown = selectedDepartments.length > 0 ? departments.filter((d) => selectedDepartments.includes(d.name)) : departments;
+  const filteredByDropdown = getFilteredDepartmentData(appliedFilters);
   const filteredDepartments =
     activeTab === "overall" ? filteredByDropdown : filteredByDropdown.filter((dept) => dept.name.toLowerCase().replace(/\s/g, "") === activeTab);
 
-  const selectedJobTypes = appliedFilters?.jobType || [];
-  const selectedTiers = appliedFilters?.placementTier || [];
-
-  const overallData = filteredByDropdown.map((d: Department) => {
-    let scale = 1;
-    if (selectedJobTypes.length > 0) {
-      if (selectedJobTypes.includes("Internship") && !selectedJobTypes.includes("Full Time")) scale *= 0.4;
-      else if (selectedJobTypes.includes("Full Time") && !selectedJobTypes.includes("Internship")) scale *= 0.8;
+  useEffect(() => {
+    if (activeTab === "overall") {
+      return;
     }
 
-    let tierLpaScale = 1;
-    if (selectedTiers.length > 0) {
-      if (selectedTiers.includes("Tier 1 (20+ LPA)")) {
-        scale *= 0.2;
-        tierLpaScale = 1.5;
-      } else if (selectedTiers.includes("Tier 3 (<10 LPA)")) {
-        scale *= 0.5;
-        tierLpaScale = 0.6;
-      } else if (selectedTiers.includes("Tier 2 (10-20 LPA)")) {
-        scale *= 0.4;
-        tierLpaScale = 0.9;
-      }
+    const tabStillExists = filteredByDropdown.some((dept) => dept.name.toLowerCase().replace(/\s/g, "") === activeTab);
+    if (!tabStillExists) {
+      setActiveTab("overall");
     }
+  }, [activeTab, filteredByDropdown]);
 
-    return {
-      name: d.name,
-      placements: Math.round(d.placements * scale),
-      internships: Math.round(d.internships * scale),
-      offers: Math.round(d.offers * scale),
-      avgLpa: Number((parseLpa(d.avgPackage) * tierLpaScale).toFixed(1)),
-      highestLpa: parseLpa(d.highestPackage),
-      eligible: d.eligibleStudents,
-      placed: Math.round(d.studentsPlaced * scale),
-    };
-  });
+  const overallData = filteredByDropdown.map((d: Department) => ({
+    name: d.name,
+    placements: d.placements,
+    internships: d.internships,
+    offers: d.offers,
+    avgLpa: Number(parseLpa(d.avgPackage).toFixed(1)),
+    highestLpa: Number(parseLpa(d.highestPackage).toFixed(1)),
+    eligible: d.eligibleStudents,
+    placed: d.studentsPlaced,
+  }));
 
   return (
     <div

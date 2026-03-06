@@ -1,30 +1,10 @@
 "use client";
 
-import { stats, departments } from "./data";
+import { stats } from "./data";
 
 export function StatsCards({ appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
-  let displayStats = stats;
-
-  if (appliedFilters?.department && appliedFilters.department.length > 0) {
-    const selectedDepts = departments.filter((d) => appliedFilters.department!.includes(d.name));
-    if (selectedDepts.length > 0) {
-      const el = selectedDepts.reduce((sum, d) => sum + d.eligibleStudents, 0);
-      const pl = selectedDepts.reduce((sum, d) => sum + d.studentsPlaced, 0);
-      const off = selectedDepts.reduce((sum, d) => sum + d.offers, 0);
-      const rateStr = el > 0 ? ((pl / el) * 100).toFixed(1) + "%" : "0%";
-      const avgNums = selectedDepts.map((d) => parseFloat(d.avgPackage.replace(/[^\d.]/g, "")));
-      const avg = avgNums.reduce((sum, n) => sum + n, 0) / avgNums.length;
-
-      displayStats = stats.map((stat) => {
-        if (stat.title === "Eligible Students") return { ...stat, value: el.toString() };
-        if (stat.title === "Students Placed") return { ...stat, value: pl.toString() };
-        if (stat.title === "Placement Rate") return { ...stat, value: rateStr };
-        if (stat.title === "Companies Visited") return { ...stat, title: "Offers", value: off.toString() };
-        if (stat.title === "Average Package") return { ...stat, value: `₹${avg.toFixed(1)} LPA` };
-        return stat;
-      }) as typeof stats;
-    }
-  }
+  // Always show overall institutional stats, regardless of filters
+  const displayStats = stats;
 
   return (
     <div

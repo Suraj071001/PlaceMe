@@ -14,22 +14,44 @@ type Props = {
 
 export default function IntegrationCard({ integration }: Props) {
   const Icon = integration.id === "google-chat" ? MessageSquare : Users;
+  const itemLabel = integration.id === "google-chat" ? "Space" : "Channel";
 
   const [spacesOpen, setSpacesOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
 
-  const openConfigDialog = () => {
+  const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
+
+  // mock spaces for frontend
+  const [spaces] = useState([
+    { id: "space1", name: "Placement Updates", active: true },
+    { id: "space2", name: "Internship Notifications", active: false },
+    { id: "space3", name: "Drive Announcements", active: true },
+    { id: "space4", name: "Placement Updates", active: true },
+    { id: "space5", name: "Internship Notifications", active: false },
+    { id: "space6", name: "Drive Announcements", active: true },
+    { id: "space7", name: "Placement Updates", active: true },
+    { id: "space8", name: "Internship Notifications", active: false },
+    { id: "space9", name: "Drive Announcements", active: true },
+    { id: "space10", name: "Placement Updates", active: true },
+    { id: "space11", name: "Internship Notifications", active: false },
+    { id: "space12", name: "Drive Announcements", active: true },
+    { id: "space13", name: "Placement Updates", active: true },
+    { id: "space14", name: "Internship Notifications", active: false },
+    { id: "space15", name: "Drive Announcements", active: true },
+  ]);
+
+  const openConfigDialog = (space: string) => {
+    setSelectedSpace(space);
     setSpacesOpen(false);
 
     setTimeout(() => {
       setConfigOpen(true);
-    }, 150);
+    }, 200);
   };
 
   return (
     <>
       <div className="bg-white border rounded-xl shadow-sm p-6 flex flex-col justify-between h-full">
-        {/* Header */}
         <div className="flex items-start gap-3">
           <Icon className="w-7 h-7 text-indigo-600 mt-1" />
 
@@ -46,7 +68,6 @@ export default function IntegrationCard({ integration }: Props) {
 
         <hr className="my-4" />
 
-        {/* Configure Button */}
         <div className="flex justify-end">
           <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={() => setSpacesOpen(true)}>
             <Settings size={16} />
@@ -55,11 +76,16 @@ export default function IntegrationCard({ integration }: Props) {
         </div>
       </div>
 
-      {/* Spaces Dialog */}
-      <SpacesDialog open={spacesOpen} onOpenChange={setSpacesOpen} onAddSpace={openConfigDialog} />
+      <SpacesDialog
+        open={spacesOpen}
+        onOpenChange={setSpacesOpen}
+        spaces={spaces}
+        onSelectSpace={openConfigDialog}
+        integrationName={integration.name}
+        itemLabel={itemLabel}
+      />
 
-      {/* Configure Dialog */}
-      <ConfigureSpaceDialog open={configOpen} onOpenChange={setConfigOpen} />
+      <ConfigureSpaceDialog open={configOpen} onOpenChange={setConfigOpen} spaceName={selectedSpace} integrationName={integration.name} itemLabel={itemLabel} />
     </>
   );
 }

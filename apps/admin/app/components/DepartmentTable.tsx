@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { departments, type Department } from "./data";
+import { type Department } from "./data";
+import { getFilteredDepartmentData } from "./analyticsFilters";
 
 const allColumns = [
   { key: "placements", label: "Placements" },
@@ -28,8 +29,7 @@ export function DepartmentTable({ appliedFilters }: { appliedFilters?: Record<st
     return Number.isFinite(n) ? n : 0;
   };
 
-  const filteredDepartments =
-    appliedFilters?.department && appliedFilters.department.length > 0 ? departments.filter((d) => appliedFilters.department?.includes(d.name)) : departments;
+  const filteredDepartments = getFilteredDepartmentData(appliedFilters);
 
   const totals = filteredDepartments.reduce(
     (acc, d: Department) => {

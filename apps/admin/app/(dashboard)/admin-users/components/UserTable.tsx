@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@repo/ui/components/input";
 import { PermissionsDialog } from "./PermissionsDialog";
@@ -86,14 +86,34 @@ export function UserTable() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [branchFilter, setBranchFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredUsers = users.filter((u) => {
-    const searchMatch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const roleMatch = roleFilter === "all" || u.role === roleFilter;
-    const deptMatch = departmentFilter === "all" || u.department === departmentFilter;
-    const branchMatch = branchFilter === "all" || u.branch === branchFilter;
-    return searchMatch && roleMatch && deptMatch && branchMatch;
-  });
+  const pageSize = 5;
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const searchMatch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const roleMatch = roleFilter === "all" || u.role === roleFilter;
+      const deptMatch = departmentFilter === "all" || u.department === departmentFilter;
+      const branchMatch = branchFilter === "all" || u.branch === branchFilter;
+      return searchMatch && roleMatch && deptMatch && branchMatch;
+    });
+  }, [users, searchQuery, roleFilter, departmentFilter, branchFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter, departmentFilter, branchFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const currentUserRole = "Director";
 
@@ -206,57 +226,95 @@ export function UserTable() {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
-            <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
-              <td className="px-4 py-4 font-medium text-slate-800">{user.name}</td>
-              <td className="px-4 py-4 text-slate-500">
-                <span className="flex items-center gap-1">
-                  {user.email}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-external-link"
-                  >
-                    <path d="M15 3h6v6" />
-                    <path d="M10 14 21 3" />
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  </svg>
-                </span>
-              </td>
-              <td className="px-4 py-4 text-slate-700">{user.role}</td>
-              <td className="px-4 py-4 text-slate-700">{user.responsibility}</td>
-              <td className="px-4 py-4 text-slate-600 font-medium">{user.department}</td>
-              <td className="px-4 py-4 text-slate-600 font-medium">{user.branch}</td>
-              <td className="px-4 py-4">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100/50">
-                  {user.status}
-                </span>
-              </td>
-              <td className="px-4 py-4 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  {canViewPermissions(user) && <PermissionsDialog userName={user.name} role={user.role} permissions={user.permissions} />}
+          {paginatedUsers.length > 0 ? (
+            paginatedUsers.map((user) => (
+              <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
+                <td className="px-4 py-4 font-medium text-slate-800">{user.name}</td>
+                <td className="px-4 py-4 text-slate-500">
+                  <span className="flex items-center gap-1">
+                    {user.email}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-external-link"
+                    >
+                      <path d="M15 3h6v6" />
+                      <path d="M10 14 21 3" />
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    </svg>
+                  </span>
+                </td>
+                <td className="px-4 py-4 text-slate-700">{user.role}</td>
+                <td className="px-4 py-4 text-slate-700">{user.responsibility}</td>
+                <td className="px-4 py-4 text-slate-600 font-medium">{user.department}</td>
+                <td className="px-4 py-4 text-slate-600 font-medium">{user.branch}</td>
+                <td className="px-4 py-4">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+                    {user.status}
+                  </span>
+                </td>
+                <td className="px-4 py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    {canViewPermissions(user) && <PermissionsDialog userName={user.name} role={user.role} permissions={user.permissions} />}
 
-                  {canEditUser(user.role) && (
-                    <EditPermissionsDialog
-                      userName={user.name}
-                      role={user.role}
-                      permissions={user.permissions}
-                      onSave={(newPerms) => handleUpdatePermissions(user.id, newPerms)}
-                    />
-                  )}
-                </div>
+                    {canEditUser(user.role) && (
+                      <EditPermissionsDialog
+                        userName={user.name}
+                        role={user.role}
+                        permissions={user.permissions}
+                        onSave={(newPerms) => handleUpdatePermissions(user.id, newPerms)}
+                      />
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={8} className="px-4 py-10 text-center text-sm text-slate-500">
+                No users found for current filters.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
+
+      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-sm">
+        <p className="text-slate-500">
+          Showing {filteredUsers.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
+        </p>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="h-9 rounded-lg border border-slate-200 px-3 text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span className="min-w-24 text-center text-slate-600">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="h-9 rounded-lg border border-slate-200 px-3 text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
