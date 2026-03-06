@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@repo/db": "*",
+    "@repo/redis-config": "*",
     "axios": "^1.13.6",
-    "@repo/redis-config" : "*"
+    "resend": "^6.9.3"
   }
 }

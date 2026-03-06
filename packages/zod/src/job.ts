@@ -36,6 +36,7 @@ export const CreateJobSchema = z.object({
     closeAt: z.coerce.date(),
     role: z.string().min(1, "Role is required"),
     tier: TierEnum.optional(),
+    batchIds: z.array(z.string().uuid("Invalid batch ID")).optional(),
 });
 
 export const UpdateJobSchema = z.object({
@@ -52,6 +53,7 @@ export const UpdateJobSchema = z.object({
     closeAt: z.coerce.date().optional(),
     role: z.string().min(1, "Role is required").optional(),
     tier: TierEnum.optional(),
+    batchIds: z.array(z.string().uuid("Invalid batch ID")).optional(),
 });
 
 export type CreateJobPayload = z.infer<typeof CreateJobSchema>;

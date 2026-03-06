@@ -1,68 +1,146 @@
-import axios from "axios"
-import redisClient from "@repo/redis-config/redisClient"
-import { STREAM_ID as JOB_STREAM_ID, } from "@repo/redis-config/STREAM"
-import client from "@repo/db"
+import axios from "axios";
+import redisClient from "@repo/redis-config/redisClient";
+import { STREAM_ID as JOB_STREAM_ID } from "@repo/redis-config/STREAM";
+import client from "@repo/db";
 
-const GOOGLE_CHAT_CONSUMERGROUP_ID = "google-chat"
+const GOOGLE_CHAT_CONSUMERGROUP_ID = "google-chat";
 
-interface googleWebhookConfig {
-    SPACE_ID : string,
-    KEY : string ,
-    TOKEN : string
+interface GoogleWebhookConfig {
+  SPACE_ID: string;
+  KEY: string;
+  TOKEN: string;
 }
 
-export async  function webhook({SPACE_ID , KEY , TOKEN } : googleWebhookConfig ,  data : string  ){
-  const url = `https://chat.googleapis.com/v1/spaces/${SPACE_ID}/messages?key=${KEY}&token=${TOKEN}`
-  const response = await  axios({
-    url : url,
-    method : "POST",
-    headers :{"Content-Type": "application/json; charset=UTF-8"},
-    data : {
-        text : data
-    } 
-  })
+export async function webhook(
+  { SPACE_ID, KEY, TOKEN }: GoogleWebhookConfig,
+  data: string,
+) {
+  const url = `https://chat.googleapis.com/v1/spaces/${SPACE_ID}/messages?key=${KEY}&token=${TOKEN}`;
+  const response = await axios({
+    url,
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=UTF-8" },
+    data: {
+      text: data,
+    },
+  });
 
   return response;
 }
 
+async function processMessage(message: any) {
+  const fields = message.message;
 
+  const jobId = fields.jobId as string | undefined;
+  if (!jobId) {
+    console.warn("JOB_STREAM message missing jobId field", { fields });
+    return;
+  }
 
+  const job = await client.job.findUnique({
+    where: { id: jobId },
+    include: {
+      company: true,
+      department: true,
+      batches: {
+        include: {
+          googleChatConfigs: {
+            where: {
+              isActive: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
+  if (!job) {
+    console.warn("Job not found for jobId from stream", { jobId });
+    return;
+  }
 
+  if (!job.batches || job.batches.length === 0) {
+    console.info(
+      "Job has no batches configured, skipping Google Chat notification",
+      {
+        jobId,
+      },
+    );
+    return;
+  }
 
+  const textParts: string[] = [];
+  textParts.push(`New job posted: ${job.title}`);
+  textParts.push(`Role: ${job.role}`);
+  textParts.push(`Company: ${job.company.name}`);
+  if (job.department?.name) {
+    textParts.push(`Department: ${job.department.name}`);
+  }
+  if (job.description) {
+    textParts.push("");
+    textParts.push(job.description);
+  }
+
+  const text = textParts.join("\n");
+
+  for (const batch of job.batches) {
+    for (const config of batch.googleChatConfigs) {
+      await webhook(
+        {
+          SPACE_ID: config.spaceId,
+          KEY: config.key,
+          TOKEN: config.token,
+        },
+        text,
+      );
+    }
+  }
+}
 
 async function Main() {
   const WorkerId = 1;
-    // await redisClient.xGroupCreate(JOB_STREAM_ID , GOOGLE_CHAT_CONSUMERGROUP_ID , '$' ,  { MKSTREAM : true });
 
-  while(1){
-    const response = await redisClient.xReadGroup(
-      GOOGLE_CHAT_CONSUMERGROUP_ID,  `Worker-${WorkerId}` , {
-        key : JOB_STREAM_ID,
-        id : ">"
-      }, {
-        COUNT : 1,
-        BLOCK : 5000
+  // await redisClient.xGroupCreate(JOB_STREAM_ID, GOOGLE_CHAT_CONSUMERGROUP_ID, "$", {
+  //   MKSTREAM: true,
+  // });
+
+  while (1) {
+    const response = (await redisClient.xReadGroup(
+      GOOGLE_CHAT_CONSUMERGROUP_ID,
+      `Worker-${WorkerId}`,
+      {
+        key: JOB_STREAM_ID,
+        id: ">", // message not deliverd to other consumer so far
+      },
+      {
+        COUNT: 1,
+        BLOCK: 5000,
+      },
+    )) as
+      | {
+          name: string;
+          messages: {
+            id: string;
+            message: Record<string, string>;
+          }[];
+        }[]
+      | null;
+
+    if (!response || response.length === 0) continue;
+
+    const stream = response[0]!;
+    for (const message of stream.messages) {
+      try {
+        await processMessage(message);
+        await redisClient.xAck(
+          JOB_STREAM_ID,
+          GOOGLE_CHAT_CONSUMERGROUP_ID,
+          message.id,
+        );
+      } catch (err) {
+        console.error("Failed to process JOB_STREAM message", err);
       }
-    )
-
-    if(!response) continue;
-
-    // push the notication of pending
-   //@ts-expect-error
-   // iterate through all the space get all the keys and call the function send the message
-    console.log((response[0].messages));
-    const chatResponse =  await  webhook({SPACE_ID : "AAQAofdmP3Y" , KEY :  "AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI"  , TOKEN : "OMgVXGO2PhRkH_rz-Fi6wSrDJ842gob_-rcrBN_Lcv4" }  , JSON.stringify(response))
-
-    // push the notification of sucess
-
-    if(chatResponse.status == 200) {
-      // shoudl we acknowledge
     }
-
-
-  
-
   }
 }
 
