@@ -19,7 +19,7 @@ const navItems = [
   { title: "Candidates", url: "/candidates-pipeline" },
   { title: "Reports", url: "/reports" },
   { title: "Integrations", url: "/integrations" },
-  { title: "Admin-Roles", url: "/admin" },
+  { title: "Admin-Roles", url: "/admin-users" },
 ];
 
 export const metadata: Metadata = {
@@ -38,7 +38,7 @@ export default function RootLayout({
         <SidebarProvider>
           <AppSidebar navItems={navItems} />
           <SidebarInset className="text-black">
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <header className="sticky flex h-16 shrink-0 items-center gap-2 border-b px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
               <PageTitle navItems={navItems} />

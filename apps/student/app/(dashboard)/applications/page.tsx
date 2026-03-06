@@ -236,8 +236,8 @@ export default function ApplicationsPage() {
                         <button
                             onClick={() => setView("pipeline")}
                             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${view === "pipeline"
-                                    ? "bg-indigo-600 text-white"
-                                    : "bg-white text-gray-600 hover:bg-gray-50"
+                                ? "bg-indigo-600 text-white"
+                                : "bg-white text-gray-600 hover:bg-gray-50"
                                 }`}
                         >
                             <LayoutGrid className="h-3.5 w-3.5" />
@@ -246,8 +246,8 @@ export default function ApplicationsPage() {
                         <button
                             onClick={() => setView("list")}
                             className={`flex items-center gap-1.5 border-l px-3 py-1.5 text-xs font-medium transition-colors ${view === "list"
-                                    ? "bg-indigo-600 text-white"
-                                    : "bg-white text-gray-600 hover:bg-gray-50"
+                                ? "bg-indigo-600 text-white"
+                                : "bg-white text-gray-600 hover:bg-gray-50"
                                 }`}
                         >
                             <List className="h-3.5 w-3.5" />
@@ -261,8 +261,8 @@ export default function ApplicationsPage() {
                         size="sm"
                         onClick={() => setFiltersOpen(!filtersOpen)}
                         className={`gap-1.5 ${filtersOpen
-                                ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                                : ""
+                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                            : ""
                             }`}
                     >
                         <Filter className="h-3.5 w-3.5" />
