@@ -4,6 +4,77 @@ import { BarChart3, Cpu, Zap, Wrench } from "lucide-react";
 
 export type FilterKeys = "dateRange" | "department" | "jobType" | "placementTier" | "compareYears";
 
+export const stages = [
+  {
+    id: "applied",
+    title: "Applied",
+    color: "bg-blue-100",
+  },
+  {
+    id: "shortlisted",
+    title: "Shortlisted",
+    color: "bg-purple-100",
+  },
+  {
+    id: "interview",
+    title: "Interview",
+    color: "bg-orange-100",
+  },
+  {
+    id: "final",
+    title: "Final Round",
+    color: "bg-yellow-100",
+  },
+  {
+    id: "selected",
+    title: "Selected",
+    color: "bg-green-100",
+  },
+  {
+    id: "rejected",
+    title: "Rejected",
+    color: "bg-red-100",
+  },
+];
+
+export const students = [
+  {
+    id: 1,
+    name: "Alex Chen",
+    branch: "CSE",
+    stage: "interview",
+    status: "Scheduled",
+    date: "Dec 24, 2:00 PM",
+  },
+  {
+    id: 2,
+    name: "James Wilson",
+    branch: "MBA",
+    stage: "final",
+    status: "Feedback Pending",
+    date: "Dec 10",
+  },
+  {
+    id: 3,
+    name: "Sarah Johnson",
+    branch: "MCA",
+    stage: "final",
+    status: "Scheduled",
+    date: "Dec 25",
+  },
+  {
+    id: 4,
+    name: "Michael Brown",
+    branch: "CSE",
+    stage: "applied",
+    status: "Waiting",
+    date: "Dec 20",
+  },
+  
+];
+
+export const stageOrder = ["applied", "shortlisted", "interview", "final", "selected", "rejected"];
+
 export type Integration = {
   id: string;
   name: string;
