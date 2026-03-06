@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { GalleryVerticalEnd, LogOut } from "lucide-react";
 
@@ -6,6 +8,13 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { Button } from "./button";
 
 export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof Sidebar> & { navItems: NavItem[] }) {
+  const handleLogout = () => {
+    // Clear any authentication tokens
+    localStorage.removeItem("token");
+    // Redirect to login page
+    window.location.href = "/login";
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -32,8 +41,8 @@ export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof S
         className={`border-t-2 bg-white`}
       >
         <SidebarMenuItem>
-          <SidebarMenuButton size="lg" asChild>
-            <div>
+          <SidebarMenuButton size="lg" onClick={handleLogout} className="cursor-pointer">
+            <div className="flex w-full items-center gap-2">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
                 <LogOut className="size-4" />
               </div>
@@ -41,7 +50,6 @@ export function AppSidebar({ navItems, ...props }: React.ComponentProps<typeof S
                 <span className="font-medium">Logout</span>
               </div>
             </div>
-
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarFooter>

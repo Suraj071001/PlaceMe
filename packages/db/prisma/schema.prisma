@@ -67,6 +67,16 @@ model User {
   notifications Notification[] @relation("NotificationToUser")
 }
 
+model OTP {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
 model Role {
   id          String   @id @default(uuid())
   name        String   @unique
