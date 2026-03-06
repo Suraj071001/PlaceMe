@@ -1,11 +1,10 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { AppSidebar } from "@repo/ui/components/app-sidebar";
 import { Separator } from "@repo/ui/components/separator";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@repo/ui/components/sidebar";
 import { PageTitle } from "@repo/ui/components/page-title";
-
-import "./globals.css";
-
 import { Inter } from "next/font/google";
 
 const inter = Inter({
@@ -44,7 +43,7 @@ export default function RootLayout({
               <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
               <PageTitle navItems={navItems} />
             </header>
-            <main className="flex-1 bg-[#f5f7fb]">{children}</main>
+            <main className="flex-1 min-h-0 overflow-hidden bg-[#f5f7fb]">{children}</main>
           </SidebarInset>
         </SidebarProvider>
       </body>

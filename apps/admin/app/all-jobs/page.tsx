@@ -152,7 +152,12 @@ export default function AllJobsPage() {
                   <div className="flex justify-center gap-2">
                     <button className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100">View</button>
 
-                    <button className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100">Applicants</button>
+                    <button
+                      className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100"
+                      onClick={() => router.push("/candidates-pipeline")}
+                    >
+                      Applicants
+                    </button>
 
                     <button className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100">Close</button>
                   </div>
