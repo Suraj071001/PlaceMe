@@ -1,7 +1,7 @@
 // All mock/static data used across dashboard components
 import { Users, CheckCircle2, Target, Building2, DollarSign } from "lucide-react";
 import { BarChart3, Cpu, Zap, Wrench } from "lucide-react";
-import { getDefaultPermissions } from "../admin-users/components/permissions";
+import { getDefaultPermissions } from "../(dashboard)/admin-users/components/permissions";
 
 export type FilterKeys = "dateRange" | "department" | "jobType" | "placementTier" | "compareYears";
 

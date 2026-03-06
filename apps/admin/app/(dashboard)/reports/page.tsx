@@ -1,6 +1,6 @@
 "use client";
 
-import { reports } from "../components/data";
+import { reports } from "../../components/data";
 import ReportCard from "./components/ReportCard";
 import { useState } from "react";
 import { Search } from "lucide-react";
