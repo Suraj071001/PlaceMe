@@ -1,4 +1,4 @@
-import { integrations } from "../components/data";
+import { integrations } from "../../components/data";
 import IntegrationCard from "./IntegerationCard";
 
 export default function IntegrationsPage() {

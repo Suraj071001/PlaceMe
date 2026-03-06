@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { stages, students as initialStudents, stageOrder } from "../../components/data";
+import { stages, students as initialStudents, stageOrder } from "../../../components/data";
 import PipelineStage from "./PipelineStages";
 
 export default function PipelineBoard() {

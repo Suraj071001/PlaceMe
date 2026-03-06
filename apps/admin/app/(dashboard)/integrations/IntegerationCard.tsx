@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MessageSquare, Users, Settings } from "lucide-react";
-import { Integration } from "../components/data";
+import { Integration } from "../../components/data";
 
 type Props = {
   integration: Integration;
