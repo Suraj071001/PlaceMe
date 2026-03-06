@@ -29,7 +29,6 @@ model Company {
   pipeline    Pipeline[]    @relation("CompanyToPipeline")
   offers      Offer[]       @relation("CompanyToOffer")
   hrContacts  HRContact[]
-  locations   Location[]    @relation("CompanyToLocation")
 }
 
 model HRContact {
@@ -127,18 +126,9 @@ model Department {
   company   Company  @relation("CompanyToDepartment", fields: [companyId], references: [id])
   jobs      Job[]    @relation("DepartmentToJob")
   batches   Batch[]
+  applicationForms ApplicationForm[]
 }
 
-model Location {
-  id        String   @id @default(uuid())
-  companyId String
-  name      String
-  address   String?
-  deletedAt DateTime?
-
-  company   Company  @relation("CompanyToLocation", fields: [companyId], references: [id])
-  jobs      Job[]
-}
 
 model Job {
   id             String         @id @default(uuid())
@@ -146,26 +136,44 @@ model Job {
   title          String
   slug           String?        @unique
   description    String?
+
   departmentId   String?
-  locationId     String?
+
+  location       String?
+
   employmentType EmploymentType @default(FULL_TIME)
+  workMode       String 
+  ctc            String?
+
+  minimumCGPA    Float?
+  passingYear    Int?
+  applicationDeadline DateTime?
+
+  additionalDetails Json?
+
   isOpen         Boolean        @default(true)
   status         jobStatus      @default(ACTIVE)
+
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   deletedAt      DateTime?
+
   openAt         DateTime       @default(now())
   closeAt        DateTime
+
   role           String
   tier           TIER           @default(BASIC)
 
+  google_chat    Boolean        @default(false)
+  email          Boolean        @default(false)
+
   company        Company        @relation("CompanyToJob", fields: [companyId], references: [id])
   department     Department?    @relation("DepartmentToJob", fields: [departmentId], references: [id])
-  location       Location?      @relation(fields: [locationId], references: [id])
 
   applications   Application[]  @relation("ApplicationToJob")
   offers         Offer[]
   batches        Batch[]
+  applicationForms ApplicationForm[] @relation("JobApplicationForm")
 }
 
 model Batch {
@@ -308,6 +316,74 @@ model Activity {
   projectId     String?
   createdAt     DateTime @default(now())
 }
+
+
+model ApplicationForm {
+  id        String  @id @default(uuid())
+  title     String
+  isDefault Boolean @default(false)
+
+  sections FormSection[]
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  jobs Job[] @relation("JobApplicationForm")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FormSection {
+  id          String  @id @default(uuid())
+  title       String
+  order       Int
+  description String?
+
+  formId String
+  form   ApplicationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  questions FormQuestion[]
+}
+
+model FormQuestion {
+  id          String       @id @default(uuid())
+  label       String
+  type        QuestionType
+  order       Int
+  required    Boolean      @default(false)
+  isPrivate   Boolean      @default(false)
+  description String?
+  systemNote  String?
+
+  sectionId String
+  section   FormSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  options QuestionOption[]
+}
+
+model QuestionOption {
+  id    String @id @default(uuid())
+  label String
+  value String
+
+  questionId String
+  question   FormQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+enum QuestionType {
+  SHORT_TEXT
+  LONG_TEXT
+  EMAIL
+  PHONE
+  YES_NO
+  CHECKBOX
+  MULTIPLE_CHOICE
+  DATE
+  FILE_UPLOAD
+  URL
+}
+
 
 enum CompanyStatus {
   CONTACTED

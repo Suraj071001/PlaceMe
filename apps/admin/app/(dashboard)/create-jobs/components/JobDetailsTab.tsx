@@ -1,119 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { SectionTitle, Label, InputField, SelectField, SearchableSelectField, MultiSelectChips } from "./FormElements";
 
-/* ─── helpers ─── */
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 style={{ fontSize: 15, fontWeight: 600, color: "#1e40af", margin: "0 0 18px" }}>{children}</h2>;
-}
-
-function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
-  return (
-    <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#334155", marginBottom: 6 }}>
-      {children}
-      {required && <span style={{ color: "#ef4444" }}> *</span>}
-    </label>
-  );
-}
-
-function InputField({ placeholder, value, onChange, type = "text" }: { placeholder: string; value: string; onChange: (v: string) => void; type?: string }) {
-  return (
-    <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-        width: "100%",
-        padding: "10px 14px",
-        border: "1px solid #e2e8f0",
-        borderRadius: 7,
-        fontSize: 13,
-        color: "#0f172a",
-        outline: "none",
-        background: "#fff",
-      }}
-    />
-  );
-}
-
-function SelectField({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
-  return (
-    <div style={{ position: "relative" }}>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "10px 34px 10px 14px",
-          border: "1px solid #e2e8f0",
-          borderRadius: 7,
-          fontSize: 13,
-          color: "#0f172a",
-          outline: "none",
-          background: "#fff",
-          appearance: "none",
-          cursor: "pointer",
-        }}
-      >
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
-      <ChevronDown size={15} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8" }} />
-    </div>
-  );
-}
-
-/* ─── Multi-select chip selector ─── */
-function MultiSelectChips({ options, selected, onChange }: { options: string[]; selected: string[]; onChange: (v: string[]) => void }) {
-  const toggle = (opt: string) => {
-    if (selected.includes(opt)) {
-      onChange(selected.filter((s) => s !== opt));
-    } else {
-      onChange([...selected, opt]);
-    }
-  };
-
-  return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-      {options.map((opt) => {
-        const isActive = selected.includes(opt);
-        return (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => toggle(opt)}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "6px 14px",
-              borderRadius: 20,
-              border: isActive ? "1.5px solid #2563eb" : "1px solid #e2e8f0",
-              background: isActive ? "#eff6ff" : "#fff",
-              color: isActive ? "#1e40af" : "#475569",
-              fontSize: 12,
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-            }}
-          >
-            {opt}
-            {isActive && <X size={12} />}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+const companyOptions = [
+  "Accenture",
+  "Amazon",
+  "Capgemini",
+  "Cisco",
+  "Cognizant",
+  "Deloitte",
+  "Google",
+  "IBM",
+  "Infosys",
+  "Microsoft",
+  "Oracle",
+  "TCS",
+  "Tech Mahindra",
+  "Wipro",
+].sort((a, b) => a.localeCompare(b));
 
 /* ─── Main ─── */
 export function JobDetailsTab() {
-  const [companyName, setCompanyName] = useState("");
+  const [companyName, setCompanyName] = useState(companyOptions[0] || "");
   const [jobTitle, setJobTitle] = useState("");
   const [jobType, setJobType] = useState("Full-Time");
   const [workMode, setWorkMode] = useState("On-Site");
@@ -135,7 +44,7 @@ export function JobDetailsTab() {
       {/* Company Name */}
       <div style={{ marginBottom: 20 }}>
         <Label required>Company Name</Label>
-        <InputField placeholder="e.g., Google, Infosys, TCS" value={companyName} onChange={setCompanyName} />
+        <SearchableSelectField value={companyName} onChange={setCompanyName} options={companyOptions} />
       </div>
 
       {/* Job Title */}

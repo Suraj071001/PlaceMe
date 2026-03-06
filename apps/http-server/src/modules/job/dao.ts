@@ -12,10 +12,10 @@ export const createJob = async (data: CreateJobPayload) => {
         ...jobData,
         ...(batchIds && batchIds.length > 0
           ? {
-              batches: {
-                connect: batchIds.map((id) => ({ id })),
-              },
-            }
+            batches: {
+              connect: batchIds.map((id) => ({ id })),
+            },
+          }
           : {}),
       },
     });
@@ -29,7 +29,7 @@ export const createJob = async (data: CreateJobPayload) => {
         title: job.title,
         slug: job.slug as string,
         description: job.description as string,
-        locationId: job.locationId as string,
+        location: job.location as string,
         departmentId: job.departmentId as string,
         employmentType: job.employmentType,
         closeAt: JSON.stringify(job.closeAt),
@@ -51,7 +51,7 @@ export const createJob = async (data: CreateJobPayload) => {
 export const getJobById = async (id: string) => {
   return await client.job.findFirst({
     where: { id },
-    include: { company: true, department: true, location: true },
+    include: { company: true, department: true },
   });
 };
 

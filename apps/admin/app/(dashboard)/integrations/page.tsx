@@ -1,5 +1,5 @@
 import { integrations } from "../../components/data";
-import IntegrationCard from "./IntegerationCard";
+import IntegrationCard from "./components/IntegerationCard";
 
 export default function IntegrationsPage() {
   return (

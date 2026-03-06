@@ -1,0 +1,50 @@
+﻿node.exe : Loaded Prisma 
+config from prisma.config.ts.
+At C:\Program 
+Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : 
+N    otSpecified: (Loaded 
+Prisma     
+c...isma.config.ts.:String    
+) [], RemoteException
+    + FullyQualifiedErrorId : 
+N    ativeCommandError
+ 
+
+Prisma schema loaded from 
+prisma\schema.prisma.
+Error: Prisma schema 
+validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mError 
+validating field `department` 
+in model `ApplicationForm`: 
+The relation field 
+`department` on model 
+`ApplicationForm` is missing 
+an opposite relation field on 
+the model `Department`. Either 
+run `prisma format` or add it 
+manually.[0m
+  [1;94m-->[0m  [4mprisma\sc
+hema.prisma:318[0m
+[1;94m   | [0m
+[1;94m317 | [0m  
+departmentId String
+[1;94m318 | [0m  
+[1;91mdepartment   Department 
+@relation(fields: 
+[departmentId], references: 
+[id])
+[0m
+[1;94m319 | [0m
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: getDmmf]
+
+Prisma CLI Version : 7.4.2

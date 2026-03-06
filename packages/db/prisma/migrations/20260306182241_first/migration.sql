@@ -8,9 +8,6 @@ CREATE TYPE "TIER" AS ENUM ('BASIC', 'STANDARD', 'DREAM');
 CREATE TYPE "HRDesignation" AS ENUM ('HR', 'TALENT_ACQUISITION', 'RECRUITER', 'SENIOR_RECRUITER', 'HR_MANAGER', 'HR_HEAD', 'CAMPUS_RECRUITER', 'TECH_RECRUITER', 'OTHER');
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('ADMIN', 'RECRUITER', 'HIRING_MANAGER', 'INTERVIEWER', 'SOURCER', 'COORDINATOR', 'READ_ONLY');
-
--- CreateEnum
 CREATE TYPE "EmploymentType" AS ENUM ('FULL_TIME', 'PART_TIME', 'CONTRACT', 'TEMPORARY', 'INTERNSHIP');
 
 -- CreateEnum
@@ -53,15 +50,46 @@ CREATE TABLE "HRContact" (
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "firstName" TEXT,
     "lastName" TEXT,
-    "role" "Role" NOT NULL DEFAULT 'READ_ONLY',
+    "roleId" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "phone" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Role" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Permission" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Permission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RolePermission" (
+    "id" TEXT NOT NULL,
+    "roleId" TEXT NOT NULL,
+    "permissionId" TEXT NOT NULL,
+
+    CONSTRAINT "RolePermission_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -85,17 +113,6 @@ CREATE TABLE "Department" (
 );
 
 -- CreateTable
-CREATE TABLE "Location" (
-    "id" TEXT NOT NULL,
-    "companyId" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "address" TEXT,
-    "deletedAt" TIMESTAMP(3),
-
-    CONSTRAINT "Location_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Job" (
     "id" TEXT NOT NULL,
     "companyId" TEXT NOT NULL,
@@ -103,8 +120,15 @@ CREATE TABLE "Job" (
     "slug" TEXT,
     "description" TEXT,
     "departmentId" TEXT,
-    "locationId" TEXT,
+    "location" TEXT,
     "employmentType" "EmploymentType" NOT NULL DEFAULT 'FULL_TIME',
+    "workMode" TEXT NOT NULL,
+    "openings" INTEGER,
+    "ctc" TEXT,
+    "minimumCGPA" DOUBLE PRECISION,
+    "passingYear" INTEGER,
+    "applicationDeadline" TIMESTAMP(3),
+    "additionalDetails" JSONB,
     "isOpen" BOOLEAN NOT NULL DEFAULT true,
     "status" "jobStatus" NOT NULL DEFAULT 'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -114,8 +138,35 @@ CREATE TABLE "Job" (
     "closeAt" TIMESTAMP(3) NOT NULL,
     "role" TEXT NOT NULL,
     "tier" "TIER" NOT NULL DEFAULT 'BASIC',
+    "google_chat" BOOLEAN NOT NULL DEFAULT false,
+    "email" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Job_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Batch" (
+    "id" TEXT NOT NULL,
+    "departmentId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Batch_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "GoogleChatConfig" (
+    "id" TEXT NOT NULL,
+    "batchId" TEXT NOT NULL,
+    "spaceId" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "GoogleChatConfig_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -228,6 +279,14 @@ CREATE TABLE "Activity" (
     CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_BatchToJob" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_BatchToJob_AB_pkey" PRIMARY KEY ("A","B")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Company_name_key" ON "Company"("name");
 
@@ -238,10 +297,22 @@ CREATE UNIQUE INDEX "Company_domain_key" ON "Company"("domain");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_name_key" ON "Permission"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RolePermission_roleId_permissionId_key" ON "RolePermission"("roleId", "permissionId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "IC_userId_key" ON "IC"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Job_slug_key" ON "Job"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GoogleChatConfig_batchId_spaceId_key" ON "GoogleChatConfig"("batchId", "spaceId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Student_userId_key" ON "Student"("userId");
@@ -249,8 +320,20 @@ CREATE UNIQUE INDEX "Student_userId_key" ON "Student"("userId");
 -- CreateIndex
 CREATE UNIQUE INDEX "Application_studentId_jobId_key" ON "Application"("studentId", "jobId");
 
+-- CreateIndex
+CREATE INDEX "_BatchToJob_B_index" ON "_BatchToJob"("B");
+
 -- AddForeignKey
 ALTER TABLE "HRContact" ADD CONSTRAINT "HRContact_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "IC" ADD CONSTRAINT "IC_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -259,16 +342,16 @@ ALTER TABLE "IC" ADD CONSTRAINT "IC_userId_fkey" FOREIGN KEY ("userId") REFERENC
 ALTER TABLE "Department" ADD CONSTRAINT "Department_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Location" ADD CONSTRAINT "Location_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Job" ADD CONSTRAINT "Job_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Job" ADD CONSTRAINT "Job_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Job" ADD CONSTRAINT "Job_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Batch" ADD CONSTRAINT "Batch_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "Department"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "GoogleChatConfig" ADD CONSTRAINT "GoogleChatConfig_batchId_fkey" FOREIGN KEY ("batchId") REFERENCES "Batch"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Student" ADD CONSTRAINT "Student_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -302,3 +385,9 @@ ALTER TABLE "Offer" ADD CONSTRAINT "Offer_applicationId_fkey" FOREIGN KEY ("appl
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BatchToJob" ADD CONSTRAINT "_BatchToJob_A_fkey" FOREIGN KEY ("A") REFERENCES "Batch"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BatchToJob" ADD CONSTRAINT "_BatchToJob_B_fkey" FOREIGN KEY ("B") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
