@@ -6,16 +6,16 @@ import client from "@repo/db";
 const GOOGLE_CHAT_CONSUMERGROUP_ID = "google-chat";
 
 interface GoogleWebhookConfig {
-  SPACE_ID: string;
-  KEY: string;
-  TOKEN: string;
+  webhookUrl?: string;
 }
 
 export async function webhook(
-  { SPACE_ID, KEY, TOKEN }: GoogleWebhookConfig,
+  { webhookUrl }: GoogleWebhookConfig,
   data: string,
 ) {
-  const url = `https://chat.googleapis.com/v1/spaces/${SPACE_ID}/messages?key=${KEY}&token=${TOKEN}`;
+
+  if(!webhookUrl) return;
+  const url = webhookUrl;
   const response = await axios({
     url,
     method: "POST",
@@ -84,16 +84,14 @@ async function processMessage(message: any) {
   const text = textParts.join("\n");
 
   for (const batch of job.batches) {
-    for (const config of batch.googleChatConfigs) {
+
       await webhook(
         {
-          SPACE_ID: config.spaceId,
-          KEY: config.key,
-          TOKEN: config.token,
+          webhookUrl: batch.googleChatConfigs?.webhookUrl,
         },
         text,
       );
-    }
+
   }
 }
 
