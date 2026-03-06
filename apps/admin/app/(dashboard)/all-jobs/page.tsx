@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Filter } from "lucide-react";
-import { jobs } from "../components/data";
+import { jobs } from "../../components/data";
 import { useRouter } from "next/navigation";
 
 const ITEMS_PER_PAGE = 5;
