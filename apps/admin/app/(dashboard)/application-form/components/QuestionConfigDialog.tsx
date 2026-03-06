@@ -1,7 +1,14 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/ui/components/dialog";
 import { useState } from "react";
 
-export default function QuestionConfigDialog({ open, setOpen, type, addQuestion }: any) {
+interface QuestionConfigDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  type: string;
+  addQuestion: (question: { id: number; type: string; label: string; description: string; required: boolean; private: boolean }) => void;
+}
+
+export default function QuestionConfigDialog({ open, setOpen, type, addQuestion }: QuestionConfigDialogProps) {
   const [label, setLabel] = useState("");
   const [description, setDescription] = useState("");
   const [required, setRequired] = useState(false);

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { defaultQuestions } from "../../components/data";
 import { Search, ChevronDown, Plus, Pencil, ArrowLeft } from "lucide-react";
 
-import QuestionCard from "./components/QuestionCard";
+import QuestionCard, { Question } from "./components/QuestionCard";
 import QuestionTypeDialog from "./components/QuestionDialogType";
 import QuestionConfigDialog from "./components/QuestionConfigDialog";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ const mockForms = [
 
 export default function ApplicationFormPage() {
   const [forms, setForms] = useState(mockForms);
-  const [questions, setQuestions] = useState(defaultQuestions);
+  const [questions, setQuestions] = useState<Question[]>(defaultQuestions as Question[]);
   const [activeFormId, setActiveFormId] = useState(1);
 
   const [typeDialogOpen, setTypeDialogOpen] = useState(false);
@@ -31,7 +31,7 @@ export default function ApplicationFormPage() {
   const [editingTitleValue, setEditingTitleValue] = useState("");
   const router = useRouter();
 
-  function deleteQuestion(id: number) {
+  function deleteQuestion(id: string | number) {
     setQuestions(questions.filter((q) => q.id !== id));
   }
 
@@ -41,7 +41,7 @@ export default function ApplicationFormPage() {
     setConfigDialogOpen(true);
   }
 
-  function addQuestion(question: any) {
+  function addQuestion(question: Question) {
     setQuestions([...questions, question]);
   }
 
@@ -113,10 +113,11 @@ export default function ApplicationFormPage() {
               <div
                 key={form.id}
                 onClick={() => setActiveFormId(form.id)}
-                className={`p-3.5 rounded-xl cursor-pointer transition-all duration-200 ${activeFormId === form.id
+                className={`p-3.5 rounded-xl cursor-pointer transition-all duration-200 ${
+                  activeFormId === form.id
                     ? "bg-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] border border-slate-200 ring-1 ring-slate-900/5 relative overflow-hidden"
                     : "hover:bg-slate-100 border border-transparent"
-                  }`}
+                }`}
               >
                 {activeFormId === form.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />}
                 <div className={`font-semibold text-[14px] ${activeFormId === form.id ? "text-slate-900" : "text-slate-700"}`}>{form.title}</div>

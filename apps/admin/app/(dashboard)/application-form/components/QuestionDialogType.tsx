@@ -39,7 +39,13 @@ const types = [
   },
 ];
 
-export default function QuestionTypeDialog({ open, setOpen, onSelect }: any) {
+interface QuestionTypeDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onSelect: (type: string) => void;
+}
+
+export default function QuestionTypeDialog({ open, setOpen, onSelect }: QuestionTypeDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-[600px] p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh]">
