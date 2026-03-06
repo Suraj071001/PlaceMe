@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "bun run prisma/seed.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -29,7 +29,6 @@ model Company {
   pipeline    Pipeline[]    @relation("CompanyToPipeline")
   offers      Offer[]       @relation("CompanyToOffer")
   hrContacts  HRContact[]
-  locations   Location[]    @relation("CompanyToLocation")
 }
 
 model HRContact {
@@ -119,16 +118,6 @@ model Department {
   batches   Batch[]
 }
 
-model Location {
-  id        String   @id @default(uuid())
-  companyId String
-  name      String
-  address   String?
-  deletedAt DateTime?
-
-  company   Company  @relation("CompanyToLocation", fields: [companyId], references: [id])
-  jobs      Job[]
-}
 
 model Job {
   id             String         @id @default(uuid())
@@ -136,22 +125,41 @@ model Job {
   title          String
   slug           String?        @unique
   description    String?
+
   departmentId   String?
-  locationId     String?
+
+  location       String?
+
   employmentType EmploymentType @default(FULL_TIME)
+  workMode       String 
+
+  openings       Int?
+  ctc            String?
+
+  minimumCGPA    Float?
+  passingYear    Int?
+  applicationDeadline DateTime?
+
+  additionalDetails Json?
+
   isOpen         Boolean        @default(true)
   status         jobStatus      @default(ACTIVE)
+
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   deletedAt      DateTime?
+
   openAt         DateTime       @default(now())
   closeAt        DateTime
+
   role           String
   tier           TIER           @default(BASIC)
 
+  google_chat    Boolean        @default(false)
+  email          Boolean        @default(false)
+
   company        Company        @relation("CompanyToJob", fields: [companyId], references: [id])
   department     Department?    @relation("DepartmentToJob", fields: [departmentId], references: [id])
-  location       Location?      @relation(fields: [locationId], references: [id])
 
   applications   Application[]  @relation("ApplicationToJob")
   offers         Offer[]

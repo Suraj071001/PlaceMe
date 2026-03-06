@@ -1,128 +1,245 @@
 import client from "../index";
 
 async function main() {
-    /*
+  /*
       PERMISSIONS
     */
-    const permissions = [
-        { name: "view_jobs", description: "View job listings" },
-        { name: "apply_job", description: "Apply to jobs" },
-        { name: "view_application", description: "View application" },
-        { name: "update_profile", description: "Update profile" },
-        { name: "create_company", description: "Create company" },
-        { name: "edit_company", description: "Edit company" },
-        { name: "create_job", description: "Create job" },
-        { name: "edit_job", description: "Edit job" },
-        { name: "delete_job", description: "Delete job" },
-        { name: "view_application_admin", description: "View all applications" },
-        { name: "move_application_stage", description: "Move application pipeline stage" },
-        { name: "send_offer", description: "Send offer to candidate" },
-        { name: "manage_users", description: "Manage users" },
-        { name: "view_reports", description: "View reports" }
-    ];
+  const permissions = [
+    { name: "READ_JOBS", description: "View job listings" },
+    { name: "READ_COMPANY", description: "View company details" },
+    { name: "APPLY_JOB", description: "Apply to jobs" },
+    { name: "READ_APPLICATION", description: "View application" },
+    { name: "UPDATE_PROFILE", description: "Update profile" },
+    { name: "CREATE_COMPANY", description: "Create company" },
+    { name: "EDIT_COMPANY", description: "Edit company" },
+    { name: "CREATE_JOB", description: "Create job" },
+    { name: "EDIT_JOB", description: "Edit job" },
+    { name: "DELETE_JOB", description: "Delete job" },
+    { name: "READ_APPLICATION_ADMIN", description: "View all applications" },
+    {
+      name: "MOVE_APPLICATION_STAGE",
+      description: "Move application pipeline stage",
+    },
+    { name: "SEND_OFFER", description: "Send offer to candidate" },
+    { name: "MANAGE_USERS", description: "Manage users" },
+    { name: "READ_REPORTS", description: "View reports" },
+  ];
+  const permissionRecords: any[] = [];
 
-    const permissionRecords: any[] = [];
+  for (const permission of permissions) {
+    const record = await client.permission.upsert({
+      where: { name: permission.name },
+      update: {},
+      create: permission,
+    });
+    permissionRecords.push(record);
+  }
 
-    for (const permission of permissions) {
-        const record = await client.permission.upsert({
-            where: { name: permission.name },
-            update: {},
-            create: permission
-        });
-        permissionRecords.push(record);
-    }
-
-    /*
+  /*
       ROLES
     */
-    const adminRole = await client.role.upsert({
-        where: { name: "ADMIN" },
-        update: {},
-        create: {
-            name: "ADMIN",
-            description: "System Administrator",
-            isDefault: false
-        }
-    });
+  const adminRole = await client.role.upsert({
+    where: { name: "ADMIN" },
+    update: {},
+    create: {
+      name: "ADMIN",
+      description: "System Administrator",
+      isDefault: false,
+    },
+  });
 
-    const studentRole = await client.role.upsert({
-        where: { name: "STUDENT" },
-        update: {},
-        create: {
-            name: "STUDENT",
-            description: "Default student role",
-            isDefault: true
-        }
-    });
+  const studentRole = await client.role.upsert({
+    where: { name: "STUDENT" },
+    update: {},
+    create: {
+      name: "STUDENT",
+      description: "Default student role",
+      isDefault: true,
+    },
+  });
 
-    const recruiterRole = await client.role.upsert({
-        where: { name: "RECRUITER" },
-        update: {},
-        create: {
-            name: "RECRUITER",
-            description: "Company recruiter",
-            isDefault: false
-        }
-    });
+  const recruiterRole = await client.role.upsert({
+    where: { name: "RECRUITER" },
+    update: {},
+    create: {
+      name: "RECRUITER",
+      description: "Company recruiter",
+      isDefault: false,
+    },
+  });
 
-    const interviewerRole = await client.role.upsert({
-        where: { name: "INTERVIEWER" },
-        update: {},
-        create: {
-            name: "INTERVIEWER",
-            description: "Interview panel member",
-            isDefault: false
-        }
-    });
+  const interviewerRole = await client.role.upsert({
+    where: { name: "INTERVIEWER" },
+    update: {},
+    create: {
+      name: "INTERVIEWER",
+      description: "Interview panel member",
+      isDefault: false,
+    },
+  });
 
-    /*
+  /*
       ROLE PERMISSIONS
     */
-    const getPermission = (name: string) =>
-        permissionRecords.find((p) => p.name === name)!;
+  // ROLE PERMISSIONS
+  const getPermission = (name: string) =>
+    permissionRecords.find((p) => p.name === name)!;
 
-    const rolePermissions = [
-        // STUDENT
-        { roleId: studentRole.id, permissionId: getPermission("view_jobs").id },
-        { roleId: studentRole.id, permissionId: getPermission("apply_job").id },
-        { roleId: studentRole.id, permissionId: getPermission("view_application").id },
-        { roleId: studentRole.id, permissionId: getPermission("update_profile").id },
+  const rolePermissions = [
+    // STUDENT
+    { roleId: studentRole.id, permissionId: getPermission("READ_JOBS").id },
+    { roleId: studentRole.id, permissionId: getPermission("APPLY_JOB").id },
+    {
+      roleId: studentRole.id,
+      permissionId: getPermission("READ_APPLICATION").id,
+    },
+    {
+      roleId: studentRole.id,
+      permissionId: getPermission("UPDATE_PROFILE").id,
+    },
 
-        // RECRUITER
-        { roleId: recruiterRole.id, permissionId: getPermission("create_job").id },
-        { roleId: recruiterRole.id, permissionId: getPermission("edit_job").id },
-        { roleId: recruiterRole.id, permissionId: getPermission("view_application_admin").id },
-        { roleId: recruiterRole.id, permissionId: getPermission("move_application_stage").id },
-        { roleId: recruiterRole.id, permissionId: getPermission("send_offer").id },
+    // RECRUITER
+    { roleId: recruiterRole.id, permissionId: getPermission("CREATE_JOB").id },
+    { roleId: recruiterRole.id, permissionId: getPermission("EDIT_JOB").id },
+    {
+      roleId: recruiterRole.id,
+      permissionId: getPermission("READ_APPLICATION_ADMIN").id,
+    },
+    {
+      roleId: recruiterRole.id,
+      permissionId: getPermission("MOVE_APPLICATION_STAGE").id,
+    },
+    { roleId: recruiterRole.id, permissionId: getPermission("SEND_OFFER").id },
 
-        // INTERVIEWER
-        { roleId: interviewerRole.id, permissionId: getPermission("view_application_admin").id },
+    // INTERVIEWER
+    {
+      roleId: interviewerRole.id,
+      permissionId: getPermission("READ_APPLICATION_ADMIN").id,
+    },
 
-        // ADMIN → all permissions
-        ...permissionRecords.map((permission) => ({
-            roleId: adminRole.id,
-            permissionId: permission.id
-        }))
-    ];
+    // ADMIN → all permissions
+    ...permissionRecords.map((permission) => ({
+      roleId: adminRole.id,
+      permissionId: permission.id,
+    })),
+  ];
 
-    for (const rp of rolePermissions) {
-        await client.rolePermission.upsert({
-            where: {
-                roleId_permissionId: {
-                    roleId: rp.roleId,
-                    permissionId: rp.permissionId
-                }
-            },
-            update: {},
-            create: rp
-        });
-    }
+  for (const rp of rolePermissions) {
+    await client.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId: rp.roleId,
+          permissionId: rp.permissionId,
+        },
+      },
+      update: {},
+      create: rp,
+    });
+  }
 
-    console.log("RBAC seeding completed 🚀");
+  // ADMIN USER SETUP
+  const hashedPassword = await Bun.password.hash("admin123", {
+    algorithm: "bcrypt",
+  });
+
+  const adminUser = await client.user.upsert({
+    where: { email: "admin@placeme.com" },
+    update: {
+      password: hashedPassword,
+    },
+    create: {
+      email: "admin@placeme.com",
+      password: hashedPassword,
+      firstName: "Super",
+      lastName: "Admin",
+      roleId: adminRole.id,
+      isActive: true,
+      phone: "+1234567890",
+    },
+  });
+
+  // MOCK DATA SETUP
+  const company = await client.company.upsert({
+    where: { name: "Placeme Inc" },
+    update: {},
+    create: {
+      name: "Placeme Inc",
+      domain: "placeme.com",
+      status: "CONTACTED",
+      tier: "DREAM",
+    },
+  });
+
+  let department = await client.department.findFirst({
+    where: { name: "Engineering", companyId: company.id },
+  });
+  if (!department) {
+    department = await client.department.create({
+      data: {
+        name: "Engineering",
+        companyId: company.id,
+      },
+    });
+  }
+
+  const hrContactCount = await client.hRContact.count({
+    where: { companyId: company.id },
+  });
+  if (hrContactCount === 0) {
+    await client.hRContact.create({
+      data: {
+        name: "John HR",
+        email: "hr@placeme.com",
+        phone: "9876543210",
+        designation: "HR_MANAGER",
+        companyId: company.id,
+      },
+    });
+  }
+
+  const jobCount = await client.job.count({ where: { companyId: company.id } });
+  if (jobCount === 0) {
+    await client.job.create({
+      data: {
+        companyId: company.id,
+        departmentId: department.id,
+        title: "Software Development Engineer II",
+        slug: "sde-2-placeme",
+        description: "Looking for an SDE-2 to join the Core Tech team.",
+        location: "Remote",
+        employmentType: "FULL_TIME",
+        workMode: "Remote",
+        ctc: "20-25 LPA",
+        minimumCGPA: 7.5,
+        passingYear: 2024,
+        role: "SDE-2",
+        isOpen: true,
+        status: "ACTIVE",
+        additionalDetails: {
+          responsibilities: [
+            "Design, develop, and maintain scalable software solutions.",
+            "Collaborate with cross-functional teams to define and implement new features.",
+          ],
+          qualifications: [
+            "Bachelor's degree in Computer Science or related field.",
+          ],
+        },
+        openAt: new Date(),
+        closeAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        tier: "DREAM",
+      },
+    });
+  }
+
+  console.log("RBAC and Mock Data seeding completed 🚀");
+  console.log("====================================");
+  console.log("Admin Credentials:");
+  console.log("Email: admin@placeme.com");
+  console.log("Password: admin123");
+  console.log("====================================");
 }
 
-main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

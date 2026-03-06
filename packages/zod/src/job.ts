@@ -28,7 +28,13 @@ export const CreateJobSchema = z.object({
     slug: z.string().optional(),
     description: z.string().optional(),
     departmentId: z.string().uuid("Invalid department ID").optional(),
-    locationId: z.string().uuid("Invalid location ID").optional(),
+    location: z.string().optional(),
+    workMode: z.string().min(1, "Work mode is required"),
+    ctc: z.string().optional(),
+    minimumCGPA: z.number().optional(),
+    passingYear: z.number().int().optional(),
+    applicationDeadline: z.coerce.date().optional(),
+    additionalDetails: z.any().optional(),
     employmentType: EmploymentTypeEnum.optional(),
     isOpen: z.boolean().optional(),
     status: JobStatusEnum.optional(),
@@ -37,6 +43,8 @@ export const CreateJobSchema = z.object({
     role: z.string().min(1, "Role is required"),
     tier: TierEnum.optional(),
     batchIds: z.array(z.string().uuid("Invalid batch ID")).optional(),
+    google_chat: z.boolean().optional(),
+    email: z.boolean().optional(),
 });
 
 export const UpdateJobSchema = z.object({
@@ -45,7 +53,13 @@ export const UpdateJobSchema = z.object({
     slug: z.string().optional(),
     description: z.string().optional(),
     departmentId: z.string().uuid("Invalid department ID").optional(),
-    locationId: z.string().uuid("Invalid location ID").optional(),
+    location: z.string().optional(),
+    workMode: z.string().optional(),
+    ctc: z.string().optional(),
+    minimumCGPA: z.number().optional(),
+    passingYear: z.number().int().optional(),
+    applicationDeadline: z.coerce.date().optional(),
+    additionalDetails: z.any().optional(),
     employmentType: EmploymentTypeEnum.optional(),
     isOpen: z.boolean().optional(),
     status: JobStatusEnum.optional(),
@@ -54,6 +68,8 @@ export const UpdateJobSchema = z.object({
     role: z.string().min(1, "Role is required").optional(),
     tier: TierEnum.optional(),
     batchIds: z.array(z.string().uuid("Invalid batch ID")).optional(),
+    google_chat: z.boolean().optional(),
+    email: z.boolean().optional(),
 });
 
 export type CreateJobPayload = z.infer<typeof CreateJobSchema>;
