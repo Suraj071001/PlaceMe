@@ -74,7 +74,7 @@ const eligibleCompanies: EligibleCompany[] = [
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-6 pb-10 max-w-7xl mx-auto">
       {/* Welcome header */}
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">
