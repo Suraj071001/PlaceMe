@@ -218,7 +218,7 @@ model Student {
 
   enrollment   String
   address      String
-  registration String
+  skills       String[]
   branchId       String
   batchId       String
 

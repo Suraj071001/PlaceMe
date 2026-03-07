@@ -4,27 +4,28 @@ async function main() {
   /*
         PERMISSIONS
       */
-  const permissions = [
-    { name: "READ_JOBS", description: "View job listings" },
-    { name: "READ_COMPANY", description: "View company details" },
-    { name: "APPLY_JOB", description: "Apply to jobs" },
-    { name: "READ_APPLICATION", description: "View application" },
-    { name: "UPDATE_PROFILE", description: "Update profile" },
-    { name: "CREATE_COMPANY", description: "Create company" },
-    { name: "EDIT_COMPANY", description: "Edit company" },
-    { name: "CREATE_JOB", description: "Create job" },
-    { name: "EDIT_JOB", description: "Edit job" },
-    { name: "DELETE_JOB", description: "Delete job" },
-    { name: "READ_APPLICATION_ADMIN", description: "View all applications" },
-    {
-      name: "MOVE_APPLICATION_STAGE",
-      description: "Move application pipeline stage",
-    },
-    { name: "SEND_OFFER", description: "Send offer to candidate" },
-    { name: "MANAGE_USERS", description: "Manage users" },
-    { name: "READ_REPORTS", description: "View reports" },
-  ];
-  const permissionRecords: any[] = [];
+    const permissions = [
+        { name: "READ_JOBS", description: "View job listings" },
+        { name: "READ_COMPANY", description: "View company details" },
+        { name: "APPLY_JOB", description: "Apply to jobs" },
+        { name: "READ_APPLICATION", description: "View application" },
+        { name: "UPDATE_PROFILE", description: "Update profile" },
+        { name: "CREATE_COMPANY", description: "Create company" },
+        { name: "EDIT_COMPANY", description: "Edit company" },
+        { name: "CREATE_JOB", description: "Create job" },
+        { name: "EDIT_JOB", description: "Edit job" },
+        { name: "DELETE_JOB", description: "Delete job" },
+        { name: "READ_APPLICATION_ADMIN", description: "View all applications" },
+        {
+            name: "MOVE_APPLICATION_STAGE",
+            description: "Move application pipeline stage",
+        },
+        { name: "SEND_OFFER", description: "Send offer to candidate" },
+        { name: "MANAGE_USERS", description: "Manage users" },
+        { name: "READ_REPORTS", description: "View reports" },
+        { name: "READ_PROFILE", description: "View profile" },
+    ];
+    const permissionRecords: any[] = [];
 
   for (const permission of permissions) {
     const record = await client.permission.upsert({
@@ -196,39 +197,39 @@ async function main() {
     });
   }
 
-  const jobCount = await client.job.count({ where: { companyId: company.id } });
-  if (jobCount === 0) {
-    await client.job.upsert({
-      where: { slug: "sde-2-placeme" },
-      update: {},
-      create: {
-        companyId: company.id,
-        departmentId: department.id,
-        title: "Software Development Engineer II",
-        slug: "sde-2-placeme",
-        description: "Looking for an SDE-2 to join the Core Tech team.",
-        location: "Remote",
-        employmentType: "FULL_TIME",
-        workMode: "Remote",
-        ctc: "20-25 LPA",
-        minimumCGPA: 7.5,
-        passingYear: 2024,
-        role: "SDE-2",
-        isOpen: true,
-        status: "ACTIVE",
-        additionalDetails: {
-          responsibilities: [
-            "Design, develop, and maintain scalable software solutions.",
-            "Collaborate with cross-functional teams to define and implement new features.",
-          ],
-          qualifications: ["Bachelor's degree in Computer Science or related field."],
-        },
-        openAt: new Date(),
-        closeAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-        tier: "DREAM",
-      },
-    });
-  }
+    const jobCount = await client.job.count({ where: { companyId: company.id } });
+    if (jobCount === 0) {
+        await client.job.create({
+            data: {
+                companyId: company.id,
+                departmentId: department.id,
+                title: "Software Development Engineer II",
+                slug: "sde-2-placeme",
+                description: "Looking for an SDE-2 to join the Core Tech team.",
+                location: "Remote",
+                employmentType: "FULL_TIME",
+                workMode: "Remote",
+                ctc: "20-25 LPA",
+                minimumCGPA: 7.5,
+                passingYear: 2024,
+                role: "SDE-2",
+                isOpen: true,
+                status: "ACTIVE",
+                additionalDetails: {
+                    responsibilities: [
+                        "Design, develop, and maintain scalable software solutions.",
+                        "Collaborate with cross-functional teams to define and implement new features.",
+                    ],
+                    qualifications: [
+                        "Bachelor's degree in Computer Science or related field.",
+                    ],
+                },
+                openAt: new Date(),
+                closeAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                tier: "DREAM",
+            },
+        });
+    }
 
   /*
       SEED DUMMY STUDENT & ADMIN
@@ -263,19 +264,49 @@ async function main() {
     },
   });
 
-  // Create the Student profile for the dummy student
-  await client.student.upsert({
-    where: { userId: dummyStudent.id },
-    update: {},
-    create: {
-      userId: dummyStudent.id,
-      enrollment: "ENR-12345",
-      address: "123 Student Rd",
-      registration: "REG-54321",
-      branch: "Computer Science",
-      email: "suraj24mca@gmail.com",
-    },
-  });
+    // Create a dummy Branch and Batch for the student
+    const dummyBranch = await client.branch.upsert({
+        where: { id: "dummy-branch-id" },
+        update: {},
+        create: {
+            id: "dummy-branch-id",
+            name: "Computer Science",
+            departmentId: department.id
+        }
+    });
+
+    const dummyBatch = await client.batch.upsert({
+        where: { id: "dummy-batch-id" },
+        update: {},
+        create: {
+            id: "dummy-batch-id",
+            name: "2024",
+            branchId: dummyBranch.id
+        }
+    });
+
+    // Create the Student profile for the dummy student
+    await client.student.upsert({
+        where: { userId: dummyStudent.id },
+        update: {},
+        create: {
+            userId: dummyStudent.id,
+            enrollment: "ENR-12345",
+            address: "123 Student Rd",
+            branchId: dummyBranch.id,
+            batchId: dummyBatch.id,
+            email: "suraj24mca@gmail.com"
+        }
+    });
+
+    console.log("Dummy Users seeding completed");
+    console.log("RBAC and Mock Data seeding completed");
+    console.log("====================================");
+    console.log("Admin Credentials:");
+    console.log("Email: admin@placeme.com");
+    console.log("Password: admin123");
+    console.log("====================================");
+ 
 
   console.log("Dummy Users seeding completed 🚀");
   console.log("RBAC and Mock Data seeding completed 🚀");
