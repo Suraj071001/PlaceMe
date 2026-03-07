@@ -1,311 +1,266 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LayoutGrid, List, Filter, ChevronUp } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { ApplicationStatusCard } from "./application-status-card";
 import { ApplicationColumn } from "./application-column";
 import { ApplicationListView } from "./application-list-view";
-import {
-    ApplicationFilterBar,
-    defaultFilters,
-    type ApplicationFilters,
-} from "./application-filter-bar";
+import { ApplicationFilterBar, defaultFilters, type ApplicationFilters } from "./application-filter-bar";
 import type { Application } from "./application-card";
 
-const STATUSES = [
-    "Applied",
-    "Online Assessment",
-    "Technical Interview",
-    "HR Interview",
-    "Selected",
-    "Rejected",
-] as const;
+const DEFAULT_STATUSES = ["Applied", "Online Assessment", "Technical Interview", "HR Interview", "Selected", "Rejected"] as const;
 
-const allApplications: Application[] = [
-    {
-        id: "1",
-        company: "Meta",
-        role: "Data Scientist",
-        type: "Full-time",
-        tier: "Dream",
-        package: 40,
-        location: "Gurgaon",
-        appliedDate: "Feb 25, 2026",
-        status: "Applied",
-    },
-    {
-        id: "2",
-        company: "Adobe",
-        role: "UX Designer",
-        type: "Full-time",
-        tier: "Tier 1",
-        package: 24,
-        location: "Noida",
-        appliedDate: "Feb 28, 2026",
-        status: "Applied",
-    },
-    {
-        id: "3",
-        company: "Paytm",
-        role: "Backend Intern",
-        type: "Internship",
-        tier: "Tier 2",
-        package: 0.8,
-        location: "Noida",
-        appliedDate: "Mar 2, 2026",
-        status: "Applied",
-    },
-    {
-        id: "4",
-        company: "Amazon",
-        role: "Full Stack Developer",
-        type: "Full-time",
-        tier: "Tier 1",
-        package: 28,
-        location: "Bangalore",
-        appliedDate: "Feb 20, 2026",
-        status: "Online Assessment",
-    },
-    {
-        id: "5",
-        company: "Flipkart",
-        role: "Software Development Intern",
-        type: "Internship",
-        tier: "Tier 1",
-        package: 1.2,
-        location: "Bangalore",
-        appliedDate: "Mar 1, 2026",
-        status: "Online Assessment",
-    },
-    {
-        id: "6",
-        company: "Google",
-        role: "Software Engineer",
-        type: "Full-time",
-        tier: "Dream",
-        package: 45,
-        location: "Bangalore",
-        appliedDate: "Feb 15, 2026",
-        interviewDate: "Mar 8, 2026",
-        status: "Technical Interview",
-    },
-    {
-        id: "7",
-        company: "Netflix",
-        role: "Backend Engineer",
-        type: "Full-time",
-        tier: "Tier 1",
-        package: 32,
-        location: "Mumbai",
-        appliedDate: "Feb 22, 2026",
-        interviewDate: "Mar 12, 2026",
-        status: "Technical Interview",
-    },
-    {
-        id: "8",
-        company: "Microsoft",
-        role: "Product Manager",
-        type: "Full-time",
-        tier: "Dream",
-        package: 42,
-        location: "Hyderabad",
-        appliedDate: "Feb 18, 2026",
-        interviewDate: "Mar 10, 2026",
-        status: "HR Interview",
-    },
-    {
-        id: "9",
-        company: "Zomato",
-        role: "Product Analyst",
-        type: "Full-time",
-        tier: "Tier 1",
-        package: 18,
-        location: "Gurgaon",
-        appliedDate: "Feb 10, 2026",
-        interviewDate: "Mar 5, 2026",
-        status: "HR Interview",
-    },
-    {
-        id: "10",
-        company: "Swiggy",
-        role: "Data Analyst Intern",
-        type: "Internship",
-        tier: "Tier 1",
-        package: 1,
-        location: "Bangalore",
-        appliedDate: "Feb 12, 2026",
-        status: "HR Interview",
-    },
-    {
-        id: "11",
-        company: "Apple",
-        role: "iOS Developer",
-        type: "Full-time",
-        tier: "Dream",
-        package: 48,
-        location: "Bangalore",
-        appliedDate: "Jan 10, 2026",
-        status: "Selected",
-    },
-    {
-        id: "12",
-        company: "Tesla",
-        role: "Software Engineer",
-        type: "Full-time",
-        tier: "Dream",
-        package: 35,
-        location: "Pune",
-        appliedDate: "Jan 15, 2026",
-        status: "Rejected",
-    },
-];
+const API_BASE = typeof window !== "undefined" ? "http://localhost:5501/api/v1" : "";
+
+type BackendApplication = {
+  id: string;
+  status?: string;
+  createdAt?: string;
+  stage?: {
+    name?: string;
+  } | null;
+  job?: {
+    title?: string | null;
+    role?: string | null;
+    ctc?: string | null;
+    location?: string | null;
+    employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | null;
+    tier?: "BASIC" | "STANDARD" | "DREAM" | null;
+    company?: {
+      name?: string | null;
+    } | null;
+  } | null;
+};
+
+const getTrackingStatus = (status?: string, stageName?: string | null) => {
+  if (stageName && stageName.trim()) return stageName.trim();
+  switch (status) {
+    case "DRAFT":
+    case "APPLIED":
+      return "Applied";
+    case "SCREENING":
+    case "PHONE_SCREEN":
+      return "Online Assessment";
+    case "INTERVIEW":
+      return "Technical Interview";
+    case "OFFER":
+      return "HR Interview";
+    case "HIRED":
+      return "Selected";
+    case "REJECTED":
+    case "ARCHIVED":
+      return "Rejected";
+    default:
+      return "Applied";
+  }
+};
+
+const mapEmploymentType = (value?: BackendApplication["job"] extends infer T ? (T extends { employmentType?: infer U } ? U : never) : never) => {
+  if (value === "INTERNSHIP") return "Internship" as const;
+  return "Full-time" as const;
+};
+
+const mapTier = (value?: BackendApplication["job"] extends infer T ? (T extends { tier?: infer U } ? U : never) : never) => {
+  if (value === "DREAM") return "Dream" as const;
+  if (value === "STANDARD") return "Tier 1" as const;
+  return "Tier 2" as const;
+};
+
+const parsePackage = (ctc?: string | null) => {
+  if (!ctc) return 0;
+  const match = ctc.match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+};
+
+const formatDate = (value?: string) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+};
+
+const mapBackendToUi = (application: BackendApplication): Application => ({
+  id: application.id,
+  company: application.job?.company?.name ?? "Unknown Company",
+  role: application.job?.title || application.job?.role || "Untitled Role",
+  type: mapEmploymentType(application.job?.employmentType),
+  tier: mapTier(application.job?.tier),
+  package: parsePackage(application.job?.ctc),
+  location: application.job?.location || "N/A",
+  appliedDate: formatDate(application.createdAt),
+  status: getTrackingStatus(application.status, application.stage?.name),
+});
 
 export default function ApplicationsPage() {
-    const [view, setView] = useState<"pipeline" | "list">("pipeline");
-    const [filtersOpen, setFiltersOpen] = useState(false);
-    const [filters, setFilters] = useState<ApplicationFilters>(defaultFilters);
+  const [view, setView] = useState<"pipeline" | "list">("pipeline");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState<ApplicationFilters>(defaultFilters);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const locations = useMemo(
-        () => [...new Set(allApplications.map((a) => a.location))],
-        []
-    );
+  useEffect(() => {
+    let mounted = true;
+    const token = localStorage.getItem("token");
 
-    const filteredApplications = useMemo(() => {
-        return allApplications.filter((app) => {
-            if (filters.search) {
-                const q = filters.search.toLowerCase();
-                if (
-                    !app.company.toLowerCase().includes(q) &&
-                    !app.role.toLowerCase().includes(q)
-                )
-                    return false;
-            }
-            if (filters.jobType && app.type !== filters.jobType) return false;
-            if (filters.status && app.status !== filters.status) return false;
-            if (filters.tier && app.tier !== filters.tier) return false;
-            if (filters.location && app.location !== filters.location) return false;
-            if (filters.minPackage && app.package < parseFloat(filters.minPackage))
-                return false;
-            if (filters.maxPackage && app.package > parseFloat(filters.maxPackage))
-                return false;
-            if (filters.appliedFrom) {
-                const from = new Date(filters.appliedFrom);
-                const applied = new Date(app.appliedDate);
-                if (applied < from) return false;
-            }
-            if (filters.appliedTo) {
-                const to = new Date(filters.appliedTo);
-                const applied = new Date(app.appliedDate);
-                if (applied > to) return false;
-            }
-            return true;
+    const loadApplications = async () => {
+      if (!token) {
+        if (mounted) {
+          setApplications([]);
+          setError("Please log in to view applications.");
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams();
+        if (filters.search) params.set("search", filters.search);
+        if (filters.jobType) params.set("jobType", filters.jobType);
+        if (filters.status) params.set("status", filters.status);
+        if (filters.tier) params.set("tier", filters.tier);
+        if (filters.location) params.set("location", filters.location);
+        if (filters.minPackage) params.set("minPackage", filters.minPackage);
+        if (filters.maxPackage) params.set("maxPackage", filters.maxPackage);
+        if (filters.appliedFrom) params.set("appliedFrom", filters.appliedFrom);
+        if (filters.appliedTo) params.set("appliedTo", filters.appliedTo);
+
+        const response = await fetch(`${API_BASE}/student-application/mine?${params.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-    }, [filters]);
 
-    const grouped = useMemo(() => {
-        const map: Record<string, Application[]> = {};
-        for (const status of STATUSES) {
-            map[status] = [];
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload?.message ?? payload?.error ?? "Failed to fetch applications");
         }
-        for (const app of filteredApplications) {
-            const bucket = map[app.status];
-            if (bucket) {
-                bucket.push(app);
-            }
+
+        const data: BackendApplication[] = Array.isArray(payload?.data) ? payload.data : [];
+        if (mounted) {
+          setApplications(data.map(mapBackendToUi));
         }
-        return map;
-    }, [filteredApplications]);
+      } catch (fetchError) {
+        if (mounted) {
+          setApplications([]);
+          setError(fetchError instanceof Error ? fetchError.message : "Failed to fetch applications");
+        }
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
 
-    return (
-        <div className="min-w-0 space-y-5 pb-10">
-            {/* Header */}
-            <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        Application Tracking
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Track your application status and progress
-                    </p>
-                </div>
+    const timeout = setTimeout(() => {
+      void loadApplications();
+    }, 300);
 
-                <div className="flex items-center gap-2">
-                    {/* Pipeline / List toggle */}
-                    <div className="flex overflow-hidden rounded-lg border border-gray-200">
-                        <button
-                            onClick={() => setView("pipeline")}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${view === "pipeline"
-                                ? "bg-indigo-600 text-white"
-                                : "bg-white text-gray-600 hover:bg-gray-50"
-                                }`}
-                        >
-                            <LayoutGrid className="h-3.5 w-3.5" />
-                            Pipeline
-                        </button>
-                        <button
-                            onClick={() => setView("list")}
-                            className={`flex items-center gap-1.5 border-l px-3 py-1.5 text-xs font-medium transition-colors ${view === "list"
-                                ? "bg-indigo-600 text-white"
-                                : "bg-white text-gray-600 hover:bg-gray-50"
-                                }`}
-                        >
-                            <List className="h-3.5 w-3.5" />
-                            List
-                        </button>
-                    </div>
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+    };
+  }, [filters]);
 
-                    {/* Filters toggle */}
-                    <Button
-                        variant={filtersOpen ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFiltersOpen(!filtersOpen)}
-                        className={`gap-1.5 ${filtersOpen
-                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                            : ""
-                            }`}
-                    >
-                        <Filter className="h-3.5 w-3.5" />
-                        Filters
-                        {filtersOpen && <ChevronUp className="h-3.5 w-3.5" />}
-                    </Button>
-                </div>
-            </div>
+  const locations = useMemo(() => [...new Set(applications.map((a) => a.location))], [applications]);
 
-            {/* Filter bar */}
-            <ApplicationFilterBar
-                filters={filters}
-                onFilterChange={setFilters}
-                isOpen={filtersOpen}
-                statuses={[...STATUSES]}
-                locations={locations}
-            />
+  const statuses = useMemo(() => {
+    const dynamic = Array.from(new Set(applications.map((a) => a.status))).filter(Boolean);
+    const merged = [...DEFAULT_STATUSES];
+    dynamic.forEach((status) => {
+      if (!merged.includes(status as (typeof DEFAULT_STATUSES)[number])) {
+        merged.push(status as (typeof DEFAULT_STATUSES)[number]);
+      }
+    });
+    return merged;
+  }, [applications]);
 
-            {/* Summary bar */}
-            <div className="flex flex-wrap gap-3">
-                {STATUSES.map((status) => (
-                    <ApplicationStatusCard
-                        key={status}
-                        count={grouped[status]?.length ?? 0}
-                        label={status}
-                    />
-                ))}
-            </div>
+  const grouped = useMemo(() => {
+    const map: Record<string, Application[]> = {};
+    for (const status of statuses) {
+      map[status] = [];
+    }
+    for (const app of applications) {
+      const bucket = map[app.status];
+      if (bucket) {
+        bucket.push(app);
+      }
+    }
+    return map;
+  }, [applications, statuses]);
 
-            {/* Content */}
-            {view === "pipeline" ? (
-                <div className="flex gap-4 overflow-x-auto pb-4">
-                    {STATUSES.map((status) => (
-                        <ApplicationColumn
-                            key={status}
-                            status={status}
-                            applications={grouped[status] ?? []}
-                        />
-                    ))}
-                </div>
-            ) : (
-                <ApplicationListView applications={filteredApplications} />
-            )}
+  return (
+    <div className="min-w-0 space-y-5 pb-10">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Application Tracking</h1>
+          <p className="text-muted-foreground">Track your application status and progress</p>
         </div>
-    );
+
+        <div className="flex items-center gap-2">
+          {/* Pipeline / List toggle */}
+          <div className="flex overflow-hidden rounded-lg border border-gray-200">
+            <button
+              onClick={() => setView("pipeline")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                view === "pipeline" ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Pipeline
+            </button>
+            <button
+              onClick={() => setView("list")}
+              className={`flex items-center gap-1.5 border-l px-3 py-1.5 text-xs font-medium transition-colors ${
+                view === "list" ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <List className="h-3.5 w-3.5" />
+              List
+            </button>
+          </div>
+
+          {/* Filters toggle */}
+          <Button
+            variant={filtersOpen ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className={`gap-1.5 ${filtersOpen ? "bg-indigo-600 text-white hover:bg-indigo-700" : ""}`}
+          >
+            <Filter className="h-3.5 w-3.5" />
+            Filters
+            {filtersOpen && <ChevronUp className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter bar */}
+      <ApplicationFilterBar filters={filters} onFilterChange={setFilters} isOpen={filtersOpen} statuses={statuses} locations={locations} />
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {/* Summary bar */}
+      <div className="flex flex-wrap gap-3">
+        {statuses.map((status) => (
+          <ApplicationStatusCard key={status} count={grouped[status]?.length ?? 0} label={status} />
+        ))}
+      </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">Loading applications...</div>
+      ) : view === "pipeline" ? (
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {statuses.map((status) => (
+            <ApplicationColumn key={status} status={status} applications={grouped[status] ?? []} />
+          ))}
+        </div>
+      ) : (
+        <ApplicationListView applications={applications} />
+      )}
+    </div>
+  );
 }

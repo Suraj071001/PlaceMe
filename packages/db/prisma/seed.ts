@@ -1,4 +1,4 @@
-import client from "../index";
+import client, { ApplicationStatus } from "../index";
 import { seedAcademics } from "./seed-academics";
 
 async function seedNotificationsForUser(userId: string) {
@@ -178,8 +178,7 @@ async function main() {
   ========================
   */
 
-  const getPermission = (name: string) =>
-    permissionRecords.find((p) => p.name === name)!;
+  const getPermission = (name: string) => permissionRecords.find((p) => p.name === name)!;
 
   const rolePermissions = [
     { roleId: studentRole.id, permissionId: getPermission("READ_JOBS").id },
@@ -432,6 +431,32 @@ async function main() {
     },
   });
 
+  // Create a second job
+  const job2 = await client.job.upsert({
+    where: { slug: "frontend-dev-google" },
+    update: {},
+    create: {
+      companyId: company.id,
+      departmentId: department.id,
+      title: "Frontend Developer",
+      slug: "frontend-dev-google",
+      description: "Exciting opportunity for a Frontend Developer to work on cutting-edge web applications.",
+      location: "Bangalore",
+      employmentType: "FULL_TIME",
+      workMode: "HYBRID",
+      ctc: "15-20 LPA",
+      minimumCGPA: 7.0,
+      passingYear: 2024,
+      role: "Frontend Developer",
+      status: "ACTIVE",
+      openAt: new Date(),
+      closeAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      batches: {
+        connect: { id: batch.id },
+      },
+    },
+  });
+
   /*
   ========================
   APPLICATION FORM
@@ -452,7 +477,7 @@ async function main() {
         isDefault: true,
         departmentId: department.id,
         jobs: {
-          connect: { id: job.id },
+          connect: [{ id: job.id }, { id: job2.id }],
         },
       },
     });
@@ -527,6 +552,543 @@ async function main() {
       email: "suraj24mca@gmail.com",
     },
   });
+
+  /*
+  ========================
+  MORE STUDENTS
+  ========================
+  */
+
+  const studentsData = [
+    {
+      email: "alice.johnson@example.com",
+      firstName: "Alice",
+      lastName: "Johnson",
+      enrollment: "ENR-67890",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["Python", "Django"],
+    },
+    {
+      email: "bob.smith@example.com",
+      firstName: "Bob",
+      lastName: "Smith",
+      enrollment: "ENR-54321",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["Java", "Spring"],
+    },
+    {
+      email: "charlie.brown@example.com",
+      firstName: "Charlie",
+      lastName: "Brown",
+      enrollment: "ENR-09876",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["JavaScript", "React"],
+    },
+    {
+      email: "diana.prince@example.com",
+      firstName: "Diana",
+      lastName: "Prince",
+      enrollment: "ENR-13579",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["C++", "Data Structures"],
+    },
+    {
+      email: "eve.adams@example.com",
+      firstName: "Eve",
+      lastName: "Adams",
+      enrollment: "ENR-24680",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["SQL", "Database Design"],
+    },
+    {
+      email: "frank.miller@example.com",
+      firstName: "Frank",
+      lastName: "Miller",
+      enrollment: "ENR-11223",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["Go", "Kubernetes"],
+    },
+    {
+      email: "grace.lee@example.com",
+      firstName: "Grace",
+      lastName: "Lee",
+      enrollment: "ENR-33445",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["Ruby", "Rails"],
+    },
+    {
+      email: "henry.wilson@example.com",
+      firstName: "Henry",
+      lastName: "Wilson",
+      enrollment: "ENR-55667",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["PHP", "Laravel"],
+    },
+    {
+      email: "iris.davis@example.com",
+      firstName: "Iris",
+      lastName: "Davis",
+      enrollment: "ENR-77889",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["Swift", "iOS Development"],
+    },
+    {
+      email: "jack.garcia@example.com",
+      firstName: "Jack",
+      lastName: "Garcia",
+      enrollment: "ENR-99001",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["Kotlin", "Android"],
+    },
+    {
+      email: "kate.martinez@example.com",
+      firstName: "Kate",
+      lastName: "Martinez",
+      enrollment: "ENR-22334",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["TypeScript", "Angular"],
+    },
+    {
+      email: "liam.rodriguez@example.com",
+      firstName: "Liam",
+      lastName: "Rodriguez",
+      enrollment: "ENR-44556",
+      branchId: branch.id,
+      batchId: batch.id,
+      skills: ["C#", ".NET"],
+    },
+  ];
+
+  const createdStudents = [];
+  for (const studentData of studentsData) {
+    const user = await client.user.upsert({
+      where: { email: studentData.email },
+      update: {},
+      create: {
+        email: studentData.email,
+        firstName: studentData.firstName,
+        lastName: studentData.lastName,
+        password: dummyPassword,
+        roleId: studentRole.id,
+        isActive: true,
+      },
+    });
+
+    const student = await client.student.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        enrollment: studentData.enrollment,
+        address: "456 College Ave",
+        skills: studentData.skills,
+        branchId: studentData.branchId,
+        batchId: studentData.batchId,
+        email: studentData.email,
+      },
+    });
+
+    createdStudents.push(student);
+  }
+
+  /*
+  ========================
+  APPLICATIONS
+  ========================
+  */
+
+  // Create or get pipeline for the company
+  let pipeline = await client.pipeline.findFirst({
+    where: { companyId: company.id },
+  });
+
+  if (!pipeline) {
+    pipeline = await client.pipeline.create({
+      data: {
+        companyId: company.id,
+        name: "Default Pipeline",
+      },
+    });
+  }
+
+  // Get stages for the pipeline
+  const stages = await client.stage.findMany({
+    where: { pipelineId: pipeline.id },
+  });
+
+  if (stages.length === 0) {
+    // Create default stages if none exist
+    const defaultStages = [
+      { name: "Applied", sortOrder: 1 },
+      { name: "Screening", sortOrder: 2 },
+      { name: "Phone Screen", sortOrder: 3 },
+      { name: "Online Assessment", sortOrder: 4 },
+      { name: "Shortlisted", sortOrder: 5 },
+      { name: "Interview", sortOrder: 6 },
+      { name: "Technical Interview", sortOrder: 7 },
+      { name: "HR Interview", sortOrder: 8 },
+      { name: "Final Round", sortOrder: 9 },
+      { name: "Offer", sortOrder: 10 },
+      { name: "Selected", sortOrder: 11 },
+      { name: "Hired", sortOrder: 12 },
+      { name: "Rejected", sortOrder: 13 },
+      { name: "Archived", sortOrder: 14 },
+    ];
+
+    for (const stageData of defaultStages) {
+      await client.stage.create({
+        data: {
+          name: stageData.name,
+          sortOrder: stageData.sortOrder,
+          pipelineId: pipeline.id,
+        },
+      });
+    }
+  }
+
+  // Refresh stages
+  const updatedStages = await client.stage.findMany({
+    where: { pipelineId: pipeline.id },
+  });
+
+  // Get all students to ensure they exist
+  const allStudents = await client.student.findMany();
+  console.log(`Found ${allStudents.length} students in database`);
+
+  if (allStudents.length === 0) {
+    console.log("No students found, skipping application creation");
+    console.log("🌱 Seed completed successfully");
+    return;
+  }
+
+  const getStudentIdAt = (index: number) => {
+    const student = allStudents[index % allStudents.length];
+
+    if (!student) {
+      throw new Error(`Missing seeded student at index ${index}`);
+    }
+
+    return student.id;
+  };
+
+  // Applications for Job 1 (SDE-2)
+  const applicationsDataJob1: Array<{
+    studentId: string;
+    stageId?: string;
+    status: ApplicationStatus;
+  }> = [
+    {
+      studentId: getStudentIdAt(0),
+      stageId: updatedStages.find((s) => s.name === "Applied")?.id,
+      status: ApplicationStatus.APPLIED,
+    },
+    {
+      studentId: getStudentIdAt(1),
+      stageId: updatedStages.find((s) => s.name === "Screening")?.id,
+      status: ApplicationStatus.SCREENING,
+    },
+    {
+      studentId: getStudentIdAt(2),
+      stageId: updatedStages.find((s) => s.name === "Phone Screen")?.id,
+      status: ApplicationStatus.PHONE_SCREEN,
+    },
+    {
+      studentId: getStudentIdAt(3),
+      stageId: updatedStages.find((s) => s.name === "Online Assessment")?.id,
+      status: ApplicationStatus.SCREENING,
+    },
+    {
+      studentId: getStudentIdAt(4),
+      stageId: updatedStages.find((s) => s.name === "Shortlisted")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(5),
+      stageId: updatedStages.find((s) => s.name === "Interview")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(6),
+      stageId: updatedStages.find((s) => s.name === "Technical Interview")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(7),
+      stageId: updatedStages.find((s) => s.name === "HR Interview")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(8),
+      stageId: updatedStages.find((s) => s.name === "Final Round")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(9),
+      stageId: updatedStages.find((s) => s.name === "Offer")?.id,
+      status: ApplicationStatus.OFFER,
+    },
+    {
+      studentId: getStudentIdAt(10),
+      stageId: updatedStages.find((s) => s.name === "Selected")?.id,
+      status: ApplicationStatus.HIRED,
+    },
+    {
+      studentId: getStudentIdAt(11),
+      stageId: updatedStages.find((s) => s.name === "Hired")?.id,
+      status: ApplicationStatus.HIRED,
+    },
+    {
+      studentId: getStudentIdAt(12),
+      stageId: updatedStages.find((s) => s.name === "Rejected")?.id,
+      status: ApplicationStatus.REJECTED,
+    },
+    // Additional applications with different statuses
+    {
+      studentId: getStudentIdAt(0),
+      stageId: updatedStages.find((s) => s.name === "Applied")?.id,
+      status: ApplicationStatus.APPLIED,
+    },
+    {
+      studentId: getStudentIdAt(1),
+      stageId: updatedStages.find((s) => s.name === "Applied")?.id,
+      status: ApplicationStatus.APPLIED,
+    },
+    {
+      studentId: getStudentIdAt(2),
+      stageId: updatedStages.find((s) => s.name === "Screening")?.id,
+      status: ApplicationStatus.SCREENING,
+    },
+    {
+      studentId: getStudentIdAt(3),
+      stageId: updatedStages.find((s) => s.name === "Phone Screen")?.id,
+      status: ApplicationStatus.PHONE_SCREEN,
+    },
+    {
+      studentId: getStudentIdAt(4),
+      stageId: updatedStages.find((s) => s.name === "Interview")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(5),
+      stageId: updatedStages.find((s) => s.name === "Offer")?.id,
+      status: ApplicationStatus.OFFER,
+    },
+    {
+      studentId: getStudentIdAt(6),
+      stageId: updatedStages.find((s) => s.name === "Rejected")?.id,
+      status: ApplicationStatus.REJECTED,
+    },
+    {
+      studentId: getStudentIdAt(7),
+      stageId: updatedStages.find((s) => s.name === "Archived")?.id,
+      status: ApplicationStatus.ARCHIVED,
+    },
+  ];
+
+  // Applications for Job 2 (Frontend Developer)
+  const applicationsDataJob2: Array<{
+    studentId: string;
+    stageId?: string;
+    status: ApplicationStatus;
+  }> = [
+    {
+      studentId: getStudentIdAt(0),
+      stageId: updatedStages.find((s) => s.name === "Applied")?.id,
+      status: ApplicationStatus.APPLIED,
+    },
+    {
+      studentId: getStudentIdAt(1),
+      stageId: updatedStages.find((s) => s.name === "Screening")?.id,
+      status: ApplicationStatus.SCREENING,
+    },
+    {
+      studentId: getStudentIdAt(2),
+      stageId: updatedStages.find((s) => s.name === "Phone Screen")?.id,
+      status: ApplicationStatus.PHONE_SCREEN,
+    },
+    {
+      studentId: getStudentIdAt(3),
+      stageId: updatedStages.find((s) => s.name === "Online Assessment")?.id,
+      status: ApplicationStatus.SCREENING,
+    },
+    {
+      studentId: getStudentIdAt(4),
+      stageId: updatedStages.find((s) => s.name === "Shortlisted")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(5),
+      stageId: updatedStages.find((s) => s.name === "Interview")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(6),
+      stageId: updatedStages.find((s) => s.name === "Technical Interview")?.id,
+      status: ApplicationStatus.INTERVIEW,
+    },
+    {
+      studentId: getStudentIdAt(7),
+      stageId: updatedStages.find((s) => s.name === "Offer")?.id,
+      status: ApplicationStatus.OFFER,
+    },
+    {
+      studentId: getStudentIdAt(8),
+      stageId: updatedStages.find((s) => s.name === "Selected")?.id,
+      status: ApplicationStatus.HIRED,
+    },
+    {
+      studentId: getStudentIdAt(9),
+      stageId: updatedStages.find((s) => s.name === "Rejected")?.id,
+      status: ApplicationStatus.REJECTED,
+    },
+  ];
+
+  // Create applications for Job 1
+  for (const appData of applicationsDataJob1) {
+    const application = await client.application.upsert({
+      where: {
+        studentId_jobId: {
+          studentId: appData.studentId,
+          jobId: job.id,
+        },
+      },
+      update: {},
+      create: {
+        jobId: job.id,
+        studentId: appData.studentId,
+        pipelineId: pipeline.id,
+        stageId: appData.stageId,
+        status: appData.status,
+        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date within last 30 days
+      },
+    });
+
+    // Create form response for some applications
+    if (form && Math.random() > 0.5) {
+      // 50% chance to have form response
+      const formResponse = await client.formResponse.upsert({
+        where: { applicationId: application.id },
+        update: {},
+        create: {
+          applicationId: application.id,
+          formId: form.id,
+          studentId: appData.studentId,
+        },
+      });
+
+      // Get form questions
+      const questions = await client.formQuestion.findMany({
+        where: { section: { formId: form.id } },
+      });
+
+      // Create sample answers
+      for (const question of questions) {
+        let answerValue = "";
+        let answerValues: string[] = [];
+
+        if (question.type === "LONG_TEXT") {
+          answerValue = "I am very interested in this position and believe my skills in software development would be a great fit for your team.";
+        } else if (question.type === "URL") {
+          answerValue = "https://linkedin.com/in/sample-profile";
+        }
+
+        await client.formAnswer.upsert({
+          where: {
+            responseId_questionId: {
+              responseId: formResponse.id,
+              questionId: question.id,
+            },
+          },
+          update: {},
+          create: {
+            responseId: formResponse.id,
+            questionId: question.id,
+            value: answerValue,
+            values: answerValues,
+          },
+        });
+      }
+    }
+  }
+
+  // Create applications for Job 2
+  for (const appData of applicationsDataJob2) {
+    const application = await client.application.upsert({
+      where: {
+        studentId_jobId: {
+          studentId: appData.studentId,
+          jobId: job2.id,
+        },
+      },
+      update: {},
+      create: {
+        jobId: job2.id,
+        studentId: appData.studentId,
+        pipelineId: pipeline.id,
+        stageId: appData.stageId,
+        status: appData.status,
+        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date within last 30 days
+      },
+    });
+
+    // Create form response for some applications
+    if (form && Math.random() > 0.5) {
+      // 50% chance to have form response
+      const formResponse = await client.formResponse.upsert({
+        where: { applicationId: application.id },
+        update: {},
+        create: {
+          applicationId: application.id,
+          formId: form.id,
+          studentId: appData.studentId,
+        },
+      });
+
+      // Get form questions
+      const questions = await client.formQuestion.findMany({
+        where: { section: { formId: form.id } },
+      });
+
+      // Create sample answers
+      for (const question of questions) {
+        let answerValue = "";
+        let answerValues: string[] = [];
+
+        if (question.type === "LONG_TEXT") {
+          answerValue = "I am very interested in this frontend position and believe my skills in web development would be a great fit for your team.";
+        } else if (question.type === "URL") {
+          answerValue = "https://linkedin.com/in/frontend-profile";
+        }
+
+        await client.formAnswer.upsert({
+          where: {
+            responseId_questionId: {
+              responseId: formResponse.id,
+              questionId: question.id,
+            },
+          },
+          update: {},
+          create: {
+            responseId: formResponse.id,
+            questionId: question.id,
+            value: answerValue,
+            values: answerValues,
+          },
+        });
+      }
+    }
+  }
 
   console.log("🌱 Seed completed successfully");
 }
