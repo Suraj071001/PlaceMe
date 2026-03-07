@@ -2,57 +2,57 @@ import client from "../index";
 import { seedAcademics } from "./seed-academics";
 
 async function seedNotificationsForUser(userId: string) {
-    await client.notification.deleteMany({ where: { userId } });
+  await client.notification.deleteMany({ where: { userId } });
 
-    await client.notification.createMany({
-        data: [
-            {
-                userId,
-                type: "job",
-                payload: {
-                    title: "New job posted",
-                    desc: "Google has posted a new position: Software Engineer",
-                },
-                isRead: false,
-            },
-            {
-                userId,
-                type: "application",
-                payload: {
-                    title: "Application shortlisted",
-                    desc: "Your application for Microsoft - Product Manager has been shortlisted",
-                },
-                isRead: false,
-            },
-            {
-                userId,
-                type: "interview",
-                payload: {
-                    title: "Interview scheduled",
-                    desc: "Interview scheduled for Amazon on March 12, 2026 at 10:00 AM",
-                },
-                isRead: true,
-            },
-            {
-                userId,
-                type: "reminder",
-                payload: {
-                    title: "Application deadline approaching",
-                    desc: "Apply for Netflix - Backend Engineer before March 25, 2026",
-                },
-                isRead: true,
-            },
-            {
-                userId,
-                type: "profile",
-                payload: {
-                    title: "Profile update reminder",
-                    desc: "Update your resume and skills to improve profile strength",
-                },
-                isRead: true,
-            },
-        ],
-    });
+  await client.notification.createMany({
+    data: [
+      {
+        userId,
+        type: "job",
+        payload: {
+          title: "New job posted",
+          desc: "Google has posted a new position: Software Engineer",
+        },
+        isRead: false,
+      },
+      {
+        userId,
+        type: "application",
+        payload: {
+          title: "Application shortlisted",
+          desc: "Your application for Microsoft - Product Manager has been shortlisted",
+        },
+        isRead: false,
+      },
+      {
+        userId,
+        type: "interview",
+        payload: {
+          title: "Interview scheduled",
+          desc: "Interview scheduled for Amazon on March 12, 2026 at 10:00 AM",
+        },
+        isRead: true,
+      },
+      {
+        userId,
+        type: "reminder",
+        payload: {
+          title: "Application deadline approaching",
+          desc: "Apply for Netflix - Backend Engineer before March 25, 2026",
+        },
+        isRead: true,
+      },
+      {
+        userId,
+        type: "profile",
+        payload: {
+          title: "Profile update reminder",
+          desc: "Update your resume and skills to improve profile strength",
+        },
+        isRead: true,
+      },
+    ],
+  });
 }
 
 async function main() {
@@ -82,6 +82,30 @@ async function main() {
     { name: "MANAGE_USERS", description: "Manage users" },
     { name: "READ_REPORTS", description: "View reports" },
     { name: "READ_PROFILE", description: "View profile" },
+    { name: "CREATE_ROLE", description: "Create roles" },
+    { name: "READ_ROLE", description: "View roles" },
+    { name: "UPDATE_ROLE", description: "Update roles" },
+    { name: "DELETE_ROLE", description: "Delete roles" },
+    { name: "READ_PERMISSION", description: "View permissions" },
+    { name: "CREATE_PERMISSION", description: "Create permissions" },
+    { name: "UPDATE_PERMISSION", description: "Update permissions" },
+    { name: "DELETE_PERMISSION", description: "Delete permissions" },
+    { name: "MANAGE_USER_ROLE", description: "Manage user roles" },
+    { name: "MANAGE_ROLE_PERMISSION", description: "Manage role permissions" },
+    { name: "READ_ROLE_PERMISSION", description: "View role permissions" },
+    { name: "MANAGE_ADMIN_USERS", description: "Manage admin users" },
+    { name: "READ_ADMIN_USERS", description: "View admin users" },
+
+    {
+      name: "READ_GOOGLE_CHAT_CONFIG",
+      description: "View Google Chat configuration",
+    },
+    {
+      name: "MANAGE_GOOGLE_CHAT_CONFIG",
+      description: "Manage Google Chat configuration",
+    },
+    { name: "READ_DEPARTMENT", description: "View department details" },
+    { name: "READ_BRANCH", description: "View branch details" },
   ];
 
   const permissionRecords: any[] = [];
@@ -145,7 +169,8 @@ async function main() {
   ========================
   */
 
-  const getPermission = (name: string) => permissionRecords.find((p) => p.name === name)!;
+  const getPermission = (name: string) =>
+    permissionRecords.find((p) => p.name === name)!;
 
   const rolePermissions = [
     { roleId: studentRole.id, permissionId: getPermission("READ_JOBS").id },
