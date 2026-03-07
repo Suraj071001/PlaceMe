@@ -21,9 +21,11 @@ type NewCompanyPayload = {
 interface AddCompanyDialogProps {
   onAddCompany: (company: NewCompanyPayload) => void;
   branchOptions: BranchOption[];
+  isLoadingBranches: boolean;
+  branchOptionsError: string;
 }
 
-export function AddCompanyDialog({ onAddCompany, branchOptions }: AddCompanyDialogProps) {
+export function AddCompanyDialog({ onAddCompany, branchOptions, isLoadingBranches, branchOptionsError }: AddCompanyDialogProps) {
   const [open, setOpen] = useState(false);
 
   const [form, setForm] = useState({
@@ -40,7 +42,7 @@ export function AddCompanyDialog({ onAddCompany, branchOptions }: AddCompanyDial
   };
 
   const handleSubmit = () => {
-    if (!form.name.trim() || !form.branchId) return;
+    if (!form.name.trim() || !form.branchId || isLoadingBranches || branchOptions.length === 0) return;
 
     onAddCompany({
       name: form.name.trim(),
@@ -113,8 +115,14 @@ export function AddCompanyDialog({ onAddCompany, branchOptions }: AddCompanyDial
                 className="border border-slate-200 rounded-lg px-3 py-2 text-sm"
               />
 
-              <select name="branchId" value={form.branchId} onChange={handleChange} className="border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                <option value="">Select Branch</option>
+              <select
+                name="branchId"
+                value={form.branchId}
+                onChange={handleChange}
+                disabled={isLoadingBranches || branchOptions.length === 0}
+                className="border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+              >
+                <option value="">{isLoadingBranches ? "Loading branches..." : branchOptions.length === 0 ? "No branches available" : "Select Branch"}</option>
                 {branchOptions.map((branch) => (
                   <option key={branch.id} value={branch.id}>
                     {branch.name}
@@ -141,13 +149,22 @@ export function AddCompanyDialog({ onAddCompany, branchOptions }: AddCompanyDial
               </select>
             </div>
 
+            {branchOptionsError && <p className="text-sm text-red-600">{branchOptionsError}</p>}
+            {!branchOptionsError && !isLoadingBranches && branchOptions.length === 0 && (
+              <p className="text-sm text-slate-500">Branches must be available before creating a company.</p>
+            )}
+
             {/* Actions */}
             <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
               <button onClick={() => setOpen(false)} className="px-4 py-2 text-sm border border-slate-200 rounded-lg">
                 Cancel
               </button>
 
-              <button onClick={handleSubmit} className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
+              <button
+                onClick={handleSubmit}
+                disabled={isLoadingBranches || branchOptions.length === 0 || !form.name.trim() || !form.branchId}
+                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
                 Create Company
               </button>
             </div>

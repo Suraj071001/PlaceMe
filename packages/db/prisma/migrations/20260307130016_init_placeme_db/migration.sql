@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Batch" ADD COLUMN     "Year" INTEGER NOT NULL DEFAULT 2027;

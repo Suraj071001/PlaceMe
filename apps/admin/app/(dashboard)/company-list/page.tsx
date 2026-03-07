@@ -15,12 +15,6 @@ type BranchOption = {
   name: string;
 };
 
-type DepartmentWithBranches = {
-  id: string;
-  name: string;
-  branches?: BranchOption[];
-};
-
 type ApiCompany = {
   id: string;
   name: string;
@@ -67,6 +61,8 @@ export default function CompaniesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [branchFilter, setBranchFilter] = useState("all");
   const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
+  const [isLoadingBranches, setIsLoadingBranches] = useState(false);
+  const [branchOptionsError, setBranchOptionsError] = useState("");
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -123,8 +119,11 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     const fetchBranches = async () => {
+      setIsLoadingBranches(true);
+      setBranchOptionsError("");
+
       try {
-        const response = await fetch(`${API_BASE}/department`, {
+        const response = await fetch(`${API_BASE}/company/branches`, {
           method: "GET",
           headers: getAuthHeaders(),
         });
@@ -134,13 +133,15 @@ export default function CompaniesPage() {
           throw new Error(payload?.error ?? payload?.message ?? "Failed to load branches");
         }
 
-        const departments: DepartmentWithBranches[] = Array.isArray(payload?.data) ? payload.data : [];
-        const allBranches = departments.flatMap((department) => department.branches ?? []);
-        const uniqueBranchMap = new Map(allBranches.map((branch) => [branch.id, branch]));
+        const branches: BranchOption[] = Array.isArray(payload?.data) ? payload.data : [];
+        const uniqueBranchMap = new Map(branches.map((branch) => [branch.id, branch]));
         setBranchOptions(Array.from(uniqueBranchMap.values()).sort((a, b) => a.name.localeCompare(b.name)));
-      } catch {
-        // Keep create dialog usable even if branch list fails to load.
+      } catch (error) {
         setBranchOptions([]);
+        const message = error instanceof Error ? error.message : "Failed to load branches";
+        setBranchOptionsError(message);
+      } finally {
+        setIsLoadingBranches(false);
       }
     };
 
@@ -214,7 +215,12 @@ export default function CompaniesPage() {
           </div>
         </div>
 
-        <AddCompanyDialog onAddCompany={handleAddCompany} branchOptions={branchOptions} />
+        <AddCompanyDialog
+          onAddCompany={handleAddCompany}
+          branchOptions={branchOptions}
+          isLoadingBranches={isLoadingBranches}
+          branchOptionsError={branchOptionsError}
+        />
       </div>
 
       {/* Filters Section */}
