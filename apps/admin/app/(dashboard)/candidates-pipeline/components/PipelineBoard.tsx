@@ -5,8 +5,27 @@ import { stages, students as initialStudents, stageOrder } from "../../../compon
 import PipelineStage from "./PipelineStages";
 import { Briefcase } from "lucide-react";
 
+type PipelineStudent = (typeof initialStudents)[number] & {
+  company?: string;
+  companyName?: string;
+  role?: string;
+  jobRole?: string;
+  type?: string;
+  employmentType?: string;
+  tier?: string;
+  package?: string;
+  ctc?: string;
+  location?: string;
+  workMode?: string;
+  appliedDate?: string;
+  appliedAt?: string;
+};
+
 const stageStyleMap: Record<string, { label: string; color: string }> = {
   applied: { label: "Applied", color: "text-yellow-500 bg-yellow-50 border-yellow-200" },
+  shortlisted: { label: "Shortlisted", color: "text-purple-600 bg-purple-50 border-purple-200" },
+  interview: { label: "Interview", color: "text-blue-600 bg-blue-50 border-blue-200" },
+  final: { label: "Final", color: "text-amber-600 bg-amber-50 border-amber-200" },
   online_assessment: { label: "Online Assessment", color: "text-green-600 bg-green-50 border-green-200" },
   technical_interview: { label: "Technical Interview", color: "text-blue-600 bg-blue-50 border-blue-200" },
   hr_interview: { label: "HR Interview", color: "text-purple-600 bg-purple-50 border-purple-200" },
@@ -27,7 +46,7 @@ const typeStyleMap: Record<string, string> = {
 };
 
 export default function PipelineBoard() {
-  const [students, setStudents] = useState(initialStudents);
+  const [students, setStudents] = useState<PipelineStudent[]>(initialStudents as PipelineStudent[]);
   const [selected, setSelected] = useState<string[]>([]);
 
   const toggleSelect = (id: string) => {
@@ -57,7 +76,7 @@ export default function PipelineBoard() {
   );
 
   return (
-    <div className="h-full flex flex-col mr-50">
+    <div className="h-full flex flex-col">
       {/* ── Mobile View ── */}
       <div className="flex flex-col h-full md:hidden">
         {/* Summary Cards */}
@@ -73,84 +92,92 @@ export default function PipelineBoard() {
           })}
         </div>
 
-        {/* Table Header */}
-        <div className="grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 px-4 py-2 text-xs font-medium text-gray-500 border-b border-gray-200 bg-gray-50 overflow-x-auto whitespace-nowrap">
-          <span>Company</span>
-          <span>Role</span>
-          <span>Type</span>
-          <span>Tier</span>
-          <span>Package</span>
-          <span>Location</span>
-          <span>Status</span>
-          <span>Applied Date</span>
-        </div>
+        {/* Table Header + Rows — single horizontal scroll container */}
+        <div className="flex-1 overflow-x-auto overflow-y-auto">
+          <div className="min-w-[700px]">
+            {/* Table Header */}
+            <div className="grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 px-4 py-2 text-xs font-medium text-gray-500 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+              <span>Company</span>
+              <span>Role</span>
+              <span>Type</span>
+              <span>Tier</span>
+              <span>Package</span>
+              <span>Location</span>
+              <span>Status</span>
+              <span>Applied Date</span>
+            </div>
 
-        {/* Table Rows */}
-        <div className="flex-1 overflow-y-auto divide-y divide-gray-100 pb-24">
-          {students.map((s: any) => {
-            const id = String(s.id);
-            const stageStyle = stageStyleMap[s.stage];
-            const isSelected = selected.includes(id);
+            {/* Table Rows */}
+            <div className="divide-y divide-gray-100 pb-24">
+              {students.map((s) => {
+                const id = String(s.id);
+                const stageStyle = stageStyleMap[s.stage];
+                const isSelected = selected.includes(id);
+                const company = s.company ?? s.companyName ?? s.name ?? "—";
+                const role = s.role ?? s.jobRole ?? s.branch ?? "—";
+                const type = s.type ?? s.employmentType ?? s.status ?? "—";
+                const tier = s.tier ?? s.branch ?? "—";
+                const packageValue = s.package ?? s.ctc ?? "—";
+                const location = s.location ?? s.workMode ?? "—";
+                const appliedDate = s.appliedDate ?? s.appliedAt ?? s.date ?? "—";
 
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => toggleSelect(id)}
-                className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left overflow-x-auto whitespace-nowrap transition ${
-                  isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
-                }`}
-              >
-                {/* Company */}
-                <span className="flex items-center gap-1.5 font-semibold text-sm text-gray-900">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
-                    <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
-                  </span>
-                  {s.company ?? s.companyName ?? "—"}
-                </span>
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => toggleSelect(id)}
+                    className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left transition ${
+                      isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                    }`}
+                  >
+                    {/* Company */}
+                    <span className="flex items-center gap-1.5 font-semibold text-sm text-gray-900">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
+                        <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
+                      </span>
+                      {company}
+                    </span>
 
-                {/* Role */}
-                <span className="text-sm text-gray-700 truncate">{s.role ?? s.jobRole ?? "—"}</span>
+                    {/* Role */}
+                    <span className="text-sm text-gray-700 truncate">{role}</span>
 
-                {/* Type */}
-                <span
-                  className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium ${
-                    typeStyleMap[s.type ?? s.employmentType ?? ""] ?? "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {s.type ?? s.employmentType ?? "—"}
-                </span>
+                    {/* Type */}
+                    <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium ${typeStyleMap[type] ?? "bg-gray-100 text-gray-600"}`}>
+                      {type}
+                    </span>
 
-                {/* Tier */}
-                <span className={`text-xs font-semibold ${tierStyleMap[s.tier ?? ""] ?? "text-gray-500"}`}>{s.tier ?? "—"}</span>
+                    {/* Tier */}
+                    <span className={`text-xs font-semibold ${tierStyleMap[tier] ?? "text-gray-500"}`}>{tier}</span>
 
-                {/* Package */}
-                <span className="text-sm font-medium text-gray-800">{s.package ?? s.ctc ?? "—"}</span>
+                    {/* Package */}
+                    <span className="text-sm font-medium text-gray-800">{packageValue}</span>
 
-                {/* Location */}
-                <span className="text-sm text-gray-600">{s.location ?? "—"}</span>
+                    {/* Location */}
+                    <span className="text-sm text-gray-600">{location}</span>
 
-                {/* Status */}
-                <span
-                  className={`inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium ${
-                    stageStyle?.color ?? "bg-gray-100 text-gray-600 border-gray-200"
-                  }`}
-                >
-                  {stageStyle?.label ?? s.stage}
-                </span>
+                    {/* Status */}
+                    <span
+                      className={`inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium ${
+                        stageStyle?.color ?? "bg-gray-100 text-gray-600 border-gray-200"
+                      }`}
+                    >
+                      {stageStyle?.label ?? s.stage}
+                    </span>
 
-                {/* Applied Date */}
-                <span className="text-sm text-gray-500">{s.appliedDate ?? s.appliedAt ?? "—"}</span>
-              </button>
-            );
-          })}
+                    {/* Applied Date */}
+                    <span className="text-sm text-gray-500">{appliedDate}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ── Desktop View (Pipeline Board) ── */}
-      <div className="relative hidden h-full md:block">
-        <div className="h-full w-full overflow-x-auto overflow-y-hidden pipeline-scroll">
-          <div className="flex h-full w-max gap-4 px-2 pb-1 sm:gap-6 sm:px-4 lg:px-8">
+      <div className="relative hidden h-full min-h-0 md:block">
+        <div className="h-full w-full overflow-y-hidden overflow-x-hidden">
+          <div className="grid h-full grid-cols-6 gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6">
             {stages.map((stage) => {
               const stageStudents = students.filter((s) => s.stage === stage.id).map((s) => ({ ...s, id: String(s.id) }));
 

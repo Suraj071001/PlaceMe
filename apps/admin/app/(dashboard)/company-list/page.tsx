@@ -9,7 +9,6 @@ import { CompanyTable } from "./components/CompanyTable";
 export default function CompaniesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [tierFilter, setTierFilter] = useState("all");
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:px-6">
@@ -29,19 +28,12 @@ export default function CompaniesPage() {
 
       {/* Filters Section */}
       <section>
-        <CompanyFilters
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          tierFilter={tierFilter}
-          setTierFilter={setTierFilter}
-        />
+        <CompanyFilters searchQuery={searchQuery} setSearchQuery={setSearchQuery} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
       </section>
 
       {/* Table Section */}
       <section>
-        <CompanyTable searchQuery={searchQuery} statusFilter={statusFilter} tierFilter={tierFilter} />
+        <CompanyTable searchQuery={searchQuery} statusFilter={statusFilter} />
       </section>
     </div>
   );
