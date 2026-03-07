@@ -59,7 +59,8 @@ type PipelineStudent = {
 
 type StageCol = { id: string; title: string; color: string };
 
-const API_BASE = typeof window !== "undefined" ? "http://localhost:5501/api/v1" : "";
+const API_BASE =
+  typeof window !== "undefined" ? "http://localhost:5501/api/v1" : "";
 
 async function safeJson(res: Response) {
   const contentType = res.headers.get("content-type") ?? "";
@@ -126,7 +127,9 @@ const toStageKey = (value?: string | null) => {
     .replace(/^_+|_+$/g, "");
 };
 
-const toTitle = (stageKey: string) => stageStyleMap[stageKey]?.label ?? stageKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const toTitle = (stageKey: string) =>
+  stageStyleMap[stageKey]?.label ??
+  stageKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 const formatDate = (date?: string) => {
   if (!date) return "—";
@@ -139,7 +142,10 @@ export default function PipelineBoard() {
   const router = useRouter();
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>("");
-  const [students, setStudents] = useState<PipelineStudent[]>([]);
+  const [allStudents, setAllStudents] = useState<PipelineStudent[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<PipelineStudent[]>(
+    [],
+  );
   const [selected, setSelected] = useState<string[]>([]);
 
   const [companyFilter, setCompanyFilter] = useState("All Companies");
@@ -151,7 +157,9 @@ export default function PipelineBoard() {
   const [statusFilter, setStatusFilter] = useState("All Status");
 
   const toggleSelect = (id: string) => {
-    setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
+    );
   };
 
   useEffect(() => {
@@ -177,25 +185,30 @@ export default function PipelineBoard() {
   }, [selectedJobId]);
 
   useEffect(() => {
-    const fetchApplications = async () => {
+    const fetchAllApplications = async () => {
       if (!selectedJobId) {
-        setStudents([]);
+        setAllStudents([]);
         return;
       }
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res = await fetch(`${API_BASE}/admin-applications/job/${selectedJobId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${API_BASE}/admin-applications/job/${selectedJobId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         if (!res.ok) {
-          setStudents([]);
+          setAllStudents([]);
           return;
         }
 
         const body = await safeJson(res);
-        const list = Array.isArray(body?.data) ? (body.data as ApplicationItem[]) : [];
+        const list = Array.isArray(body?.data)
+          ? (body.data as ApplicationItem[])
+          : [];
 
         const mapped = list.map((item) => {
           const first = item.student?.user?.firstName ?? "";
@@ -222,39 +235,96 @@ export default function PipelineBoard() {
           };
         });
 
-        setStudents(mapped);
-        setSelected([]);
+        setAllStudents(mapped);
       } catch {
-        setStudents([]);
+        setAllStudents([]);
       }
     };
 
-    fetchApplications();
+    fetchAllApplications();
   }, [selectedJobId]);
 
-  const filterOptions = useMemo(() => {
-    const uniq = (values: string[]) => Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
-    return {
-      companies: uniq(students.map((s) => s.company)),
-      roles: uniq(students.map((s) => s.role)),
-      departments: uniq(students.map((s) => s.department)),
-      branches: uniq(students.map((s) => s.branch)),
-      batches: uniq(students.map((s) => s.batch)),
-      stages: uniq(students.map((s) => s.stageLabel)),
-      statuses: uniq(students.map((s) => s.status)),
-    };
-  }, [students]);
+  useEffect(() => {
+    const fetchFilteredApplications = async () => {
+      if (!selectedJobId) {
+        setFilteredStudents([]);
+        return;
+      }
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
-  const filteredStudents = students.filter((s) => {
-    if (companyFilter !== "All Companies" && s.company !== companyFilter) return false;
-    if (roleFilter !== "All Roles" && s.role !== roleFilter) return false;
-    if (departmentFilter !== "All Departments" && s.department !== departmentFilter) return false;
-    if (branchFilter !== "All Branches" && s.branch !== branchFilter) return false;
-    if (batchFilter !== "All Batches" && s.batch !== batchFilter) return false;
-    if (stageFilter !== "All Stages" && s.stageLabel !== stageFilter) return false;
-    if (statusFilter !== "All Status" && s.status !== statusFilter) return false;
-    return true;
-  });
+        const params = new URLSearchParams();
+        if (branchFilter !== "All Branches")
+          params.append("branch", branchFilter);
+        if (batchFilter !== "All Batches") params.append("batch", batchFilter);
+        if (stageFilter !== "All Stages") params.append("stage", stageFilter);
+        if (statusFilter !== "All Status")
+          params.append("status", statusFilter);
+
+        const query = params.toString();
+        const url = `${API_BASE}/admin-applications/job/${selectedJobId}${query ? `?${query}` : ""}`;
+
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          setFilteredStudents([]);
+          return;
+        }
+
+        const body = await safeJson(res);
+        const list = Array.isArray(body?.data)
+          ? (body.data as ApplicationItem[])
+          : [];
+
+        const mapped = list.map((item) => {
+          const first = item.student?.user?.firstName ?? "";
+          const last = item.student?.user?.lastName ?? "";
+          const stageLabel = item.stage?.name ?? item.status ?? "Applied";
+          const stage = toStageKey(stageLabel);
+          return {
+            id: item.id,
+            stageId: item.stage?.id ?? undefined,
+            name: `${first} ${last}`.trim() || "Unknown Student",
+            stage,
+            stageLabel: toTitle(stage),
+            status: item.status ?? "APPLIED",
+            company: item.job?.company?.name ?? "—",
+            role: item.job?.role ?? item.job?.title ?? "—",
+            type: item.job?.employmentType ?? "—",
+            tier: item.job?.tier ?? "—",
+            package: item.job?.ctc ?? "—",
+            location: item.job?.location ?? item.job?.workMode ?? "—",
+            appliedDate: formatDate(item.createdAt),
+            department: item.job?.department?.name ?? "—",
+            branch: item.student?.branch?.name ?? "—",
+            batch: item.student?.batch?.name ?? "—",
+          };
+        });
+
+        setFilteredStudents(mapped);
+        setSelected([]);
+      } catch {
+        setFilteredStudents([]);
+      }
+    };
+
+    fetchFilteredApplications();
+  }, [selectedJobId, branchFilter, batchFilter, stageFilter, statusFilter]);
+
+  const filterOptions = useMemo(() => {
+    const uniq = (values: string[]) =>
+      Array.from(new Set(values.filter(Boolean))).sort((a, b) =>
+        a.localeCompare(b),
+      );
+    return {
+      branches: uniq(allStudents.map((s) => s.branch)),
+      batches: uniq(allStudents.map((s) => s.batch)),
+      stages: uniq(allStudents.map((s) => s.stageLabel)),
+      statuses: uniq(allStudents.map((s) => s.status)),
+    };
+  }, [allStudents]);
 
   const stageColumns: StageCol[] = useMemo(() => {
     const stageKeys = Array.from(new Set(filteredStudents.map((s) => s.stage)));
@@ -272,24 +342,29 @@ export default function PipelineBoard() {
 
   const stageDbIdByKey = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const s of students) {
+    for (const s of allStudents) {
       if (s.stageId && !map[s.stage]) {
         map[s.stage] = s.stageId;
       }
     }
     return map;
-  }, [students]);
+  }, [allStudents]);
 
   const moveSelectedForward = async () => {
-    const originalStudents = [...students];
-    const updatedStudents = students.map((s) => {
+    const originalStudents = [...filteredStudents];
+    const updatedStudents = filteredStudents.map((s) => {
       if (!selected.includes(s.id)) return s;
       const currentIndex = stageColumns.findIndex((c) => c.id === s.stage);
       const nextStage = stageColumns[currentIndex + 1];
       if (!nextStage) return s;
-      return { ...s, stage: nextStage.id, stageLabel: nextStage.title, stageId: stageDbIdByKey[nextStage.id] };
+      return {
+        ...s,
+        stage: nextStage.id,
+        stageLabel: nextStage.title,
+        stageId: stageDbIdByKey[nextStage.id],
+      };
     });
-    setStudents(updatedStudents);
+    setFilteredStudents(updatedStudents);
 
     const token = localStorage.getItem("token");
     for (const applicationId of selected) {
@@ -305,7 +380,7 @@ export default function PipelineBoard() {
           body: JSON.stringify({ stageId: student.stageId }),
         });
       } catch {
-        setStudents(originalStudents);
+        setFilteredStudents(originalStudents);
       }
     }
     setSelected([]);
@@ -315,55 +390,97 @@ export default function PipelineBoard() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-2 px-4 py-3 bg-white border-b">
-        <select value={selectedJobId} onChange={(e) => setSelectedJobId(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-2 px-4 py-3 bg-white border-b">
+        <select
+          value={selectedJobId}
+          onChange={(e) => setSelectedJobId(e.target.value)}
+          className="rounded-md border-gray-300 text-sm py-1.5 px-2"
+        >
           {jobs.map((job) => (
-            <option key={job.id} value={job.id}>{job.company?.name ?? "Company"} • {job.role ?? job.title ?? "Role"}</option>
+            <option key={job.id} value={job.id}>
+              {job.company?.name ?? "Company"} •{" "}
+              {job.role ?? job.title ?? "Role"}
+            </option>
           ))}
         </select>
-        <select value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
-          <option>All Companies</option>
-          {filterOptions.companies.map((v) => <option key={v}>{v}</option>)}
-        </select>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
-          <option>All Roles</option>
-          {filterOptions.roles.map((v) => <option key={v}>{v}</option>)}
-        </select>
-        <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
-          <option>All Departments</option>
-          {filterOptions.departments.map((v) => <option key={v}>{v}</option>)}
-        </select>
-        <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+        <select
+          value={branchFilter}
+          onChange={(e) => setBranchFilter(e.target.value)}
+          className="rounded-md border-gray-300 text-sm py-1.5 px-2"
+        >
           <option>All Branches</option>
-          {filterOptions.branches.map((v) => <option key={v}>{v}</option>)}
+          {filterOptions.branches.map((v) => (
+            <option key={v}>{v}</option>
+          ))}
         </select>
-        <select value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+        <select
+          value={batchFilter}
+          onChange={(e) => setBatchFilter(e.target.value)}
+          className="rounded-md border-gray-300 text-sm py-1.5 px-2"
+        >
           <option>All Batches</option>
-          {filterOptions.batches.map((v) => <option key={v}>{v}</option>)}
+          {filterOptions.batches.map((v) => (
+            <option key={v}>{v}</option>
+          ))}
         </select>
-        <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+        <select
+          value={stageFilter}
+          onChange={(e) => setStageFilter(e.target.value)}
+          className="rounded-md border-gray-300 text-sm py-1.5 px-2"
+        >
           <option>All Stages</option>
-          {filterOptions.stages.map((v) => <option key={v}>{v}</option>)}
+          {filterOptions.stages.map((v) => (
+            <option key={v}>{v}</option>
+          ))}
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-md border-gray-300 text-sm py-1.5 px-2"
+        >
           <option>All Status</option>
-          {filterOptions.statuses.map((v) => <option key={v}>{v}</option>)}
+          {filterOptions.statuses.map((v) => (
+            <option key={v}>{v}</option>
+          ))}
         </select>
       </div>
 
       <div className="grid w-full grid-cols-2 gap-3 rounded-xl border bg-white p-4 text-center text-sm sm:grid-cols-4 sm:gap-4 mt-3 mx-4">
-        <div className="min-w-0"><p className="text-gray-500">Company</p><p className="font-medium truncate">{selectedJob?.company?.name ?? "—"}</p></div>
-        <div className="min-w-0"><p className="text-gray-500">Role</p><p className="font-medium truncate">{selectedJob?.role ?? selectedJob?.title ?? "—"}</p></div>
-        <div className="min-w-0"><p className="text-gray-500">Package</p><p className="font-medium">{selectedJob?.ctc ?? "—"}</p></div>
-        <div className="min-w-0"><p className="text-gray-500">Applicants</p><p className="font-medium">{filteredStudents.length}</p></div>
+        <div className="min-w-0">
+          <p className="text-gray-500">Company</p>
+          <p className="font-medium truncate">
+            {selectedJob?.company?.name ?? "—"}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-gray-500">Role</p>
+          <p className="font-medium truncate">
+            {selectedJob?.role ?? selectedJob?.title ?? "—"}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-gray-500">Package</p>
+          <p className="font-medium">{selectedJob?.ctc ?? "—"}</p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-gray-500">Applicants</p>
+          <p className="font-medium">{filteredStudents.length}</p>
+        </div>
       </div>
 
       <div className="flex flex-col h-full md:hidden">
         <div className="grid grid-cols-3 gap-2 px-3 pt-3 pb-2">
           {stageColumns.map((stage) => (
-            <div key={stage.id} className="flex flex-col items-center rounded-xl border border-gray-200 bg-white py-2 px-1 shadow-sm">
-              <span className="text-lg font-bold text-indigo-600">{filteredStudents.filter((s) => s.stage === stage.id).length}</span>
-              <span className="text-center text-[10px] text-gray-500 leading-tight mt-0.5">{stage.title}</span>
+            <div
+              key={stage.id}
+              className="flex flex-col items-center rounded-xl border border-gray-200 bg-white py-2 px-1 shadow-sm"
+            >
+              <span className="text-lg font-bold text-indigo-600">
+                {filteredStudents.filter((s) => s.stage === stage.id).length}
+              </span>
+              <span className="text-center text-[10px] text-gray-500 leading-tight mt-0.5">
+                {stage.title}
+              </span>
             </div>
           ))}
         </div>
@@ -371,21 +488,54 @@ export default function PipelineBoard() {
         <div className="flex-1 overflow-x-auto overflow-y-auto">
           <div className="min-w-[700px]">
             <div className="grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 px-4 py-2 text-xs font-medium text-gray-500 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-              <span>Company</span><span>Role</span><span>Type</span><span>Tier</span><span>Package</span><span>Location</span><span>Status</span><span>Applied Date</span>
+              <span>Company</span>
+              <span>Role</span>
+              <span>Type</span>
+              <span>Tier</span>
+              <span>Package</span>
+              <span>Location</span>
+              <span>Status</span>
+              <span>Applied Date</span>
             </div>
             <div className="divide-y divide-gray-100 pb-24">
               {filteredStudents.map((s) => {
                 const isSelected = selected.includes(s.id);
                 return (
-                  <button key={s.id} type="button" onClick={() => toggleSelect(s.id)} className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left transition ${isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"}`}>
-                    <span className="flex items-center gap-1.5 font-semibold text-sm text-gray-900"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100"><Briefcase className="h-3.5 w-3.5 text-indigo-500" /></span>{s.company}</span>
-                    <span className="text-sm text-gray-700 truncate">{s.role}</span>
-                    <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium ${typeStyleMap[s.type] ?? "bg-gray-100 text-gray-600"}`}>{s.type}</span>
-                    <span className={`text-xs font-semibold ${tierStyleMap[s.tier] ?? "text-gray-500"}`}>{s.tier}</span>
-                    <span className="text-sm font-medium text-gray-800">{s.package}</span>
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => toggleSelect(s.id)}
+                    className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left transition ${isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"}`}
+                  >
+                    <span className="flex items-center gap-1.5 font-semibold text-sm text-gray-900">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
+                        <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
+                      </span>
+                      {s.company}
+                    </span>
+                    <span className="text-sm text-gray-700 truncate">
+                      {s.role}
+                    </span>
+                    <span
+                      className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium ${typeStyleMap[s.type] ?? "bg-gray-100 text-gray-600"}`}
+                    >
+                      {s.type}
+                    </span>
+                    <span
+                      className={`text-xs font-semibold ${tierStyleMap[s.tier] ?? "text-gray-500"}`}
+                    >
+                      {s.tier}
+                    </span>
+                    <span className="text-sm font-medium text-gray-800">
+                      {s.package}
+                    </span>
                     <span className="text-sm text-gray-600">{s.location}</span>
-                    <span className="inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 border-gray-200">{s.stageLabel}</span>
-                    <span className="text-sm text-gray-500">{s.appliedDate}</span>
+                    <span className="inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 border-gray-200">
+                      {s.stageLabel}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {s.appliedDate}
+                    </span>
                   </button>
                 );
               })}
@@ -396,9 +546,16 @@ export default function PipelineBoard() {
 
       <div className="relative hidden h-full min-h-0 md:block">
         <div className="h-full w-full overflow-y-hidden overflow-x-hidden">
-          <div className="grid h-full gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6" style={{ gridTemplateColumns: `repeat(${Math.max(stageColumns.length, 1)}, minmax(0, 1fr))` }}>
+          <div
+            className="grid h-full gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6"
+            style={{
+              gridTemplateColumns: `repeat(${Math.max(stageColumns.length, 1)}, minmax(0, 1fr))`,
+            }}
+          >
             {stageColumns.map((stage) => {
-              const stageStudents = filteredStudents.filter((s) => s.stage === stage.id).map((s) => ({ ...s, date: s.appliedDate, branch: s.branch }));
+              const stageStudents = filteredStudents
+                .filter((s) => s.stage === stage.id)
+                .map((s) => ({ ...s, date: s.appliedDate, branch: s.branch }));
               return (
                 <PipelineStage
                   key={stage.id}
@@ -406,7 +563,9 @@ export default function PipelineBoard() {
                   students={stageStudents}
                   selected={selected}
                   toggleSelect={toggleSelect}
-                  onViewForm={(id) => router.push(`/candidates-pipeline/form-response/${id}`)}
+                  onViewForm={(id) =>
+                    router.push(`/candidates-pipeline/form-response/${id}`)
+                  }
                 />
               );
             })}
@@ -416,9 +575,21 @@ export default function PipelineBoard() {
 
       {selected.length > 0 && (
         <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-3 rounded-lg border bg-white px-4 py-3 shadow-lg sm:bottom-6 sm:w-auto sm:max-w-none sm:flex-nowrap sm:gap-4 sm:px-6">
-          <span className="text-sm font-medium">{selected.length} selected</span>
-          <button onClick={moveSelectedForward} className="rounded bg-blue-600 px-4 py-1.5 text-sm text-white hover:bg-blue-700">Move Forward</button>
-          <button onClick={() => setSelected([])} className="text-sm text-gray-500 hover:text-gray-700">Clear</button>
+          <span className="text-sm font-medium">
+            {selected.length} selected
+          </span>
+          <button
+            onClick={moveSelectedForward}
+            className="rounded bg-blue-600 px-4 py-1.5 text-sm text-white hover:bg-blue-700"
+          >
+            Move Forward
+          </button>
+          <button
+            onClick={() => setSelected([])}
+            className="text-sm text-gray-500 hover:text-gray-700"
+          >
+            Clear
+          </button>
         </div>
       )}
     </div>
