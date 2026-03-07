@@ -35,7 +35,7 @@ async function main() {
     });
     permissionRecords.push(record);
   }
-      */
+
   const adminRole = await client.role.upsert({
     where: { name: "ADMIN" },
     update: {},

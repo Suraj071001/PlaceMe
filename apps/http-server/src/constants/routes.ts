@@ -24,5 +24,15 @@ export const ROUTES = {
     },
     STUDENT: {
         PROFILE: "/student/profile",
+    },
+    STUDENT_APPLICATION: {
+        BASE: "/student-application",
+        BY_ID: "/student-application/:id",
+        APPLY: "/student-application/apply",
+        MINE: "/student-application/mine",
+    },
+    FORM_RESPONSE: {
+        BASE: "/form-response",
+        BY_APPLICATION_ID: "/form-response/application/:applicationId",
     }
 };

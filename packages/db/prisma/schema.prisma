@@ -261,6 +261,7 @@ model Application {
 
 
 
+
 model Pipeline {
   id        String   @id @default(uuid())
   companyId String

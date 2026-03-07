@@ -6,3 +6,5 @@ export * from "./src/common";
 export * from "./src/application-form";
 export * from "./src/department";
 export * from "./src/student";
+export * from "./src/student-application";
+export * from "./src/form-response";
