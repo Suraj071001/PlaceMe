@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getJobApplicationsByStageService, updateApplicationStageService } from "./service";
+import { getApplicationFormResponseService, getJobApplicationsByStageService, updateApplicationStageService } from "./service";
 
 export const getJobApplicationsController = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -21,5 +21,15 @@ export const updateApplicationStageController = async (req: Request, res: Respon
         res.status(200).json({ success: true, data: application });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const getApplicationFormResponseController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const applicationId = req.params.id as string;
+        const response = await getApplicationFormResponseService(applicationId);
+        res.status(200).json({ success: true, data: response });
+    } catch (error: any) {
+        res.status(404).json({ success: false, message: error.message });
     }
 };

@@ -7,8 +7,12 @@ import logger from "../../utils/logger";
 
 export const submitFormResponseController = async (req: Request, res: Response) => {
     try {
-        const studentId = (req as any).user.student.id;
-        const result = await submitFormResponseService(studentId, req.body);
+        const userId = (req as any).user?.id;
+        if (!userId) {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+            return;
+        }
+        const result = await submitFormResponseService(userId, req.body);
         res.status(201).json({ success: true, data: result });
     } catch (error: any) {
         logger.error("Error submitting form response:", error);
@@ -18,8 +22,12 @@ export const submitFormResponseController = async (req: Request, res: Response) 
 
 export const getFormResponseController = async (req: Request, res: Response) => {
     try {
-        const studentId = (req as any).user.student.id;
-        const result = await getFormResponseService(studentId, req.params.applicationId as string);
+        const userId = (req as any).user?.id;
+        if (!userId) {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+            return;
+        }
+        const result = await getFormResponseService(userId, req.params.applicationId as string);
         res.status(200).json({ success: true, data: result });
     } catch (error: any) {
         logger.error("Error fetching form response:", error);

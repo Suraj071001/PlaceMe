@@ -35,6 +35,7 @@ export const ROUTES = {
         BASE: "/student-application",
         BY_ID: "/student-application/:id",
         APPLY: "/student-application/apply",
+        FORM_BY_JOB: "/student-application/job/:jobId/form",
         MINE: "/student-application/mine",
     },
     FORM_RESPONSE: {
@@ -67,6 +68,7 @@ export const ROUTES = {
     ADMIN_APPLICATION: {
         BY_JOB: "/admin-applications/job/:jobId",
         UPDATE_STAGE: "/admin-applications/:id/stage",
+        FORM_RESPONSE: "/admin-applications/:id/form-response",
     },
     ANALYTICS: {
         STATS: "/analytics/stats",

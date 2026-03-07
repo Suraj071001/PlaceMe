@@ -13,9 +13,10 @@ interface Props {
   student: Student;
   selected: boolean;
   toggleSelect: (id: string) => void;
+  onViewForm?: (id: string) => void;
 }
 
-export default function StudentCard({ student, selected, toggleSelect }: Props) {
+export default function StudentCard({ student, selected, toggleSelect, onViewForm }: Props) {
   const initials = student.name
     .split(" ")
     .map((n: string) => n[0])
@@ -45,6 +46,16 @@ export default function StudentCard({ student, selected, toggleSelect }: Props) 
         <Clock size={12} />
         {student.date}
       </div>
+
+      {onViewForm && (
+        <button
+          type="button"
+          onClick={() => onViewForm(student.id)}
+          className="mt-3 w-full rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
+        >
+          View Form Response
+        </button>
+      )}
     </div>
   );
 }

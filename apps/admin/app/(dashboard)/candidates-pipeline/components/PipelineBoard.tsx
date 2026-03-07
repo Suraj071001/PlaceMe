@@ -1,213 +1,391 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { stages, students as initialStudents, stageOrder } from "../../../components/data";
+import { useEffect, useMemo, useState } from "react";
 import PipelineStage from "./PipelineStages";
 import { Briefcase } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-type PipelineStudent = (typeof initialStudents)[number] & {
-  company?: string;
-  companyName?: string;
+type JobItem = {
+  id: string;
+  title?: string;
   role?: string;
-  jobRole?: string;
-  type?: string;
-  employmentType?: string;
-  tier?: string;
-  package?: string;
   ctc?: string;
-  location?: string;
-  workMode?: string;
-  appliedDate?: string;
-  appliedAt?: string;
-  department?: string;
-  branch?: string;
+  company?: { name?: string };
+  department?: { name?: string };
 };
+
+type ApplicationItem = {
+  id: string;
+  status?: string;
+  createdAt?: string;
+  stage?: { id?: string; name?: string } | null;
+  job?: {
+    id?: string;
+    title?: string;
+    role?: string;
+    ctc?: string;
+    employmentType?: string;
+    location?: string;
+    workMode?: string;
+    tier?: string;
+    company?: { name?: string };
+    department?: { name?: string };
+  };
+  student?: {
+    user?: { firstName?: string; lastName?: string };
+    branch?: { name?: string };
+    batch?: { name?: string };
+  };
+};
+
+type PipelineStudent = {
+  id: string;
+  stageId?: string;
+  name: string;
+  stage: string;
+  stageLabel: string;
+  status: string;
+  company: string;
+  role: string;
+  type: string;
+  tier: string;
+  package: string;
+  location: string;
+  appliedDate: string;
+  department: string;
+  branch: string;
+  batch: string;
+};
+
+type StageCol = { id: string; title: string; color: string };
+
+const API_BASE = typeof window !== "undefined" ? "http://localhost:5501/api/v1" : "";
+
+async function safeJson(res: Response) {
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    const text = await res.text();
+    throw new Error(`Non-JSON response: ${text.slice(0, 80)}`);
+  }
+  return res.json();
+}
 
 const stageStyleMap: Record<string, { label: string; color: string }> = {
-  applied: { label: "Applied", color: "text-yellow-500 bg-yellow-50 border-yellow-200" },
-  shortlisted: { label: "Shortlisted", color: "text-purple-600 bg-purple-50 border-purple-200" },
-  interview: { label: "Interview", color: "text-blue-600 bg-blue-50 border-blue-200" },
-  final: { label: "Final", color: "text-amber-600 bg-amber-50 border-amber-200" },
-  online_assessment: { label: "Online Assessment", color: "text-green-600 bg-green-50 border-green-200" },
-  technical_interview: { label: "Technical Interview", color: "text-blue-600 bg-blue-50 border-blue-200" },
-  hr_interview: { label: "HR Interview", color: "text-purple-600 bg-purple-50 border-purple-200" },
-  selected: { label: "Selected", color: "text-green-700 bg-green-50 border-green-200" },
-  rejected: { label: "Rejected", color: "text-red-500 bg-red-50 border-red-200" },
-};
-
-const tierStyleMap: Record<string, string> = {
-  Dream: "text-orange-500",
-  "Tier 1": "text-blue-500",
-  "Tier 2": "text-pink-500",
-  "Tier 3": "text-gray-500",
+  applied: { label: "Applied", color: "bg-blue-100" },
+  screening: { label: "Screening", color: "bg-slate-100" },
+  phone_screen: { label: "Phone Screen", color: "bg-violet-100" },
+  online_assessment: { label: "Online Assessment", color: "bg-green-100" },
+  shortlisted: { label: "Shortlisted", color: "bg-purple-100" },
+  interview: { label: "Interview", color: "bg-orange-100" },
+  technical_interview: { label: "Technical Interview", color: "bg-cyan-100" },
+  hr_interview: { label: "HR Interview", color: "bg-fuchsia-100" },
+  final: { label: "Final Round", color: "bg-yellow-100" },
+  offer: { label: "Offer", color: "bg-emerald-100" },
+  selected: { label: "Selected", color: "bg-green-100" },
+  hired: { label: "Hired", color: "bg-lime-100" },
+  rejected: { label: "Rejected", color: "bg-red-100" },
+  archived: { label: "Archived", color: "bg-gray-200" },
 };
 
 const typeStyleMap: Record<string, string> = {
-  "Full-time": "text-green-600 bg-green-50 border border-green-200",
-  Internship: "text-orange-500 bg-orange-50 border border-orange-200",
+  FULL_TIME: "text-green-600 bg-green-50 border border-green-200",
+  INTERNSHIP: "text-orange-500 bg-orange-50 border border-orange-200",
+  PART_TIME: "text-blue-600 bg-blue-50 border border-blue-200",
+  CONTRACT: "text-violet-600 bg-violet-50 border border-violet-200",
+};
+
+const tierStyleMap: Record<string, string> = {
+  DREAM: "text-orange-500",
+  STANDARD: "text-blue-500",
+  BASIC: "text-gray-500",
+};
+
+const stagePriority = [
+  "applied",
+  "screening",
+  "phone_screen",
+  "online_assessment",
+  "shortlisted",
+  "interview",
+  "technical_interview",
+  "hr_interview",
+  "final",
+  "offer",
+  "selected",
+  "hired",
+  "rejected",
+  "archived",
+];
+
+const toStageKey = (value?: string | null) => {
+  if (!value) return "applied";
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+};
+
+const toTitle = (stageKey: string) => stageStyleMap[stageKey]?.label ?? stageKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+const formatDate = (date?: string) => {
+  if (!date) return "—";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString();
 };
 
 export default function PipelineBoard() {
-  const [students, setStudents] = useState<PipelineStudent[]>(initialStudents as PipelineStudent[]);
+  const router = useRouter();
+  const [jobs, setJobs] = useState<JobItem[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<string>("");
+  const [students, setStudents] = useState<PipelineStudent[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [selectedBranch, setSelectedBranch] = useState<string>("All Branches");
+
+  const [companyFilter, setCompanyFilter] = useState("All Companies");
+  const [roleFilter, setRoleFilter] = useState("All Roles");
+  const [departmentFilter, setDepartmentFilter] = useState("All Departments");
+  const [branchFilter, setBranchFilter] = useState("All Branches");
+  const [batchFilter, setBatchFilter] = useState("All Batches");
+  const [stageFilter, setStageFilter] = useState("All Stages");
+  const [statusFilter, setStatusFilter] = useState("All Status");
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await fetch(`${API_BASE}/job?page=1&limit=200`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const body = await safeJson(res);
+        const list = Array.isArray(body?.data) ? (body.data as JobItem[]) : [];
+        setJobs(list);
+        if (!selectedJobId && list.length > 0) setSelectedJobId(list[0]!.id);
+      } catch {
+        setJobs([]);
+      }
+    };
+
+    fetchJobs();
+  }, [selectedJobId]);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      if (!selectedJobId) {
+        setStudents([]);
+        return;
+      }
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await fetch(`${API_BASE}/admin-applications/job/${selectedJobId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          setStudents([]);
+          return;
+        }
+
+        const body = await safeJson(res);
+        const list = Array.isArray(body?.data) ? (body.data as ApplicationItem[]) : [];
+
+        const mapped = list.map((item) => {
+          const first = item.student?.user?.firstName ?? "";
+          const last = item.student?.user?.lastName ?? "";
+          const stageLabel = item.stage?.name ?? item.status ?? "Applied";
+          const stage = toStageKey(stageLabel);
+          return {
+            id: item.id,
+            stageId: item.stage?.id ?? undefined,
+            name: `${first} ${last}`.trim() || "Unknown Student",
+            stage,
+            stageLabel: toTitle(stage),
+            status: item.status ?? "APPLIED",
+            company: item.job?.company?.name ?? "—",
+            role: item.job?.role ?? item.job?.title ?? "—",
+            type: item.job?.employmentType ?? "—",
+            tier: item.job?.tier ?? "—",
+            package: item.job?.ctc ?? "—",
+            location: item.job?.location ?? item.job?.workMode ?? "—",
+            appliedDate: formatDate(item.createdAt),
+            department: item.job?.department?.name ?? "—",
+            branch: item.student?.branch?.name ?? "—",
+            batch: item.student?.batch?.name ?? "—",
+          };
+        });
+
+        setStudents(mapped);
+        setSelected([]);
+      } catch {
+        setStudents([]);
+      }
+    };
+
+    fetchApplications();
+  }, [selectedJobId]);
+
+  const filterOptions = useMemo(() => {
+    const uniq = (values: string[]) => Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    return {
+      companies: uniq(students.map((s) => s.company)),
+      roles: uniq(students.map((s) => s.role)),
+      departments: uniq(students.map((s) => s.department)),
+      branches: uniq(students.map((s) => s.branch)),
+      batches: uniq(students.map((s) => s.batch)),
+      stages: uniq(students.map((s) => s.stageLabel)),
+      statuses: uniq(students.map((s) => s.status)),
+    };
+  }, [students]);
+
+  const filteredStudents = students.filter((s) => {
+    if (companyFilter !== "All Companies" && s.company !== companyFilter) return false;
+    if (roleFilter !== "All Roles" && s.role !== roleFilter) return false;
+    if (departmentFilter !== "All Departments" && s.department !== departmentFilter) return false;
+    if (branchFilter !== "All Branches" && s.branch !== branchFilter) return false;
+    if (batchFilter !== "All Batches" && s.batch !== batchFilter) return false;
+    if (stageFilter !== "All Stages" && s.stageLabel !== stageFilter) return false;
+    if (statusFilter !== "All Status" && s.status !== statusFilter) return false;
+    return true;
+  });
+
+  const stageColumns: StageCol[] = useMemo(() => {
+    const stageKeys = Array.from(new Set(filteredStudents.map((s) => s.stage)));
+    stageKeys.sort((a, b) => {
+      const ai = stagePriority.indexOf(a);
+      const bi = stagePriority.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+    return stageKeys.map((key) => ({
+      id: key,
+      title: toTitle(key),
+      color: stageStyleMap[key]?.color ?? "bg-gray-100",
+    }));
+  }, [filteredStudents]);
+
+  const stageDbIdByKey = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const s of students) {
+      if (s.stageId && !map[s.stage]) {
+        map[s.stage] = s.stageId;
+      }
+    }
+    return map;
+  }, [students]);
+
   const moveSelectedForward = async () => {
     const originalStudents = [...students];
     const updatedStudents = students.map((s) => {
-      if (!selected.includes(String(s.id))) return s;
-      const currentIndex = stageOrder.indexOf(s.stage);
-      const nextStage = stageOrder[currentIndex + 1];
+      if (!selected.includes(s.id)) return s;
+      const currentIndex = stageColumns.findIndex((c) => c.id === s.stage);
+      const nextStage = stageColumns[currentIndex + 1];
       if (!nextStage) return s;
-      return { ...s, stage: nextStage };
+      return { ...s, stage: nextStage.id, stageLabel: nextStage.title, stageId: stageDbIdByKey[nextStage.id] };
     });
     setStudents(updatedStudents);
 
-    // Call API to update stages in backend
-    for (const studentId of selected) {
-      const student = updatedStudents.find(s => String(s.id) === studentId);
-      if (student) {
-        try {
-          await fetch(`http://localhost:3000/api/v1/admin-applications/${studentId}/stage`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ stageId: student.stage })
-          });
-        } catch (e) {
-          console.error(`Failed to update stage for student ${studentId}`);
-        }
+    const token = localStorage.getItem("token");
+    for (const applicationId of selected) {
+      const student = updatedStudents.find((s) => s.id === applicationId);
+      if (!student || !token || !student.stageId) continue;
+      try {
+        await fetch(`${API_BASE}/admin-applications/${applicationId}/stage`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ stageId: student.stageId }),
+        });
+      } catch {
+        setStudents(originalStudents);
       }
     }
     setSelected([]);
   };
 
-  const uniqueBranches = Array.from(new Set(students.map((s) => s.branch || s.department || "Other"))).filter(Boolean);
-
-  const filteredStudents = selectedBranch === "All Branches" ? students : students.filter((s) => (s.branch || s.department || "Other") === selectedBranch);
-
-  // Stage counts for summary cards
-  const stageCounts = stageOrder.reduce(
-    (acc, stageId) => {
-      acc[stageId] = filteredStudents.filter((s) => s.stage === stageId).length;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  const selectedJob = jobs.find((j) => j.id === selectedJobId);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* Filters */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b">
-        <div className="flex items-center gap-3">
-          <label htmlFor="branch-filter" className="text-sm font-medium text-gray-700">
-            Branch:
-          </label>
-          <select
-            id="branch-filter"
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1.5 pl-3 pr-8"
-          >
-            <option value="All Branches">All Branches</option>
-            {uniqueBranches.map((branch) => (
-              <option key={branch} value={branch}>
-                {branch}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-2 px-4 py-3 bg-white border-b">
+        <select value={selectedJobId} onChange={(e) => setSelectedJobId(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          {jobs.map((job) => (
+            <option key={job.id} value={job.id}>{job.company?.name ?? "Company"} • {job.role ?? job.title ?? "Role"}</option>
+          ))}
+        </select>
+        <select value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          <option>All Companies</option>
+          {filterOptions.companies.map((v) => <option key={v}>{v}</option>)}
+        </select>
+        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          <option>All Roles</option>
+          {filterOptions.roles.map((v) => <option key={v}>{v}</option>)}
+        </select>
+        <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          <option>All Departments</option>
+          {filterOptions.departments.map((v) => <option key={v}>{v}</option>)}
+        </select>
+        <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          <option>All Branches</option>
+          {filterOptions.branches.map((v) => <option key={v}>{v}</option>)}
+        </select>
+        <select value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          <option>All Batches</option>
+          {filterOptions.batches.map((v) => <option key={v}>{v}</option>)}
+        </select>
+        <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          <option>All Stages</option>
+          {filterOptions.stages.map((v) => <option key={v}>{v}</option>)}
+        </select>
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-md border-gray-300 text-sm py-1.5 px-2">
+          <option>All Status</option>
+          {filterOptions.statuses.map((v) => <option key={v}>{v}</option>)}
+        </select>
       </div>
-      {/* ── Mobile View ── */}
+
+      <div className="grid w-full grid-cols-2 gap-3 rounded-xl border bg-white p-4 text-center text-sm sm:grid-cols-4 sm:gap-4 mt-3 mx-4">
+        <div className="min-w-0"><p className="text-gray-500">Company</p><p className="font-medium truncate">{selectedJob?.company?.name ?? "—"}</p></div>
+        <div className="min-w-0"><p className="text-gray-500">Role</p><p className="font-medium truncate">{selectedJob?.role ?? selectedJob?.title ?? "—"}</p></div>
+        <div className="min-w-0"><p className="text-gray-500">Package</p><p className="font-medium">{selectedJob?.ctc ?? "—"}</p></div>
+        <div className="min-w-0"><p className="text-gray-500">Applicants</p><p className="font-medium">{filteredStudents.length}</p></div>
+      </div>
+
       <div className="flex flex-col h-full md:hidden">
-        {/* Summary Cards */}
         <div className="grid grid-cols-3 gap-2 px-3 pt-3 pb-2">
-          {stageOrder.map((stageId) => {
-            const style = stageStyleMap[stageId];
-            return (
-              <div key={stageId} className="flex flex-col items-center rounded-xl border border-gray-200 bg-white py-2 px-1 shadow-sm">
-                <span className="text-lg font-bold text-indigo-600">{stageCounts[stageId] ?? 0}</span>
-                <span className="text-center text-[10px] text-gray-500 leading-tight mt-0.5">{style?.label ?? stageId}</span>
-              </div>
-            );
-          })}
+          {stageColumns.map((stage) => (
+            <div key={stage.id} className="flex flex-col items-center rounded-xl border border-gray-200 bg-white py-2 px-1 shadow-sm">
+              <span className="text-lg font-bold text-indigo-600">{filteredStudents.filter((s) => s.stage === stage.id).length}</span>
+              <span className="text-center text-[10px] text-gray-500 leading-tight mt-0.5">{stage.title}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Table Header + Rows — single horizontal scroll container */}
         <div className="flex-1 overflow-x-auto overflow-y-auto">
           <div className="min-w-[700px]">
-            {/* Table Header */}
             <div className="grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 px-4 py-2 text-xs font-medium text-gray-500 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-              <span>Company</span>
-              <span>Role</span>
-              <span>Type</span>
-              <span>Tier</span>
-              <span>Package</span>
-              <span>Location</span>
-              <span>Status</span>
-              <span>Applied Date</span>
+              <span>Company</span><span>Role</span><span>Type</span><span>Tier</span><span>Package</span><span>Location</span><span>Status</span><span>Applied Date</span>
             </div>
-
-            {/* Table Rows */}
             <div className="divide-y divide-gray-100 pb-24">
               {filteredStudents.map((s) => {
-                const id = String(s.id);
-                const stageStyle = stageStyleMap[s.stage];
-                const isSelected = selected.includes(id);
-                const company = s.company ?? s.companyName ?? s.name ?? "—";
-                const role = s.role ?? s.jobRole ?? s.branch ?? "—";
-                const type = s.type ?? s.employmentType ?? s.status ?? "—";
-                const tier = s.tier ?? s.branch ?? "—";
-                const packageValue = s.package ?? s.ctc ?? "—";
-                const location = s.location ?? s.workMode ?? "—";
-                const appliedDate = s.appliedDate ?? s.appliedAt ?? s.date ?? "—";
-
+                const isSelected = selected.includes(s.id);
                 return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => toggleSelect(id)}
-                    className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left transition ${isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
-                      }`}
-                  >
-                    {/* Company */}
-                    <span className="flex items-center gap-1.5 font-semibold text-sm text-gray-900">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
-                        <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
-                      </span>
-                      {company}
-                    </span>
-
-                    {/* Role */}
-                    <span className="text-sm text-gray-700 truncate">{role}</span>
-
-                    {/* Type */}
-                    <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium ${typeStyleMap[type] ?? "bg-gray-100 text-gray-600"}`}>
-                      {type}
-                    </span>
-
-                    {/* Tier */}
-                    <span className={`text-xs font-semibold ${tierStyleMap[tier] ?? "text-gray-500"}`}>{tier}</span>
-
-                    {/* Package */}
-                    <span className="text-sm font-medium text-gray-800">{packageValue}</span>
-
-                    {/* Location */}
-                    <span className="text-sm text-gray-600">{location}</span>
-
-                    {/* Status */}
-                    <span
-                      className={`inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium ${stageStyle?.color ?? "bg-gray-100 text-gray-600 border-gray-200"
-                        }`}
-                    >
-                      {stageStyle?.label ?? s.stage}
-                    </span>
-
-                    {/* Applied Date */}
-                    <span className="text-sm text-gray-500">{appliedDate}</span>
+                  <button key={s.id} type="button" onClick={() => toggleSelect(s.id)} className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left transition ${isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"}`}>
+                    <span className="flex items-center gap-1.5 font-semibold text-sm text-gray-900"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100"><Briefcase className="h-3.5 w-3.5 text-indigo-500" /></span>{s.company}</span>
+                    <span className="text-sm text-gray-700 truncate">{s.role}</span>
+                    <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium ${typeStyleMap[s.type] ?? "bg-gray-100 text-gray-600"}`}>{s.type}</span>
+                    <span className={`text-xs font-semibold ${tierStyleMap[s.tier] ?? "text-gray-500"}`}>{s.tier}</span>
+                    <span className="text-sm font-medium text-gray-800">{s.package}</span>
+                    <span className="text-sm text-gray-600">{s.location}</span>
+                    <span className="inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 border-gray-200">{s.stageLabel}</span>
+                    <span className="text-sm text-gray-500">{s.appliedDate}</span>
                   </button>
                 );
               })}
@@ -216,29 +394,31 @@ export default function PipelineBoard() {
         </div>
       </div>
 
-      {/* ── Desktop View (Pipeline Board) ── */}
       <div className="relative hidden h-full min-h-0 md:block">
         <div className="h-full w-full overflow-y-hidden overflow-x-hidden">
-          <div className="grid h-full grid-cols-6 gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6">
-            {stages.map((stage) => {
-              const stageStudents = filteredStudents.filter((s) => s.stage === stage.id).map((s) => ({ ...s, id: String(s.id) }));
-
-              return <PipelineStage key={stage.id} stage={stage} students={stageStudents} selected={selected} toggleSelect={toggleSelect} />;
+          <div className="grid h-full gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6" style={{ gridTemplateColumns: `repeat(${Math.max(stageColumns.length, 1)}, minmax(0, 1fr))` }}>
+            {stageColumns.map((stage) => {
+              const stageStudents = filteredStudents.filter((s) => s.stage === stage.id).map((s) => ({ ...s, date: s.appliedDate, branch: s.branch }));
+              return (
+                <PipelineStage
+                  key={stage.id}
+                  stage={stage}
+                  students={stageStudents}
+                  selected={selected}
+                  toggleSelect={toggleSelect}
+                  onViewForm={(id) => router.push(`/candidates-pipeline/form-response/${id}`)}
+                />
+              );
             })}
           </div>
         </div>
       </div>
 
-      {/* ── Bulk Action Bar (both views) ── */}
       {selected.length > 0 && (
         <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-3 rounded-lg border bg-white px-4 py-3 shadow-lg sm:bottom-6 sm:w-auto sm:max-w-none sm:flex-nowrap sm:gap-4 sm:px-6">
           <span className="text-sm font-medium">{selected.length} selected</span>
-          <button onClick={moveSelectedForward} className="rounded bg-blue-600 px-4 py-1.5 text-sm text-white hover:bg-blue-700">
-            Move Forward
-          </button>
-          <button onClick={() => setSelected([])} className="text-sm text-gray-500 hover:text-gray-700">
-            Clear
-          </button>
+          <button onClick={moveSelectedForward} className="rounded bg-blue-600 px-4 py-1.5 text-sm text-white hover:bg-blue-700">Move Forward</button>
+          <button onClick={() => setSelected([])} className="text-sm text-gray-500 hover:text-gray-700">Clear</button>
         </div>
       )}
     </div>
