@@ -22,6 +22,8 @@ type JobCardProps = {
 };
 
 export function JobCard({ job }: JobCardProps) {
+    const salaryText = job.salary > 0 ? `₹ ${job.salary} LPA` : "Salary not disclosed";
+
     return (
         <Card className="py-4">
             <CardContent className="py-0">
@@ -46,7 +48,7 @@ export function JobCard({ job }: JobCardProps) {
 
                         {/* Meta info */}
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                            <span>₹ {job.salary} LPA</span>
+                            <span>{salaryText}</span>
                             <span>📍 {job.location}</span>
                             <span>🏢 {job.type}</span>
                             <span>📅 Apply by {job.deadline}</span>

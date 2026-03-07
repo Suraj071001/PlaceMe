@@ -1,4 +1,4 @@
-import { getStudentProfile, updateStudentProfile } from "./dao";
+import { getStudentProfile, getStudentNotifications, markStudentNotificationAsRead, updateStudentProfile } from "./dao";
 import type { UpdateStudentProfilePayload } from "@repo/zod";
 import { ERROR, LOG } from "../../constants";
 import logger from "../../utils/logger";
@@ -71,4 +71,18 @@ export const updateStudentProfileService = async (
 
     logger.info(LOG.STUDENT_UPDATE_SUCCESS, { userId });
     return updatedProfile;
+};
+
+export const getStudentNotificationsService = async (userId: string) => {
+    logger.info("STUDENT_NOTIFICATIONS_FETCH_START", { userId });
+    return getStudentNotifications(userId);
+};
+
+export const markStudentNotificationAsReadService = async (userId: string, notificationId: string) => {
+    logger.info("STUDENT_NOTIFICATION_MARK_READ_START", { userId, notificationId });
+    const updated = await markStudentNotificationAsRead(userId, notificationId);
+    if (!updated) {
+        throw new Error("Notification not found");
+    }
+    return { id: notificationId, isRead: true };
 };

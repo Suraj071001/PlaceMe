@@ -25,6 +25,8 @@ export const ROUTES = {
     STUDENT: {
         PROFILE: "/student/profile",
         BY_ID: "/student/:id",
+        NOTIFICATIONS: "/student/notifications",
+        NOTIFICATION_READ: "/student/notifications/:id/read",
         RESUME_PROFILE: "/student/resume-profile",
         RESUME_GENERATE_PDF: "/student/resume/generate-pdf",
     },

@@ -18,6 +18,10 @@ export const permissionMiddleware = (permission: string) => {
         try {
             // Verify and decode the JWT payload
             const decoded = Jwt.verify(token, JWT_SECRET as string) as JwtPayload;
+            req.user = {
+                id: decoded.id as string,
+                role: decoded.role as string,
+            };
 
             // Extract the permissions array we added earlier
             const permissions: string[] = decoded.permissions || [];

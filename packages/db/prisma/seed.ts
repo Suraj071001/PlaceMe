@@ -1,4 +1,59 @@
 import client from "../index";
+import { seedAcademics } from "./seed-academics";
+
+async function seedNotificationsForUser(userId: string) {
+    await client.notification.deleteMany({ where: { userId } });
+
+    await client.notification.createMany({
+        data: [
+            {
+                userId,
+                type: "job",
+                payload: {
+                    title: "New job posted",
+                    desc: "Google has posted a new position: Software Engineer",
+                },
+                isRead: false,
+            },
+            {
+                userId,
+                type: "application",
+                payload: {
+                    title: "Application shortlisted",
+                    desc: "Your application for Microsoft - Product Manager has been shortlisted",
+                },
+                isRead: false,
+            },
+            {
+                userId,
+                type: "interview",
+                payload: {
+                    title: "Interview scheduled",
+                    desc: "Interview scheduled for Amazon on March 12, 2026 at 10:00 AM",
+                },
+                isRead: true,
+            },
+            {
+                userId,
+                type: "reminder",
+                payload: {
+                    title: "Application deadline approaching",
+                    desc: "Apply for Netflix - Backend Engineer before March 25, 2026",
+                },
+                isRead: true,
+            },
+            {
+                userId,
+                type: "profile",
+                payload: {
+                    title: "Profile update reminder",
+                    desc: "Update your resume and skills to improve profile strength",
+                },
+                isRead: true,
+            },
+        ],
+    });
+}
 
 async function main() {
   /*
@@ -168,50 +223,11 @@ async function main() {
 
   /*
   ========================
-  DEPARTMENT
+  DEPARTMENT / BRANCH / BATCH
   ========================
   */
 
-  const department = await client.department.upsert({
-    where: { id: "dept-engineering" },
-    update: {},
-    create: {
-      id: "dept-engineering",
-      name: "Engineering",
-    },
-  });
-
-  /*
-  ========================
-  BRANCH
-  ========================
-  */
-
-  const branch = await client.branch.upsert({
-    where: { id: "branch-cse" },
-    update: {},
-    create: {
-      id: "branch-cse",
-      name: "Computer Science",
-      departmentId: department.id,
-    },
-  });
-
-  /*
-  ========================
-  BATCH
-  ========================
-  */
-
-  const batch = await client.batch.upsert({
-    where: { id: "batch-2024" },
-    update: {},
-    create: {
-      id: "batch-2024",
-      name: "2024",
-      branchId: branch.id,
-    },
-  });
+  const { department, branch, batch } = await seedAcademics(client);
 
   /*
   ========================
@@ -368,8 +384,8 @@ async function main() {
     update: {},
     create: {
       email: "suraj24mca@gmail.com",
-      firstName: "Student",
-      lastName: "User",
+      firstName: "Suraj",
+      lastName: "Kumar",
       password: dummyPassword,
       roleId: studentRole.id,
       isActive: false,

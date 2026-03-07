@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { PlacementProgressSection } from "./placement-progress-section";
 import { NextImportantActionsSection, type NextAction } from "./next-important-actions-section";
 import { EligibleCompaniesSection, type EligibleCompany } from "./eligible-companies-section";
@@ -73,12 +74,41 @@ const eligibleCompanies: EligibleCompany[] = [
 /* ── Page ─────────────────────────────────────────────────── */
 
 export default function DashboardPage() {
+  const [firstName, setFirstName] = useState("Student");
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await fetch("http://localhost:5501/api/v1/student/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) return;
+
+        const result = await res.json();
+        const fetchedFirstName = result?.data?.user?.firstName;
+        if (typeof fetchedFirstName === "string" && fetchedFirstName.trim()) {
+          setFirstName(fetchedFirstName.trim());
+        }
+      } catch {
+        // Keep fallback name when profile fetch fails.
+      }
+    };
+
+    loadProfile();
+  }, []);
+
   return (
     <div className="space-y-6 pb-10 max-w-7xl mx-auto">
       {/* Welcome header */}
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-          Welcome back, John
+          Welcome back, {firstName}
         </h1>
         <p className="text-sm text-gray-500">
           Here&apos;s your placement progress overview

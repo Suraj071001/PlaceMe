@@ -11,6 +11,30 @@ export const getStudentProfile = async (userId: string) => {
     });
 };
 
+export const getStudentNotifications = async (userId: string) => {
+    return prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+    });
+};
+
+export const markStudentNotificationAsRead = async (userId: string, notificationId: string) => {
+    const notification = await prisma.notification.findFirst({
+        where: {
+            id: notificationId,
+            userId,
+        },
+    });
+
+    if (!notification) return null;
+    if (notification.isRead) return notification;
+
+    return prisma.notification.update({
+        where: { id: notificationId },
+        data: { isRead: true },
+    });
+};
+
 export const updateStudentProfile = async (
     userId: string,
     studentData: {

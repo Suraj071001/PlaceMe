@@ -1,105 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { JobCard } from "./job-card";
 import { JobFilterBar } from "./job-filter-bar";
-
-type Job = {
-    id: string;
-    company: string;
-    role: string;
-    salary: number;
-    location: string;
-    type: string;
-    deadline: string;
-    skills: string[];
-    description: string;
-    minCgpa: number;
-    eligible: boolean;
-};
-
-const allJobs: Job[] = [
-    {
-        id: "1",
-        company: "Google",
-        role: "Software Engineer",
-        salary: 35,
-        location: "Bangalore",
-        type: "Full-time",
-        deadline: "March 15, 2026",
-        skills: ["React", "Node.js", "Python"],
-        description: "Join our engineering team to build scalable solutions",
-        minCgpa: 8,
-        eligible: true,
-    },
-    {
-        id: "2",
-        company: "Microsoft",
-        role: "Product Manager",
-        salary: 32,
-        location: "Hyderabad",
-        type: "Full-time",
-        deadline: "March 20, 2026",
-        skills: ["Product Strategy", "Analytics"],
-        description: "Lead product development for cloud services",
-        minCgpa: 7.5,
-        eligible: true,
-    },
-    {
-        id: "3",
-        company: "Meta",
-        role: "Data Scientist",
-        salary: 40,
-        location: "Remote",
-        type: "Full-time",
-        deadline: "March 12, 2026",
-        skills: ["Python", "ML", "Statistics"],
-        description: "Work on cutting-edge ML models",
-        minCgpa: 8.5,
-        eligible: false,
-    },
-    {
-        id: "4",
-        company: "Netflix",
-        role: "Backend Engineer",
-        salary: 38,
-        location: "Mumbai",
-        type: "Full-time",
-        deadline: "March 25, 2026",
-        skills: ["Java", "Microservices", "Kafka"],
-        description: "Scale streaming infrastructure globally",
-        minCgpa: 8,
-        eligible: true,
-    },
-    {
-        id: "5",
-        company: "Adobe",
-        role: "UX Designer",
-        salary: 24,
-        location: "Noida",
-        type: "Full-time",
-        deadline: "March 22, 2026",
-        skills: ["Figma", "UI/UX", "Design Systems"],
-        description: "Design beautiful user experiences",
-        minCgpa: 7.5,
-        eligible: false,
-    },
-    {
-        id: "6",
-        company: "Amazon",
-        role: "Cloud Engineer",
-        salary: 30,
-        location: "Bangalore",
-        type: "Full-time",
-        deadline: "March 30, 2026",
-        skills: ["AWS", "Kubernetes", "Terraform"],
-        description: "Build and maintain cloud infrastructure at scale",
-        minCgpa: 7,
-        eligible: true,
-    },
-];
+import { getStudentJobs, type StudentJob } from "./job-api";
 
 export default function JobsPage() {
+    const [allJobs, setAllJobs] = useState<StudentJob[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [filters, setFilters] = useState({
         search: "",
         minCgpa: "",
@@ -108,8 +17,33 @@ export default function JobsPage() {
         sortBy: "latest",
     });
 
-    const locations = useMemo(() => [...new Set(allJobs.map((j) => j.location))], []);
-    const jobTypes = useMemo(() => [...new Set(allJobs.map((j) => j.type))], []);
+    useEffect(() => {
+        let mounted = true;
+
+        const loadJobs = async () => {
+            try {
+                const jobs = await getStudentJobs();
+                if (mounted) {
+                    setAllJobs(jobs);
+                    setError(null);
+                }
+            } catch (err) {
+                if (!mounted) return;
+                const message = err instanceof Error ? err.message : "Failed to fetch jobs";
+                setError(message);
+            } finally {
+                if (mounted) setIsLoading(false);
+            }
+        };
+
+        loadJobs();
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    const locations = useMemo(() => [...new Set(allJobs.map((j) => j.location))], [allJobs]);
+    const jobTypes = useMemo(() => [...new Set(allJobs.map((j) => j.type))], [allJobs]);
 
     const filteredJobs = useMemo(() => {
         let result = allJobs.filter((job) => {
@@ -174,7 +108,11 @@ export default function JobsPage() {
                 jobTypes={jobTypes}
             />
 
-            {filteredJobs.length === 0 ? (
+            {isLoading ? (
+                <div className="py-12 text-center text-muted-foreground">Loading job opportunities...</div>
+            ) : error ? (
+                <div className="py-12 text-center text-red-600">{error}</div>
+            ) : filteredJobs.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground">
                     No jobs match your filters. Try adjusting your criteria.
                 </div>
