@@ -3,6 +3,7 @@
 import { integrations } from "../../components/data";
 import IntegrationCard from "./components/IntegerationCard";
 import { useState, useEffect } from "react";
+import { API_BASE, getAuthHeaders } from "../../lib/api";
 
 export default function IntegrationsPage() {
   const [integrationsData, setIntegrationsData] = useState<any[]>(integrations);
@@ -11,7 +12,9 @@ export default function IntegrationsPage() {
   useEffect(() => {
     const fetchIntegrations = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/v1/integrations");
+        const res = await fetch(`${API_BASE}/integrations`, {
+          headers: getAuthHeaders(),
+        });
         const json = await res.json();
         if (json.success && json.data) {
           setIntegrationsData(json.data);

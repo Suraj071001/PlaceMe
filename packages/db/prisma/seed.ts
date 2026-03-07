@@ -434,6 +434,109 @@ async function main() {
 
   /*
   ========================
+  ACTIVITY + AUDIT LOGS
+  ========================
+  */
+
+  const now = Date.now();
+  const seededActivityTypes = ["JOB_CREATED", "JOB_UPDATED", "JOB_DELETED", "PIPELINE_MOVED", "OFFER_RELEASED"];
+  const seededAuditActions = ["JOB_CREATED", "JOB_UPDATED", "JOB_DELETED", "APPLICATION_REVIEWED", "REPORT_GENERATED"];
+
+  await client.activity.deleteMany({
+    where: {
+      companyId: company.id,
+      type: {
+        in: seededActivityTypes,
+      },
+    },
+  });
+
+  await client.auditLog.deleteMany({
+    where: {
+      companyId: company.id,
+      action: {
+        in: seededAuditActions,
+      },
+    },
+  });
+
+  await client.activity.createMany({
+    data: [
+      {
+        companyId: company.id,
+        type: "JOB_CREATED",
+        body: `Job "${job.title}" created`,
+        metadata: { jobId: job.id, role: job.role },
+        createdAt: new Date(now - 1000 * 60 * 50),
+      },
+      {
+        companyId: company.id,
+        type: "JOB_UPDATED",
+        body: `Job "${job.title}" eligibility criteria updated`,
+        metadata: { jobId: job.id, updatedFields: ["minimumCGPA", "batchIds"] },
+        createdAt: new Date(now - 1000 * 60 * 40),
+      },
+      {
+        companyId: company.id,
+        type: "PIPELINE_MOVED",
+        body: "2 candidates moved to Interview stage",
+        metadata: { stage: "Interview", count: 2 },
+        createdAt: new Date(now - 1000 * 60 * 25),
+      },
+      {
+        companyId: company.id,
+        type: "OFFER_RELEASED",
+        body: "Offer letters released for shortlisted candidates",
+        metadata: { offers: 2 },
+        createdAt: new Date(now - 1000 * 60 * 15),
+      },
+      {
+        companyId: company.id,
+        type: "JOB_DELETED",
+        body: 'Archived draft job "Associate Analyst"',
+        metadata: { reason: "Duplicate draft cleanup" },
+        createdAt: new Date(now - 1000 * 60 * 10),
+      },
+    ],
+  });
+
+  await client.auditLog.createMany({
+    data: [
+      {
+        companyId: company.id,
+        action: "JOB_CREATED",
+        meta: { jobId: job.id, title: job.title, actor: "admin@placeme.com" },
+        createdAt: new Date(now - 1000 * 60 * 50),
+      },
+      {
+        companyId: company.id,
+        action: "JOB_UPDATED",
+        meta: { jobId: job.id, changes: ["ctc", "passingYear"], actor: "admin@placeme.com" },
+        createdAt: new Date(now - 1000 * 60 * 40),
+      },
+      {
+        companyId: company.id,
+        action: "APPLICATION_REVIEWED",
+        meta: { applicationsReviewed: 6, actor: "recruiter@placeme.com" },
+        createdAt: new Date(now - 1000 * 60 * 30),
+      },
+      {
+        companyId: company.id,
+        action: "REPORT_GENERATED",
+        meta: { reportType: "department-analysis", actor: "admin@placeme.com" },
+        createdAt: new Date(now - 1000 * 60 * 20),
+      },
+      {
+        companyId: company.id,
+        action: "JOB_DELETED",
+        meta: { title: "Associate Analyst", actor: "admin@placeme.com" },
+        createdAt: new Date(now - 1000 * 60 * 10),
+      },
+    ],
+  });
+
+  /*
+  ========================
   APPLICATION FORM
   ========================
   */

@@ -5,6 +5,7 @@ import ApplicationFormPreview from "./components/ApplicationFormPreview";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useJobDraft } from "../create-jobs/lib/useJobDraft";
+import { API_BASE } from "../../lib/api";
 
 export default function ReviewJobPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function ReviewJobPage() {
     };
 
     try {
-      const res = await fetch("http://localhost:5501/api/v1/job", {
+      const res = await fetch(`${API_BASE}/job`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

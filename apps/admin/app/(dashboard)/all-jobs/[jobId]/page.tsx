@@ -12,8 +12,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-const API_BASE = "http://localhost:5501/api/v1";
+import { API_BASE } from "../../../lib/api";
 
 type ApiJobDetails = {
   id: string;

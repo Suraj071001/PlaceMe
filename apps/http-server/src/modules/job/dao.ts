@@ -93,6 +93,33 @@ export const createJob = async (data: CreateJobPayload) => {
       },
     });
 
+    await tx.activity.create({
+      data: {
+        companyId: job.companyId,
+        type: "JOB_CREATED",
+        body: `${job.title} created`,
+        metadata: {
+          jobId: job.id,
+          role: job.role,
+          departmentId: job.departmentId ?? null,
+          batchIds: resolvedBatchIds,
+        },
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        companyId: job.companyId,
+        action: "JOB_CREATED",
+        meta: {
+          jobId: job.id,
+          title: job.title,
+          role: job.role,
+          batchIds: resolvedBatchIds,
+        },
+      },
+    });
+
     await redisClient.xAdd(
       JOB_STREAM_ID,
       "*",
@@ -175,15 +202,76 @@ export const getJobsByCompanyId = async (companyId: string) => {
 };
 
 export const updateJob = async (id: string, data: UpdateJobPayload) => {
-  return await client.job.update({
-    where: { id },
-    data,
+  return await client.$transaction(async (tx) => {
+    const updated = await tx.job.update({
+      where: { id },
+      data,
+    });
+
+    await tx.activity.create({
+      data: {
+        companyId: updated.companyId,
+        type: "JOB_UPDATED",
+        body: `${updated.title} updated`,
+        metadata: {
+          jobId: updated.id,
+          updatedFields: Object.keys(data),
+        },
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        companyId: updated.companyId,
+        action: "JOB_UPDATED",
+        meta: {
+          jobId: updated.id,
+          title: updated.title,
+          updatedFields: Object.keys(data),
+        },
+      },
+    });
+
+    return updated;
   });
 };
 
 export const deleteJob = async (id: string) => {
-  return await client.job.delete({
-    where: { id },
+  return await client.$transaction(async (tx) => {
+    const existing = await tx.job.findUnique({
+      where: { id },
+      select: { id: true, title: true, companyId: true },
+    });
+
+    const deleted = await tx.job.delete({
+      where: { id },
+    });
+
+    if (existing) {
+      await tx.activity.create({
+        data: {
+          companyId: existing.companyId,
+          type: "JOB_DELETED",
+          body: `${existing.title} deleted`,
+          metadata: {
+            jobId: existing.id,
+          },
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          companyId: existing.companyId,
+          action: "JOB_DELETED",
+          meta: {
+            jobId: existing.id,
+            title: existing.title,
+          },
+        },
+      });
+    }
+
+    return deleted;
   });
 };
 

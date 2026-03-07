@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Filter } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { API_BASE } from "../../lib/api";
 
-const API_BASE = "http://localhost:5501/api/v1";
 const ITEMS_PER_PAGE = 5;
 
 type ApiJob = {

@@ -7,6 +7,7 @@ import { Integration } from "./data";
 import { Button } from "@repo/ui/components/button";
 import SpacesDialog from "./SpaceDialog";
 import ConfigureSpaceDialog from "./ConfigDialog";
+import { API_BASE, getAuthHeaders } from "../../../lib/api";
 
 type Props = {
   integration: Integration;
@@ -35,15 +36,15 @@ export default function IntegrationCard({ integration }: Props) {
     setLoadingSpaces(true);
     setSpacesError(null);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      const headers = getAuthHeaders();
+      if (!headers.Authorization) {
         setSpaces([]);
         setSpacesError("Login required to fetch spaces.");
         return;
       }
 
-      const res = await fetch("http://localhost:5501/api/v1/integration/google-chat/spaces", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API_BASE}/integration/google-chat/spaces`, {
+        headers,
       });
 
       if (!res.ok) {

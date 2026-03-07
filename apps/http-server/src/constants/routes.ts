@@ -8,6 +8,7 @@ export const ROUTES = {
     },
     COMPANY: {
         BASE: "/company",
+        BRANCH_OPTIONS: "/company/branches",
         BY_ID: "/company/:id",
     },
     HR_CONTACT: {
@@ -76,6 +77,8 @@ export const ROUTES = {
         STATS: "/analytics/stats",
         DEPARTMENTS: "/analytics/departments",
         RECENT_ACTIVITY: "/analytics/recent-activity",
+        ACTIVITY: "/analytics/activity",
+        AUDIT_LOGS: "/analytics/audit-logs",
         UPCOMING_EVENTS: "/analytics/upcoming-events",
     },
     INTEGRATION: {

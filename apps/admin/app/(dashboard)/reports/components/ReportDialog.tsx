@@ -2,12 +2,12 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/ui/components/dialog";
 import { useState } from "react";
+import { API_BASE, getAuthHeaders } from "../../../lib/api";
 
 const reportTypes = [
-  { value: "placement-summary", label: "Placement Summary" },
-  { value: "department-analysis", label: "Department Analysis" },
-  { value: "company-report", label: "Company Report" },
-  { value: "internship-report", label: "Internship Report" },
+  { value: "Placement", label: "Placement Summary" },
+  { value: "Department", label: "Department Analysis" },
+  { value: "Company", label: "Company Report" },
 ];
 
 export default function GenerateReportDialog({ open, setOpen }: any) {
@@ -18,8 +18,9 @@ export default function GenerateReportDialog({ open, setOpen }: any) {
   const [dateRange, setDateRange] = useState("");
 
   async function generateReport() {
+    if (!reportType) return;
     const payload = {
-      reportType,
+      type: reportType,
       filters: {
         department,
         jobType,
@@ -28,10 +29,9 @@ export default function GenerateReportDialog({ open, setOpen }: any) {
       },
     };
 
-    console.log("Generating report with:", payload);
-
-    await fetch("/api/reports/generate", {
+    await fetch(`${API_BASE}/reports/generate`, {
       method: "POST",
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 

@@ -1,15 +1,23 @@
 import prisma from "@repo/db";
 
-// Temporary mock data for integrations
 export const getIntegrationsDAO = async () => {
+    const [googleChatSpaces, activeGoogleChatSpaces] = await Promise.all([
+        prisma.googleChatConfig.count(),
+        prisma.googleChatConfig.count({ where: { isActive: true } }),
+    ]);
+
     return [
         {
             id: "google-chat",
             name: "Google Chat",
             description: "Send placement announcements and updates directly to Google Chat groups.",
             category: "Communication",
-            lastSync: "5 minutes ago",
-            connected: true,
+            lastSync: googleChatSpaces > 0 ? "Synced from backend" : undefined,
+            connected: googleChatSpaces > 0,
+            metadata: {
+                totalSpaces: googleChatSpaces,
+                activeSpaces: activeGoogleChatSpaces,
+            },
         },
         {
             id: "microsoft-teams",

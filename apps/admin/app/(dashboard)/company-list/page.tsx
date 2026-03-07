@@ -5,8 +5,7 @@ import { Building2 } from "lucide-react";
 import { AddCompanyDialog } from "./components/AddCompanyDialog";
 import { CompanyFilters } from "./components/CompanyFilters";
 import { CompanyTable, type Company } from "./components/CompanyTable";
-
-const API_BASE = "http://localhost:5501/api/v1";
+import { API_BASE } from "../../lib/api";
 
 const COMPANY_STATUSES: Company["status"][] = ["CONTACTED", "INTERESTED", "NOT_INTERESTED", "DRIVE_COMPLETED", "OFFER_RELEASED", "ON_HOLD", "BLACKLISTED"];
 

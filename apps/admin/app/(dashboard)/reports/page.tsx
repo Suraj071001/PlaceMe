@@ -4,8 +4,7 @@ import { reports } from "../../components/data";
 import ReportCard from "./components/ReportCard";
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_V1_URL?.replace(/\/$/, "") || "http://localhost:5501/api/v1";
+import { API_BASE } from "../../lib/api";
 
 type ReportItem = {
   id: number;

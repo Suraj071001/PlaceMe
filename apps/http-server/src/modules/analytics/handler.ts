@@ -3,6 +3,8 @@ import {
     getStatsController,
     getDepartmentsAnalyticsController,
     getRecentActivityController,
+    getActivityFeedController,
+    getAuditLogsController,
     getUpcomingEventsController,
 } from "./controller";
 import { ROUTES } from "../../constants/routes";
@@ -25,6 +27,16 @@ export const analyticsRoutes = (app: Application) => {
         ROUTES.ANALYTICS.RECENT_ACTIVITY,
         permissionMiddleware("READ_REPORTS"),
         getRecentActivityController
+    );
+    app.get(
+        ROUTES.ANALYTICS.ACTIVITY,
+        permissionMiddleware("READ_REPORTS"),
+        getActivityFeedController
+    );
+    app.get(
+        ROUTES.ANALYTICS.AUDIT_LOGS,
+        permissionMiddleware("READ_REPORTS"),
+        getAuditLogsController
     );
     app.get(
         ROUTES.ANALYTICS.UPCOMING_EVENTS,

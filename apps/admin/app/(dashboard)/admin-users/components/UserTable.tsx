@@ -5,8 +5,7 @@ import { Search } from "lucide-react";
 import { Input } from "@repo/ui/components/input";
 import { PermissionsDialog } from "./PermissionsDialog";
 import { EditPermissionsDialog } from "./EditPermissionsDialog";
-
-const API_BASE = "http://localhost:5501/api/v1";
+import { API_BASE } from "../../../lib/api";
 
 type RoleRef = {
   id: string;

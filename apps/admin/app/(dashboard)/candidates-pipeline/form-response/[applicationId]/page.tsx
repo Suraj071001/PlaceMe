@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { API_BASE } from "../../../../lib/api";
 
 type Option = { id: string; label: string; value: string };
 type Question = {
@@ -52,8 +53,6 @@ type ApiResponse = {
   };
   message?: string;
 };
-
-const API_BASE = "http://localhost:5501/api/v1";
 
 function answerLabel(question: Question, answer: { value?: string | null; values?: string[]; fileUrl?: string | null }) {
   if (answer.fileUrl) return answer.fileUrl;

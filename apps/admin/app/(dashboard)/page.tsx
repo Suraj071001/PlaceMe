@@ -101,18 +101,21 @@ export default function Page() {
           {/* Chart or Table */}
           {activeView === "graphical" ? <DepartmentChart appliedFilters={appliedFilters} /> : <DepartmentTable appliedFilters={appliedFilters} />}
 
-          {/* Performance Summary + Recent Activity */}
-          <div className="mb-5 grid grid-cols-1 items-stretch gap-4 px-0 md:grid-cols-2 md:px-4">
+          {/* Performance Summary */}
+          <div className="mb-5 px-0 md:px-4">
             <PerformanceSummary appliedFilters={appliedFilters} />
-            <RecentActivity appliedFilters={appliedFilters} />
-          </div>
-
-          {/* Upcoming Events */}
-          <div className="mb-6 px-0 md:px-4">
-            <UpcomingEvents />
           </div>
         </>
       )}
+
+      {/* Always visible widgets */}
+      <div className="mb-5 grid grid-cols-1 items-stretch gap-4 px-0 md:px-4">
+        <RecentActivity appliedFilters={appliedFilters} />
+      </div>
+
+      <div className="mb-6 px-0 md:px-4">
+        <UpcomingEvents />
+      </div>
     </div>
   );
 }

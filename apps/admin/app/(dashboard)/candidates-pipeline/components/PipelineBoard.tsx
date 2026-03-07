@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import PipelineStage from "./PipelineStages";
 import { Briefcase } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { API_BASE } from "../../../lib/api";
 
 type JobItem = {
   id: string;
@@ -58,9 +59,6 @@ type PipelineStudent = {
 };
 
 type StageCol = { id: string; title: string; color: string };
-
-const API_BASE =
-  typeof window !== "undefined" ? "http://localhost:5501/api/v1" : "";
 
 async function safeJson(res: Response) {
   const contentType = res.headers.get("content-type") ?? "";

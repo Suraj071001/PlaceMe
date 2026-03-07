@@ -2,12 +2,13 @@
 
 import { SignupPage } from "@repo/ui/components/signup-page";
 import { useRouter } from "next/navigation";
+import { API_BASE } from "../../lib/api";
 
 export default function AdminSignupPage() {
     const router = useRouter();
 
     const handleSendOtp = async (email: string) => {
-        const response = await fetch("http://localhost:5501/api/v1/auth/signup/request-otp", {
+        const response = await fetch(`${API_BASE}/auth/signup/request-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email }),
@@ -21,7 +22,7 @@ export default function AdminSignupPage() {
     };
 
     const handleVerifyOtp = async (data: { email: string; otp: string; password: string }) => {
-        const response = await fetch("http://localhost:5501/api/v1/auth/signup/verify", {
+        const response = await fetch(`${API_BASE}/auth/signup/verify`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),

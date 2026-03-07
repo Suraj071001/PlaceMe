@@ -13,6 +13,7 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Plus } from "lucide-react";
+import { API_BASE, getAuthHeaders } from "../../../lib/api";
 
 export function AddUserDialog() {
   const [open, setOpen] = useState(false);
@@ -29,12 +30,9 @@ export function AddUserDialog() {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const res = await fetch("http://localhost:5501/api/v1/role", {
+        const res = await fetch(`${API_BASE}/role`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`, // Assuming token is stored in localStorage after login
-          },
+          headers: getAuthHeaders(),
         });
         const json = await res.json();
         if (Array.isArray(json?.data)) {
@@ -67,12 +65,9 @@ export function AddUserDialog() {
         return;
       }
 
-      const res = await fetch("http://localhost:5501/api/v1/admins", {
+      const res = await fetch(`${API_BASE}/admins`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(submitData),
       });
       const data = await res.json();

@@ -95,6 +95,38 @@ export const getRecentActivityDAO = async () => {
     }));
 };
 
+export const getActivityFeedDAO = async (limit = 50) => {
+    const activities = await db.activity.findMany({
+        orderBy: { createdAt: "desc" },
+        take: Math.min(Math.max(limit, 1), 200),
+    });
+
+    return activities.map((a) => ({
+        id: a.id,
+        title: a.type,
+        desc: a.body || "",
+        time: a.createdAt.toISOString(),
+        tag: "activity",
+        color: "#6366f1",
+        metadata: a.metadata ?? null,
+    }));
+};
+
+export const getAuditLogsDAO = async (limit = 50) => {
+    const logs = await db.auditLog.findMany({
+        orderBy: { createdAt: "desc" },
+        take: Math.min(Math.max(limit, 1), 200),
+    });
+
+    return logs.map((log) => ({
+        id: log.id,
+        action: log.action,
+        companyId: log.companyId,
+        meta: log.meta ?? null,
+        time: log.createdAt.toISOString(),
+    }));
+};
+
 export const getUpcomingEventsDAO = async () => {
     const upcomingJobs = await db.job.findMany({
         where: {
