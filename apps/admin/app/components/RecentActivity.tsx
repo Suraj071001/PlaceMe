@@ -61,7 +61,13 @@ export function RecentActivity({ appliedFilters: _appliedFilters }: { appliedFil
     try {
       setError(null);
       const token = localStorage.getItem("token");
-      const json = await fetchFromApi("/analytics/recent-activity", token);
+      let json: any;
+      try {
+        json = await fetchFromApi("/analytics/recent-activity", token);
+      } catch {
+        // Fallback for environments where only the full feed route is available.
+        json = await fetchFromApi("/analytics/activity?limit=5", token);
+      }
       setRecentActivity((json?.data ?? []) as ActivityItem[]);
     } catch (err: any) {
       setError(err?.message ?? "Failed to fetch recent activity");
@@ -73,12 +79,26 @@ export function RecentActivity({ appliedFilters: _appliedFilters }: { appliedFil
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("token");
-      const [activityRes, auditRes] = await Promise.all([
+      const [activityRes, auditRes] = await Promise.allSettled([
         fetchFromApi("/analytics/activity?limit=100", token),
         fetchFromApi("/analytics/audit-logs?limit=100", token),
       ]);
-      setAllActivity((activityRes?.data ?? []) as ActivityItem[]);
-      setAuditLogs((auditRes?.data ?? []) as AuditLogItem[]);
+
+      if (activityRes.status === "fulfilled") {
+        setAllActivity((activityRes.value?.data ?? []) as ActivityItem[]);
+      } else {
+        setAllActivity([]);
+      }
+
+      if (auditRes.status === "fulfilled") {
+        setAuditLogs((auditRes.value?.data ?? []) as AuditLogItem[]);
+      } else {
+        setAuditLogs([]);
+      }
+
+      if (activityRes.status === "rejected" && auditRes.status === "rejected") {
+        throw new Error("Failed to fetch activity and audit logs");
+      }
     } catch (err: any) {
       setError(err?.message ?? "Failed to fetch activity/audit logs");
     } finally {
@@ -144,6 +164,7 @@ export function RecentActivity({ appliedFilters: _appliedFilters }: { appliedFil
               </span>
             </div>
           ))}
+          {error ? <div style={{ fontSize: 12, color: "#dc2626" }}>{error}</div> : null}
           {cardItems.length === 0 ? <div style={{ fontSize: 12, color: "#64748b" }}>No activity found.</div> : null}
         </div>
       </div>

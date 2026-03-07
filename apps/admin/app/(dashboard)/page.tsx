@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState  , useEffect} from "react";
 import { StatsCards } from "../components/StatsCards";
 import { FilterAnalytics } from "../components/FilterAnalytics";
 import { EmptyAnalytics } from "../components/EmptyAnalytics";
@@ -23,6 +23,21 @@ export default function Page() {
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({});
   const [activeView, setActiveView] = useState<"graphical" | "table">("graphical");
   const [filtersApplied, setFiltersApplied] = useState(false);
+
+
+
+  useEffect(() => {
+    const defaultFilters = {
+      dateRange: ["Last 30 Days"],
+      department: [],
+      jobType: [],
+      placementTier: [],
+      compareYears: [],
+    };
+    setFilters(defaultFilters);
+    setAppliedFilters({ dateRange: ["Last 30 Days"] });
+    setFiltersApplied(true);
+  }, []);
 
   const handleFilterChange = (key: FilterKeys, value: string) => {
     setFilters((prev) => {
