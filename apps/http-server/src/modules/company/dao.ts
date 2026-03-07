@@ -7,6 +7,18 @@ export const createCompany = async (data: CreateCompanyPayload) => {
   });
 };
 
+export const getCompanyBranchOptions = async () => {
+  return await client.branch.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+};
+
 export const getCompanyById = async (id: string) => {
   return await client.company.findFirst({
     where: { id, deletedAt: null },

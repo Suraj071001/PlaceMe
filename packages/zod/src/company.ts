@@ -8,7 +8,7 @@ export const CreateCompanySchema = z.object({
   industry: z.string().min(1, "Industry is required"),
   faculty_coordinator: z.string().min(1, "Faculty coordinator is required"),
   status: CompanyStatusEnum,
-  branchId: z.string().uuid("Invalid branch ID"),
+  branchId: z.string().min(1, "Branch is required"),
 });
 
 export const UpdateCompanySchema = z.object({
@@ -27,7 +27,7 @@ export const CompanyQuerySchema = z.object({
   status: CompanyStatusEnum.optional(),
   industry: z.string().optional(),
   faculty_coordinator: z.string().optional(),
-  branchId: z.string().uuid("Invalid branch ID").optional(),
+  branchId: z.string().min(1, "Invalid branch ID").optional(),
 });
 
 export type CompanyQuery = z.infer<typeof CompanyQuerySchema>;
