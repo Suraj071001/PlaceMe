@@ -24,9 +24,9 @@ type Props = {
 
 export default function PipelineStage({ stage, students, selected, toggleSelect }: Props) {
   return (
-    <div className="w-[260px] flex-shrink-0 flex flex-col h-full">
+    <div className="min-h-0 w-full min-w-0 rounded-xl border border-gray-100 bg-white/70 p-1">
       {/* Header */}
-      <div className={`px-5 py-4 mb-1 rounded-t-xl ${stage.color}`}>
+      <div className={`mb-1 rounded-t-xl px-4 py-3 ${stage.color}`}>
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold tracking-wide">{stage.title}</h3>
 
@@ -37,7 +37,7 @@ export default function PipelineStage({ stage, students, selected, toggleSelect 
       </div>
 
       {/* Students */}
-      <div className="bg-gray-50 rounded-b-xl p-3 space-y-3 flex-1 min-h-0 overflow-y-auto stage-scroll">
+      <div className="stage-scroll min-h-0 space-y-3 overflow-y-auto rounded-b-xl bg-gray-50 p-3">
         {students.length === 0 && <p className="text-xs text-gray-400 text-center pt-6">No students</p>}
 
         {students.map((student) => (
