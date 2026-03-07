@@ -1,28 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SectionTitle, Label, InputField, SelectField, SearchableSelectField, MultiSelectChips } from "./FormElements";
-
-const companyOptions = [
-  "Accenture",
-  "Amazon",
-  "Capgemini",
-  "Cisco",
-  "Cognizant",
-  "Deloitte",
-  "Google",
-  "IBM",
-  "Infosys",
-  "Microsoft",
-  "Oracle",
-  "TCS",
-  "Tech Mahindra",
-  "Wipro",
-].sort((a, b) => a.localeCompare(b));
 
 /* ─── Main ─── */
 export function JobDetailsTab() {
-  const [companyName, setCompanyName] = useState(companyOptions[0] || "");
+  const [companyOptions, setCompanyOptions] = useState<string[]>([]);
+  const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [jobType, setJobType] = useState("Full-Time");
   const [workMode, setWorkMode] = useState("On-Site");
@@ -32,6 +16,27 @@ export function JobDetailsTab() {
   const [passingYear, setPassingYear] = useState("2026");
   const [deadline, setDeadline] = useState("");
   const [companyTier, setCompanyTier] = useState("Basic");
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:5000/api/v1/company", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (json?.data) {
+          const names = json.data.map((c: { name: string }) => c.name).sort((a: string, b: string) => a.localeCompare(b));
+          setCompanyOptions(names);
+          if (names.length > 0) setCompanyName(names[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch companies:", error);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
 
   const row: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 20 };
 
