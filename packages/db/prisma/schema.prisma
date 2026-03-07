@@ -231,6 +231,7 @@ model Student {
   deletedAt    DateTime?
 
   applications Application[]
+  formResponses FormResponse[]
 }
 
 model Application {
@@ -251,8 +252,37 @@ model Application {
   stage      Stage?    @relation(fields: [stageId], references: [id])
 
   @@unique([studentId, jobId])
+  @@index([studentId])
+  @@index([jobId])
 
   offers Offer[]
+  formResponse FormResponse?
+}
+
+
+model FormResponse {
+  id            String   @id @default(uuid())
+  applicationId String   @unique
+  formId        String
+  createdAt     DateTime @default(now())
+
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  form          ApplicationForm @relation(fields: [formId], references: [id])
+
+  answers       FormAnswer[]
+}
+
+model FormAnswer {
+  id          String @id @default(uuid())
+  responseId  String
+  questionId  String
+  answer      Json
+
+  response    FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question    FormQuestion @relation(fields: [questionId], references: [id])
+
+  @@index([responseId])
+  @@index([questionId])
 }
 
 model Pipeline {
@@ -341,6 +371,7 @@ model ApplicationForm {
   department   Department @relation(fields: [departmentId], references: [id])
 
   jobs Job[] @relation("JobApplicationForm")
+  responses FormResponse[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -372,6 +403,7 @@ model FormQuestion {
   section   FormSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   options QuestionOption[]
+  answers FormAnswer[]
 }
 
 model QuestionOption {
@@ -394,6 +426,40 @@ enum QuestionType {
   DATE
   FILE_UPLOAD
   URL
+}
+
+model FormResponse {
+  id            String   @id @default(uuid())
+  applicationId String   @unique
+  formId        String
+  studentId     String
+  
+  application   Application @relation(fields: [applicationId], references: [id])
+  form          ApplicationForm @relation(fields: [formId], references: [id])
+  student       Student    @relation(fields: [studentId], references: [id])
+
+  answers       FormAnswer[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model FormAnswer {
+  id           String   @id @default(uuid())
+  responseId   String
+  questionId   String
+  
+  value        String?
+  values       String[]
+  fileUrl      String?
+
+  response     FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question     FormQuestion @relation(fields: [questionId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([responseId, questionId])
 }
 
 
@@ -434,6 +500,7 @@ enum EmploymentType {
 }
 
 enum ApplicationStatus {
+  DRAFT
   APPLIED
   SCREENING
   PHONE_SCREEN

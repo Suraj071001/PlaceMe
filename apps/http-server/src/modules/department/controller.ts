@@ -7,7 +7,7 @@ import {
     deleteDepartmentService,
 } from "./service";
 import { CreateDepartmentSchema, UpdateDepartmentSchema } from "@repo/zod";
-import { ERROR, SUCCESS } from "../../constants";
+import { ERROR, SUCCESS, LOG } from "../../constants";
 import logger from "../../utils/logger";
 
 export const createDepartmentController = async (req: Request, res: Response) => {
@@ -15,10 +15,9 @@ export const createDepartmentController = async (req: Request, res: Response) =>
         const payload = CreateDepartmentSchema.parse(req.body);
         const department = await createDepartmentService(payload);
 
-        logger.info("Department created successfully", { departmentId: department.id });
         res.status(201).json({ message: "Department created successfully", data: department });
     } catch (error: any) {
-        logger.error("Create department failed", {
+        logger.error(LOG.DEPARTMENT_CREATE_FAILED, {
             error: error.message || ERROR.INTERNAL_SERVER_ERROR,
         });
         return res
@@ -38,7 +37,7 @@ export const getDepartmentsController = async (req: Request, res: Response) => {
 
         res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: departments });
     } catch (error: any) {
-        logger.error("Get departments failed", {
+        logger.error(LOG.DEPARTMENT_FETCH_FAILED, {
             error: error.message || ERROR.INTERNAL_SERVER_ERROR,
         });
         return res
@@ -56,9 +55,10 @@ export const getDepartmentByIdController = async (req: Request, res: Response) =
         }
 
         const department = await getDepartmentByIdService(id as string, companyId);
+
         res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: department });
     } catch (error: any) {
-        logger.error("Get department by id failed", {
+        logger.error(LOG.DEPARTMENT_FETCH_FAILED, {
             error: error.message || ERROR.INTERNAL_SERVER_ERROR,
         });
         return res
@@ -78,10 +78,9 @@ export const updateDepartmentController = async (req: Request, res: Response) =>
         const payload = UpdateDepartmentSchema.parse(req.body);
         const department = await updateDepartmentService(id as string, companyId, payload);
 
-        logger.info("Department updated successfully", { departmentId: department.id });
         res.status(200).json({ message: "Department updated successfully", data: department });
     } catch (error: any) {
-        logger.error("Update department failed", {
+        logger.error(LOG.DEPARTMENT_UPDATE_FAILED, {
             error: error.message || ERROR.INTERNAL_SERVER_ERROR,
         });
         return res
@@ -100,10 +99,9 @@ export const deleteDepartmentController = async (req: Request, res: Response) =>
 
         await deleteDepartmentService(id as string, companyId);
 
-        logger.info("Department deleted successfully", { departmentId: id });
         res.status(200).json({ message: "Department deleted successfully" });
     } catch (error: any) {
-        logger.error("Delete department failed", {
+        logger.error(LOG.DEPARTMENT_DELETE_FAILED, {
             error: error.message || ERROR.INTERNAL_SERVER_ERROR,
         });
         return res
