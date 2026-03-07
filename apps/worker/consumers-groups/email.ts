@@ -4,9 +4,8 @@ import client from "@repo/db";
 import { Resend } from "resend";
 
 const EMAIL_CONSUMERGROUP_ID = "email";
-const RESEND_API_KEY = process.env.RESEND_API_KEY 
-if(!RESEND_API_KEY) throw new Error("Provide Resend Api Key");
-const resend = new Resend(RESEND_API_KEY);
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "placementcell@dsadev.me";
 
 function chunkArray<T>(items: T[], size: number): T[][] {
@@ -115,6 +114,7 @@ async function processMessage(message: {
       text,
     }));
 
+    if (!resend) return;
     await resend.batch.send(payload);
   }
 }
@@ -133,7 +133,12 @@ async function ensureEmailConsumerGroup() {
   }
 }
 
-async function Main() {
+export async function Main() {
+  if (!resend) {
+    console.warn("Email worker disabled: RESEND_API_KEY is not set");
+    return;
+  }
+
   await ensureEmailConsumerGroup();
 
   const WorkerId = 1;
@@ -173,7 +178,3 @@ async function Main() {
     }
   }
 }
-
-Main().catch((err) => {
-  console.error("Email worker failed", err);
-});

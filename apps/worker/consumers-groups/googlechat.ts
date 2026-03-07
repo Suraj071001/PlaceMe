@@ -100,7 +100,7 @@ async function processMessage(message: any) {
   }
 }
 
-async function Main() {
+export async function Main() {
   const WorkerId = 1;
 
   try {
@@ -154,5 +154,3 @@ async function Main() {
     }
   }
 }
-
-Main();

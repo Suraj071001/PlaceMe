@@ -17,6 +17,7 @@ export const ROUTES = {
     JOB: {
         BASE: "/job",
         BY_ID: "/job/:id",
+        ELIGIBILITY: "/job/eligibility",
     },
     DEPARTMENT: {
         BASE: "/department",
@@ -77,6 +78,7 @@ export const ROUTES = {
         BASE: "/integrations",
         CONNECT: "/integrations/:provider/connect",
         DISCONNECT: "/integrations/:provider/disconnect",
+        GOOGLE_CHAT_SPACES: "/integration/google-chat/spaces",
     },
     REPORT: {
         BASE: "/reports",

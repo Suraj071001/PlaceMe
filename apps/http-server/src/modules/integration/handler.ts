@@ -1,11 +1,16 @@
 import type { Application } from "express";
-import { getIntegrationsController, connectIntegrationController, disconnectIntegrationController } from "./controller";
+import { getIntegrationsController, connectIntegrationController, disconnectIntegrationController, getGoogleChatSpacesController } from "./controller";
 import { zodValidator } from "../../middlewares/zodValidator";
 import { ConnectIntegrationSchema } from "@repo/zod";
 import { ROUTES } from "../../constants/routes";
 import { permissionMiddleware } from "../../middlewares/permissionValidator";
 
 export const integrationRoutes = (app: Application) => {
+    app.get(
+        ROUTES.INTEGRATION.GOOGLE_CHAT_SPACES,
+        permissionMiddleware("MANAGE_USERS"),
+        getGoogleChatSpacesController
+    );
     app.get(
         ROUTES.INTEGRATION.BASE,
         permissionMiddleware("MANAGE_USERS"),

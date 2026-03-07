@@ -7,6 +7,35 @@ export const createJob = async (data: CreateJobPayload) => {
   const { batchIds, applicationForm, ...jobData } = data;
 
   return await client.$transaction(async (tx) => {
+    let resolvedBatchIds = batchIds ?? [];
+
+    // If Google Chat notifications are enabled and caller did not pass explicit batches,
+    // auto-target all batches with active Google Chat configuration.
+    if ((jobData.google_chat || jobData.email) && resolvedBatchIds.length === 0) {
+      const configuredBatches = await tx.batch.findMany({
+        where: {
+          ...(jobData.departmentId
+            ? {
+              branch: {
+                departmentId: jobData.departmentId,
+              },
+            }
+            : {}),
+          ...(jobData.google_chat
+            ? {
+              googleChatConfigs: {
+                is: {
+                  isActive: true,
+                },
+              },
+            }
+            : {}),
+        },
+        select: { id: true },
+      });
+      resolvedBatchIds = configuredBatches.map((b) => b.id);
+    }
+
     // Determine the application form connection/creation payload
     let applicationFormsPayload = {};
 
@@ -53,10 +82,10 @@ export const createJob = async (data: CreateJobPayload) => {
     const job = await tx.job.create({
       data: {
         ...jobData,
-        ...(batchIds && batchIds.length > 0
+        ...(resolvedBatchIds.length > 0
           ? {
               batches: {
-                connect: batchIds.map((id) => ({ id })),
+                connect: resolvedBatchIds.map((id) => ({ id })),
               },
             }
           : {}),
@@ -78,6 +107,9 @@ export const createJob = async (data: CreateJobPayload) => {
         employmentType: String(job.employmentType),
         closeAt: job.closeAt ? job.closeAt.toISOString() : "",
         jobId: String(job.id),
+        batchIds: JSON.stringify(resolvedBatchIds),
+        google_chat: String(Boolean(job.google_chat)),
+        email: String(Boolean(job.email)),
       },
       {
         TRIM: {
@@ -152,5 +184,32 @@ export const updateJob = async (id: string, data: UpdateJobPayload) => {
 export const deleteJob = async (id: string) => {
   return await client.job.delete({
     where: { id },
+  });
+};
+
+export const getJobEligibilityData = async () => {
+  return await client.department.findMany({
+    where: {
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      branches: {
+        select: {
+          id: true,
+          name: true,
+          batches: {
+            select: {
+              id: true,
+              name: true,
+            },
+            orderBy: { createdAt: "desc" },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+    orderBy: { createdAt: "desc" },
   });
 };

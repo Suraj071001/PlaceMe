@@ -190,6 +190,7 @@ model Branch {
 model Batch {
   id        String   @id @default(uuid())
   branchId  String
+  Year      Int    @default(2027)
 
   name      String
   createdAt DateTime @default(now())

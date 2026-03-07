@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageSquare, Users, Settings } from "lucide-react";
 import { Integration } from "./data";
 
@@ -12,6 +12,12 @@ type Props = {
   integration: Integration;
 };
 
+type Space = {
+  id: string;
+  name: string;
+  active?: boolean;
+};
+
 export default function IntegrationCard({ integration }: Props) {
   const Icon = integration.id === "google-chat" ? MessageSquare : Users;
   const itemLabel = integration.id === "google-chat" ? "Space" : "Channel";
@@ -20,25 +26,46 @@ export default function IntegrationCard({ integration }: Props) {
   const [configOpen, setConfigOpen] = useState(false);
 
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [loadingSpaces, setLoadingSpaces] = useState(false);
+  const [spacesError, setSpacesError] = useState<string | null>(null);
 
-  // mock spaces for frontend
-  const [spaces] = useState([
-    { id: "space1", name: "Placement Updates", active: true },
-    { id: "space2", name: "Internship Notifications", active: false },
-    { id: "space3", name: "Drive Announcements", active: true },
-    { id: "space4", name: "Placement Updates", active: true },
-    { id: "space5", name: "Internship Notifications", active: false },
-    { id: "space6", name: "Drive Announcements", active: true },
-    { id: "space7", name: "Placement Updates", active: true },
-    { id: "space8", name: "Internship Notifications", active: false },
-    { id: "space9", name: "Drive Announcements", active: true },
-    { id: "space10", name: "Placement Updates", active: true },
-    { id: "space11", name: "Internship Notifications", active: false },
-    { id: "space12", name: "Drive Announcements", active: true },
-    { id: "space13", name: "Placement Updates", active: true },
-    { id: "space14", name: "Internship Notifications", active: false },
-    { id: "space15", name: "Drive Announcements", active: true },
-  ]);
+  const loadGoogleChatSpaces = async () => {
+    if (integration.id !== "google-chat") return;
+    setLoadingSpaces(true);
+    setSpacesError(null);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setSpaces([]);
+        setSpacesError("Login required to fetch spaces.");
+        return;
+      }
+
+      const res = await fetch("http://localhost:5501/api/v1/integration/google-chat/spaces", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        setSpaces([]);
+        setSpacesError(res.status === 401 ? "Session expired. Please login again." : "Failed to fetch spaces.");
+        return;
+      }
+
+      const body = await res.json();
+      const data = Array.isArray(body?.data) ? (body.data as Space[]) : [];
+      setSpaces(data);
+    } catch {
+      setSpaces([]);
+      setSpacesError("Failed to fetch spaces.");
+    } finally {
+      setLoadingSpaces(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGoogleChatSpaces();
+  }, [integration.id]);
 
   const openConfigDialog = (space: string) => {
     setSelectedSpace(space);
@@ -69,7 +96,15 @@ export default function IntegrationCard({ integration }: Props) {
         <hr className="my-4" />
 
         <div className="flex justify-end">
-          <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={() => setSpacesOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={async () => {
+              await loadGoogleChatSpaces();
+              setSpacesOpen(true);
+            }}
+          >
             <Settings size={16} />
             Configure
           </Button>
@@ -80,6 +115,8 @@ export default function IntegrationCard({ integration }: Props) {
         open={spacesOpen}
         onOpenChange={setSpacesOpen}
         spaces={spaces}
+        loading={loadingSpaces}
+        error={spacesError}
         onSelectSpace={openConfigDialog}
         integrationName={integration.name}
         itemLabel={itemLabel}

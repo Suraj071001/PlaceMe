@@ -9,7 +9,7 @@ export const createDepartment = async (payload: CreateDepartmentPayload) => {
   });
 };
 
-export const getDepartments = async () => {
+export const getDepartments = async (includeHierarchy = false) => {
   return await prisma.department.findMany({
     where: {
       deletedAt: null,

@@ -28,7 +28,8 @@ export const createDepartmentController = async (req: Request, res: Response) =>
 
 export const getDepartmentsController = async (req: Request, res: Response) => {
     try {
-        const departments = await getDepartmentsService();
+        const includeHierarchy = String(req.query.includeHierarchy ?? "").toLowerCase() === "true";
+        const departments = await getDepartmentsService(includeHierarchy);
 
         res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: departments });
     } catch (error: any) {

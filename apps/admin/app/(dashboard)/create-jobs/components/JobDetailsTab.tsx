@@ -1,15 +1,44 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SectionTitle, Label, InputField, SelectField, SearchableSelectField, MultiSelectChips } from "./FormElements";
+import { SectionTitle, Label, InputField, SelectField, SearchableSelectField, SearchableMultiSelectField } from "./FormElements";
 import { useJobDraft } from "../lib/useJobDraft";
+
+const API_BASE_CANDIDATES = [
+  process.env.NEXT_PUBLIC_API_V1_URL?.replace(/\/$/, ""),
+  "http://localhost:5501/api/v1",
+  "/api/v1",
+].filter(Boolean) as string[];
+
+async function fetchFromApi(path: string, token: string | null) {
+  let lastError: unknown;
+  for (const base of API_BASE_CANDIDATES) {
+    try {
+      const res = await fetch(`${base}${path}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!res.ok) {
+        lastError = new Error(`${res.status} ${res.statusText}`);
+        continue;
+      }
+      return await res.json();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError ?? new Error("Failed to fetch from API");
+}
 
 /* ─── Main ─── */
 export function JobDetailsTab() {
   const { draft, patch } = useJobDraft();
 
   const [companyOptions, setCompanyOptions] = useState<{ id: string; name: string }[]>([]);
-  const [departmentOptions, setDepartmentOptions] = useState<{ id: string; name: string }[]>([]);
+  const [departmentOptions, setDepartmentOptions] = useState<{
+    id: string;
+    name: string;
+    branches: { id: string; name: string; batches: { id: string; name: string }[] }[];
+  }[]>([]);
 
   // Ensure backend-required fields have sensible defaults in the shared draft
   useEffect(() => {
@@ -30,8 +59,10 @@ export function JobDetailsTab() {
   const workMode = draft.workMode ?? "On-Site";
   const ctcStipend = draft.ctc ?? "";
   const eligibleDepts = draft.departmentNames ?? [];
+  const eligibleBranches = draft.branchNames ?? [];
+  const eligibleBatches = draft.batchNames ?? [];
   const minCGPA = draft.minimumCGPA != null ? String(draft.minimumCGPA) : "";
-  const passingYear = draft.passingYear != null ? String(draft.passingYear) : "2026";
+  const passingYear = draft.passingYear != null ? String(draft.passingYear) : "-";
   const deadline = draft.closeAt ? draft.closeAt.slice(0, 10) : "";
   const companyTier = draft.tier ?? "BASIC";
 
@@ -39,10 +70,7 @@ export function JobDetailsTab() {
     const fetchCompanies = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5501/api/v1/company", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const json = await res.json();
+        const json = await fetchFromApi("/company", token);
         if (json?.data) {
           const items = (json.data as { id: string; name: string }[])
             .filter((c) => c?.id && c?.name)
@@ -64,16 +92,27 @@ export function JobDetailsTab() {
 
   useEffect(() => {
     const fetchDepartments = async () => {
-      if (!draft.companyId) return;
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5501/api/v1/department?companyId=${draft.companyId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const json = await res.json();
+        const json = await fetchFromApi("/job/eligibility", token);
         if (json?.data) {
-          const items = (json.data as { id: string; name: string }[])
+          const items = (json.data as {
+            id: string;
+            name: string;
+            branches?: { id: string; name: string; batches?: { id: string; name: string }[] }[];
+          }[])
             .filter((d) => d?.id && d?.name)
+            .map((d) => ({
+              id: d.id,
+              name: d.name,
+              branches: (d.branches ?? [])
+                .filter((b) => b?.id && b?.name)
+                .map((b) => ({
+                  id: b.id,
+                  name: b.name,
+                  batches: (b.batches ?? []).filter((batch) => batch?.id && batch?.name),
+                })),
+            }))
             .sort((a, b) => a.name.localeCompare(b.name));
           setDepartmentOptions(items);
         }
@@ -83,11 +122,52 @@ export function JobDetailsTab() {
     };
 
     fetchDepartments();
-  }, [draft.companyId]);
+  }, []);
 
   const row: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 20 };
 
-  const allDepartments = departmentOptions.length > 0 ? departmentOptions.map((d) => d.name) : ["Computer Science", "Electronics", "Mechanical", "Civil", "Electrical", "Information Technology", "MBA", "MCA"];
+  const branchOptions = departmentOptions
+    .filter((d) => eligibleDepts.includes(d.name))
+    .flatMap((d) => d.branches)
+    .reduce<{ id: string; name: string; batches: { id: string; name: string }[] }[]>((acc, branch) => {
+      if (acc.some((b) => b.id === branch.id)) return acc;
+      acc.push(branch);
+      return acc;
+    }, []);
+  const batchOptions = branchOptions
+    .filter((b) => eligibleBranches.includes(b.name))
+    .flatMap((b) => b.batches)
+    .reduce<{ id: string; name: string }[]>((acc, batch) => {
+      if (acc.some((b) => b.id === batch.id)) return acc;
+      acc.push(batch);
+      return acc;
+    }, []);
+
+  const selectedBatchYears = batchOptions
+    .filter((batch) => eligibleBatches.includes(batch.name))
+    .flatMap((batch) => {
+      const matches = batch.name.match(/\b(19|20)\d{2}\b/g) ?? [];
+      return matches.map((m) => Number(m));
+    })
+    .filter((year, idx, arr) => arr.indexOf(year) === idx)
+    .sort((a, b) => a - b);
+
+  useEffect(() => {
+    if (selectedBatchYears.length === 0) {
+      if (draft.passingYear !== undefined) patch({ passingYear: undefined });
+      return;
+    }
+
+    // Passing year is derived from selected batch year(s).
+    const derivedPassingYear = selectedBatchYears[selectedBatchYears.length - 1];
+    if (draft.passingYear !== derivedPassingYear) {
+      patch({ passingYear: derivedPassingYear });
+    }
+  }, [draft.passingYear, patch, selectedBatchYears]);
+
+  const allDepartments = departmentOptions.map((d) => d.name);
+  const allBranches = branchOptions.map((b) => b.name);
+  const allBatches = batchOptions.map((b) => b.name);
 
   return (
     <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: "20px clamp(14px, 3vw, 36px)" }}>
@@ -100,7 +180,16 @@ export function JobDetailsTab() {
           value={companyName}
           onChange={(name) => {
             const selected = companyOptions.find((c) => c.name === name);
-            patch({ companyId: selected?.id, companyName: name, departmentId: undefined, departmentNames: [] });
+            patch({
+              companyId: selected?.id,
+              companyName: name,
+              departmentId: undefined,
+              departmentNames: [],
+              branchIds: [],
+              branchNames: [],
+              batchIds: [],
+              batchNames: [],
+            });
           }}
           options={companyOptions.map((c) => c.name)}
         />
@@ -177,16 +266,80 @@ export function JobDetailsTab() {
       {/* Eligible Departments */}
       <div style={{ marginBottom: 20 }}>
         <Label required>Eligible Departments</Label>
-        <MultiSelectChips
+        <SearchableMultiSelectField
           options={allDepartments}
           selected={eligibleDepts}
           onChange={(names) => {
             const nameToId = new Map(departmentOptions.map((d) => [d.name, d.id]));
+            const nextBranches = departmentOptions
+              .filter((d) => names.includes(d.name))
+              .flatMap((d) => d.branches)
+              .reduce<{ id: string; name: string; batches: { id: string; name: string }[] }[]>((acc, branch) => {
+                if (acc.some((b) => b.id === branch.id)) return acc;
+                acc.push(branch);
+                return acc;
+              }, []);
+            const filteredBranches = eligibleBranches.filter((name) => nextBranches.some((b) => b.name === name));
+            const filteredBranchIds = nextBranches.filter((b) => filteredBranches.includes(b.name)).map((b) => b.id);
+            const filteredBatchesPool = nextBranches.flatMap((b) => b.batches);
+            const filteredBatchNames = eligibleBatches.filter((name) => filteredBatchesPool.some((b) => b.name === name));
+            const filteredBatchIds = filteredBatchesPool.filter((b) => filteredBatchNames.includes(b.name)).map((b) => b.id);
             patch({
               departmentNames: names,
               departmentId: names.length === 1 ? nameToId.get(names[0]!) : undefined,
+              branchIds: filteredBranchIds,
+              branchNames: filteredBranches,
+              batchIds: filteredBatchIds,
+              batchNames: filteredBatchNames,
             });
           }}
+          placeholder="Select departments"
+        />
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <Label required>Reference Branch</Label>
+        <SearchableMultiSelectField
+          options={allBranches}
+          selected={eligibleBranches}
+          onChange={(names) => {
+            const nameToId = new Map(branchOptions.map((b) => [b.name, b.id]));
+            const nextBatchOptions = branchOptions
+              .filter((branch) => names.includes(branch.name))
+              .flatMap((branch) => branch.batches)
+              .reduce<{ id: string; name: string }[]>((acc, batch) => {
+                if (acc.some((b) => b.id === batch.id)) return acc;
+                acc.push(batch);
+                return acc;
+              }, []);
+            const filteredBatchNames = eligibleBatches.filter((name) =>
+              nextBatchOptions.some((batch) => batch.name === name),
+            );
+            const filteredBatchIds = nextBatchOptions.filter((b) => filteredBatchNames.includes(b.name)).map((b) => b.id);
+            patch({
+              branchNames: names,
+              branchIds: names.map((name) => nameToId.get(name)).filter(Boolean) as string[],
+              batchNames: filteredBatchNames,
+              batchIds: filteredBatchIds,
+            });
+          }}
+          placeholder={eligibleDepts.length === 0 ? "Select department first" : "Select branches"}
+        />
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <Label required>Reference Batch</Label>
+        <SearchableMultiSelectField
+          options={allBatches}
+          selected={eligibleBatches}
+          onChange={(names) => {
+            const nameToId = new Map(batchOptions.map((b) => [b.name, b.id]));
+            patch({
+              batchNames: names,
+              batchIds: names.map((name) => nameToId.get(name)).filter(Boolean) as string[],
+            });
+          }}
+          placeholder={eligibleBranches.length === 0 ? "Select branch first" : "Select batches"}
         />
       </div>
 
@@ -202,11 +355,22 @@ export function JobDetailsTab() {
         </div>
         <div>
           <Label required>Passing Year</Label>
-          <SelectField
-            value={passingYear}
-            onChange={(v) => patch({ passingYear: Number(v) })}
-            options={["2024", "2025", "2026", "2027", "2028"]}
-          />
+          <div
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              border: "1px solid #e2e8f0",
+              borderRadius: 7,
+              fontSize: 13,
+              color: "#0f172a",
+              background: "#f8fafc",
+              minHeight: 39,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {selectedBatchYears.length > 0 ? selectedBatchYears.join(", ") : passingYear}
+          </div>
         </div>
       </div>
 

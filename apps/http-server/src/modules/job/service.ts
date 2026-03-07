@@ -5,6 +5,7 @@ import {
     updateJob,
     deleteJob,
     getJobsByCompanyId,
+    getJobEligibilityData,
 } from "./dao";
 import type { CreateJobPayload, UpdateJobPayload, JobQuery, PaginationQuery } from "@repo/zod";
 import logger from "../../utils/logger";
@@ -77,4 +78,11 @@ export const deleteJobService = async (id: string) => {
     const deleted = await deleteJob(id);
     logger.info("JOB_DELETE_SUCCESS", { id });
     return deleted;
+};
+
+export const getJobEligibilityDataService = async () => {
+    logger.info("JOB_ELIGIBILITY_FETCH_START");
+    const data = await getJobEligibilityData();
+    logger.info("JOB_ELIGIBILITY_FETCH_SUCCESS", { count: data.length });
+    return data;
 };

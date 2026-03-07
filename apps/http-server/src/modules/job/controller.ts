@@ -8,6 +8,7 @@ import {
     getJobByIdService,
     updateJobService,
     deleteJobService,
+    getJobEligibilityDataService,
 } from "./service";
 
 export const createJobController = async (req: Request, res: Response) => {
@@ -71,6 +72,17 @@ export const deleteJobController = async (req: Request<{ id: string }>, res: Res
         await deleteJobService(id);
 
         return res.status(200).json({ message: SUCCESS.RESOURCE_DELETED });
+    } catch (error: any) {
+        return res
+            .status(400)
+            .json({ error: error.message || ERROR.INTERNAL_SERVER_ERROR });
+    }
+};
+
+export const getJobEligibilityDataController = async (_req: Request, res: Response) => {
+    try {
+        const data = await getJobEligibilityDataService();
+        return res.status(200).json({ message: SUCCESS.DATA_FETCHED, data });
     } catch (error: any) {
         return res
             .status(400)

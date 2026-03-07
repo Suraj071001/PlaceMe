@@ -13,6 +13,10 @@ export type JobDraft = {
   closeAt?: string; // ISO date string
   departmentId?: string;
   departmentNames?: string[];
+  branchIds?: string[];
+  branchNames?: string[];
+  batchIds?: string[];
+  batchNames?: string[];
   description?: string;
   additionalDetails?: Record<string, unknown>;
   google_chat?: boolean;
@@ -71,4 +75,3 @@ export function clearJobDraft() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(STORAGE_KEY);
 }
-

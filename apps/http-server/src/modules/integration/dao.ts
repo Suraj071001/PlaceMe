@@ -1,3 +1,5 @@
+import prisma from "@repo/db";
+
 // Temporary mock data for integrations
 export const getIntegrationsDAO = async () => {
     return [
@@ -34,4 +36,36 @@ export const connectIntegrationDAO = async (provider: string, data: any) => {
 
 export const disconnectIntegrationDAO = async (provider: string) => {
     return { success: true, message: `Disconnected ${provider}` };
+};
+
+export const getGoogleChatSpacesDAO = async () => {
+    const configs = await prisma.googleChatConfig.findMany({
+        orderBy: {
+            createdAt: "desc",
+        },
+        include: {
+            batch: {
+                include: {
+                    branch: {
+                        include: {
+                            department: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    return configs.map((config) => {
+        const batchName = config.batch?.name ?? "Unknown Batch";
+        const branchName = config.batch?.branch?.name ?? "Unknown Branch";
+        const departmentName = config.batch?.branch?.department?.name ?? "Unknown Department";
+
+        return {
+            id: config.batchId,
+            name: `${departmentName} • ${branchName} • ${batchName}`,
+            active: config.isActive,
+            createdAt: config.createdAt,
+        };
+    });
 };

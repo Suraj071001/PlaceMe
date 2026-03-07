@@ -235,11 +235,92 @@ async function main() {
   */
 
   await client.googleChatConfig.upsert({
-    where: { batchId: batch.id },
-    update: {},
+    where: { batchId: "batch-2024" },
+    update: {
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQALBSr0Lc/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=ovyK_GCPMA7Y98As-gsPW37ncijNeVNm5KTmoXNu9ZQ",
+      isActive: true,
+    },
     create: {
-      batchId: batch.id,
-      webhookUrl: "https://chat.googleapis.com/test-webhook",
+      batchId: "batch-2024",
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQALBSr0Lc/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=ovyK_GCPMA7Y98As-gsPW37ncijNeVNm5KTmoXNu9ZQ",
+      isActive: true,
+    },
+  });
+
+  await client.googleChatConfig.upsert({
+    where: { batchId: "batch-2025" },
+    update: {
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQA-EjRVt4/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=l-3lkV8l0kGD5bgmzsJTtOM_fRMpJLwTSajaYyYEYbg",
+      isActive: true,
+    },
+    create: {
+      batchId: "batch-2025",
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQA-EjRVt4/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=l-3lkV8l0kGD5bgmzsJTtOM_fRMpJLwTSajaYyYEYbg",
+      isActive: true,
+    },
+  });
+
+  await client.googleChatConfig.upsert({
+    where: { batchId: "batch-2026" },
+    update: {
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAXnrMqm4/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=sH1XQdJQeWL_MwAdgxFJMGJyM3jK5gG52GO2PPMBJTY",
+      isActive: true,
+    },
+    create: {
+      batchId: "batch-2026",
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAXnrMqm4/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=sH1XQdJQeWL_MwAdgxFJMGJyM3jK5gG52GO2PPMBJTY",
+      isActive: true,
+    },
+  });
+
+  await client.googleChatConfig.upsert({
+    where: { batchId: "batch-ece-2024" },
+    update: {
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAyYX4QOA/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=4Iz4uf5e--q5W6cDln4mEObl4M73NjKumYGxNap6bWk",
+      isActive: true,
+    },
+    create: {
+      batchId: "batch-ece-2024",
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAyYX4QOA/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=4Iz4uf5e--q5W6cDln4mEObl4M73NjKumYGxNap6bWk",
+      isActive: true,
+    },
+  });
+
+  await client.googleChatConfig.upsert({
+    where: { batchId: "batch-ece-2025" },
+    update: {
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAfNbhau8/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=ryji76bz4KYLLm7n1vNor24PXi36329mxzVm7lyq9jg",
+      isActive: true,
+    },
+    create: {
+      batchId: "batch-ece-2025",
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAfNbhau8/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=ryji76bz4KYLLm7n1vNor24PXi36329mxzVm7lyq9jg",
+      isActive: true,
+    },
+  });
+
+  await client.googleChatConfig.upsert({
+    where: { batchId: "batch-mba-2024" },
+    update: {
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAofdmP3Y/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=OMgVXGO2PhRkH_rz-Fi6wSrDJ842gob_-rcrBN_Lcv4",
+      isActive: true,
+    },
+    create: {
+      batchId: "batch-mba-2024",
+      webhookUrl:
+        "https://chat.googleapis.com/v1/spaces/AAQAofdmP3Y/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=OMgVXGO2PhRkH_rz-Fi6wSrDJ842gob_-rcrBN_Lcv4",
+      isActive: true,
     },
   });
 

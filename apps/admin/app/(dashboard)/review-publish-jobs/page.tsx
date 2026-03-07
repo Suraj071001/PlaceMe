@@ -9,6 +9,8 @@ import { useJobDraft } from "../create-jobs/lib/useJobDraft";
 export default function ReviewJobPage() {
   const router = useRouter();
   const { draft, reset, isPublishable } = useJobDraft();
+  const isUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
   const publish = async () => {
     const token = localStorage.getItem("token");
@@ -16,6 +18,9 @@ export default function ReviewJobPage() {
       window.alert("Not logged in");
       return;
     }
+
+    const validBatchIds = (draft.batchIds ?? []).filter((id): id is string => typeof id === "string" && isUuid(id));
+    const validDepartmentId = typeof draft.departmentId === "string" && isUuid(draft.departmentId) ? draft.departmentId : undefined;
 
     const payload: any = {
       companyId: draft.companyId,
@@ -36,8 +41,11 @@ export default function ReviewJobPage() {
       additionalDetails: {
         ...(draft.additionalDetails ?? {}),
         eligibleDepartments: draft.departmentNames ?? [],
+        eligibleBranches: draft.branchNames ?? [],
+        eligibleBatches: draft.batchNames ?? [],
       },
-      departmentId: draft.departmentId,
+      departmentId: validDepartmentId,
+      batchIds: validBatchIds,
       applicationForm: draft.applicationForm,
     };
 

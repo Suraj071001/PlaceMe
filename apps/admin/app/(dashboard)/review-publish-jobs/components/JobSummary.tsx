@@ -21,6 +21,8 @@ export default function JobSummary({ draft }: { draft: JobDraft }) {
     package: draft.ctc ?? "-",
     deadline: draft.closeAt ? new Date(draft.closeAt).toDateString() : "-",
     departments: (draft.departmentNames ?? []).join(", ") || "-",
+    branches: (draft.branchNames ?? []).join(", ") || "-",
+    batches: (draft.batchNames ?? []).join(", ") || "-",
   };
 
   return (
@@ -66,6 +68,16 @@ export default function JobSummary({ draft }: { draft: JobDraft }) {
         <div>
           <p className="text-slate-500">Eligible Departments</p>
           <p className="font-medium">{job.departments}</p>
+        </div>
+
+        <div>
+          <p className="text-slate-500">Reference Branch</p>
+          <p className="font-medium">{job.branches}</p>
+        </div>
+
+        <div>
+          <p className="text-slate-500">Reference Batch</p>
+          <p className="font-medium">{job.batches}</p>
         </div>
       </div>
     </div>

@@ -16,12 +16,14 @@ type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   spaces: Space[];
+  loading?: boolean;
+  error?: string | null;
   onSelectSpace: (space: string) => void;
   integrationName: string;
   itemLabel?: string;
 };
 
-export default function SpacesDialog({ open, onOpenChange, spaces, onSelectSpace, integrationName, itemLabel = "Channel" }: Props) {
+export default function SpacesDialog({ open, onOpenChange, spaces, loading = false, error = null, onSelectSpace, integrationName, itemLabel = "Channel" }: Props) {
   const [query, setQuery] = useState("");
 
   const filteredSpaces = useMemo(() => {
@@ -82,7 +84,11 @@ export default function SpacesDialog({ open, onOpenChange, spaces, onSelectSpace
           </div>
 
           <div className="max-h-[50vh] overflow-y-auto rounded-lg border">
-            {filteredSpaces.length > 0 ? (
+            {loading ? (
+              <div className="px-4 py-8 text-center text-sm text-slate-500">Loading {itemLabel.toLowerCase()}s...</div>
+            ) : error ? (
+              <div className="px-4 py-8 text-center text-sm text-red-500">{error}</div>
+            ) : filteredSpaces.length > 0 ? (
               filteredSpaces.map((space) => (
                 <button
                   key={space.id}

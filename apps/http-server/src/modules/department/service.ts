@@ -12,9 +12,9 @@ export const createDepartmentService = async (payload: CreateDepartmentPayload) 
   return department;
 };
 
-export const getDepartmentsService = async () => {
+export const getDepartmentsService = async (includeHierarchy = false) => {
   logger.info(LOG.DEPARTMENT_FETCH_START);
-  const departments = await getDepartments();
+  const departments = await getDepartments(includeHierarchy);
   logger.info(LOG.DEPARTMENT_FETCH_SUCCESS, { count: departments.length });
   return departments;
 };
