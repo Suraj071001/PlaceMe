@@ -1,6 +1,19 @@
 import type { StudentResumeProfile, ResumeTemplateId } from "./resume-data";
 
-const API_BASE = typeof window !== "undefined" ? "http://localhost:5000/api/v1" : "";
+export type UpdateResumeProfilePayload = {
+  cgpa?: string;
+  skills?: string[];
+  education?: { degree: string; institution: string; year: string }[];
+  experience?: {
+    role: string;
+    company: string;
+    duration: string;
+    points: string[];
+  }[];
+  projects?: { name: string; description: string; tech: string }[];
+};
+
+const API_BASE = typeof window !== "undefined" ? "http://localhost:5501/api/v1" : "";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -22,6 +35,20 @@ export async function getResumeProfile(): Promise<StudentResumeProfile | null> {
   });
   if (!res.ok) return null;
   return res.json();
+}
+
+export async function updateResumeProfile(payload: UpdateResumeProfilePayload): Promise<boolean> {
+  const token = getToken();
+  if (!token) return false;
+  const res = await fetch(`${API_BASE}/student/resume-profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return res.ok;
 }
 
 export async function downloadResumePdf(templateId: ResumeTemplateId): Promise<boolean> {

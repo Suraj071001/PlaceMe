@@ -4,7 +4,6 @@ import logger from "../utils/logger";
 
 export const zodValidator =
   (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
-
     const result = schema.safeParse(req.body);
 
     if (!result.success) {

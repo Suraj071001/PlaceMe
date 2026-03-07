@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Globe, Target } from "lucide-react";
 import type { StudentResumeProfile } from "./resume-data";
 
 const NIT_AGARTALA_LOGO = "https://www.nita.ac.in/images/logo.png";
@@ -18,6 +19,18 @@ function NitaLogo() {
         className="h-14 w-auto object-contain"
       />
     </div>
+  );
+}
+
+function NitaLogoLeft() {
+  return (
+    <Image
+      src={NIT_AGARTALA_LOGO}
+      alt="National Institute of Technology Agartala"
+      width={64}
+      height={64}
+      className="h-16 w-auto object-contain"
+    />
   );
 }
 
@@ -215,6 +228,108 @@ export function ResumeTemplateProfessional({ profile }: { profile: StudentResume
           ))}
         </section>
       </div>
+    </div>
+  );
+}
+
+const nitSectionTitle = "text-sm font-bold text-gray-900 uppercase tracking-wide border-b border-gray-800 pb-1 mb-2";
+
+export function ResumeTemplateNIT({ profile }: { profile: StudentResumeProfile }) {
+  const institution = profile.education[0]?.institution ?? "National Institute of Technology, Agartala";
+  return (
+    <div className="bg-white text-gray-800 text-sm max-w-[210mm] mx-auto p-8 font-serif">
+      {/* Two-column header: logo + details left, contact right */}
+      <div className="flex justify-between gap-6 border-b-2 border-gray-800 pb-4 mb-4">
+        <div className="flex gap-4">
+          <div className="shrink-0">
+            <NitaLogoLeft />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">{profile.fullName}</h1>
+            <p className="text-gray-600 mt-0.5">Bachelor of Technology</p>
+            <p className="text-gray-600">{profile.branch}</p>
+            <p className="text-gray-600">{institution}</p>
+          </div>
+        </div>
+        <div className="text-right text-gray-700 space-y-0.5">
+          <p>{profile.phone}</p>
+          <p>{profile.email}</p>
+        </div>
+      </div>
+
+      {/* EDUCATION - table */}
+      <section className="mb-4">
+        <h2 className={nitSectionTitle}>Education</h2>
+        <table className="w-full border-collapse text-gray-700">
+          <thead>
+            <tr className="border-b border-gray-300">
+              <th className="text-left py-1.5 font-semibold text-xs uppercase">Degree/Certificate</th>
+              <th className="text-left py-1.5 font-semibold text-xs uppercase">Institute/Board</th>
+              <th className="text-left py-1.5 font-semibold text-xs uppercase">CGPA/Percentage</th>
+              <th className="text-left py-1.5 font-semibold text-xs uppercase">Year</th>
+            </tr>
+          </thead>
+          <tbody>
+            {profile.education.map((e, i) => (
+              <tr key={i} className="border-b border-gray-100">
+                <td className="py-1.5">{e.degree}</td>
+                <td className="py-1.5">{e.institution}</td>
+                <td className="py-1.5">{profile.cgpa}</td>
+                <td className="py-1.5">{e.year}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      {/* EXPERIENCE */}
+      <section className="mb-4">
+        <h2 className={nitSectionTitle}>Experience</h2>
+        {profile.experience.map((exp, i) => (
+          <div key={i} className="mb-3">
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-gray-900">{exp.company}</span>
+                <Globe className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+              </div>
+              <span className="text-gray-500 text-xs shrink-0">{exp.duration}</span>
+            </div>
+            <p className="text-gray-700 mt-0.5">{exp.role}</p>
+            <ul className="list-disc list-inside text-gray-600 mt-1 space-y-0.5 ml-0">
+              {exp.points.map((p, j) => (
+                <li key={j}>{p}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      {/* PROJECTS */}
+      <section className="mb-4">
+        <h2 className={nitSectionTitle}>Projects</h2>
+        {profile.projects.map((proj, i) => (
+          <div key={i} className="mb-3">
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-gray-900">{proj.name}</span>
+                <Target className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+              </div>
+            </div>
+            <p className="text-gray-600 text-xs mt-0.5">Tools: {proj.tech}</p>
+            <ul className="list-disc list-inside text-gray-600 mt-1 space-y-0.5 ml-0">
+              <li>{proj.description}</li>
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      {/* SKILLS */}
+      <section>
+        <h2 className={nitSectionTitle}>Skills</h2>
+        <ul className="list-disc list-inside text-gray-700 space-y-0.5">
+          <li><span className="font-semibold">Programming Languages / Technologies:</span> {profile.skills.join(", ")}</li>
+        </ul>
+      </section>
     </div>
   );
 }

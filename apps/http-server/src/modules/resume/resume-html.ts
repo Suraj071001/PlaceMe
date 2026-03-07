@@ -6,6 +6,12 @@ const NIT_AGARTALA_LOGO = "https://www.nita.ac.in/images/logo.png";
 
 const logoImgHtml = `<div style="display:flex;justify-content:center;margin-bottom:12px;"><img src="${NIT_AGARTALA_LOGO}" alt="National Institute of Technology Agartala" style="height:56px;width:auto;object-fit:contain;" /></div>`;
 
+const logoImgLeftHtml = (heightPx = 64) =>
+  `<img src="${NIT_AGARTALA_LOGO}" alt="NIT Agartala" style="height:${heightPx}px;width:auto;object-fit:contain;" />`;
+
+const globeIconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;display:inline-block;"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
+const targetIconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;display:inline-block;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
+
 export type ResumeProfile = {
   fullName: string;
   email: string;
@@ -25,7 +31,7 @@ export type ResumeProfile = {
   projects: { name: string; description: string; tech: string }[];
 };
 
-export type ResumeTemplateId = "modern" | "classic" | "minimal" | "professional";
+export type ResumeTemplateId = "modern" | "classic" | "minimal" | "professional" | "nit";
 
 function esc(s: string): string {
   return s
@@ -306,11 +312,103 @@ function professionalHtml(p: ResumeProfile): string {
 </html>`;
 }
 
+function nitHtml(p: ResumeProfile): string {
+  const institution = p.education[0]?.institution ?? "National Institute of Technology, Agartala";
+  const eduRows = p.education
+    .map(
+      (e) =>
+        `<tr class="nit-row"><td>${esc(e.degree)}</td><td>${esc(e.institution)}</td><td>${esc(p.cgpa)}</td><td>${esc(e.year)}</td></tr>`
+    )
+    .join("");
+  const expHtml = p.experience
+    .map(
+      (exp) =>
+        `<div class="nit-exp"><div class="nit-exp-row"><div class="nit-exp-head"><span class="nit-company">${esc(exp.company)}</span> ${globeIconSvg}</div><span class="nit-dur">${esc(exp.duration)}</span></div><p class="nit-role">${esc(exp.role)}</p><ul class="nit-ul">${exp.points.map((pt) => `<li>${esc(pt)}</li>`).join("")}</ul></div>`
+    )
+    .join("");
+  const projHtml = p.projects
+    .map(
+      (proj) =>
+        `<div class="nit-proj"><div class="nit-proj-row"><div class="nit-proj-head"><span class="nit-company">${esc(proj.name)}</span> ${targetIconSvg}</div></div><p class="nit-tools">Tools: ${esc(proj.tech)}</p><ul class="nit-ul"><li>${esc(proj.description)}</li></ul></div>`
+    )
+    .join("");
+  const skillsLine = esc(p.skills.join(", "));
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Georgia, 'Times New Roman', serif; font-size: 14px; line-height: 1.5; color: #1f2937; margin: 0; padding: 32px; max-width: 210mm; margin: 0 auto; }
+    .nit-header { display: flex; justify-content: space-between; gap: 24px; border-bottom: 2px solid #1f2937; padding-bottom: 16px; margin-bottom: 16px; }
+    .nit-header-left { display: flex; gap: 16px; }
+    .nit-header h1 { font-size: 20px; font-weight: 700; margin: 0; }
+    .nit-header p { margin: 2px 0 0; color: #4b5563; }
+    .nit-header-right { text-align: right; color: #374151; }
+    .nit-header-right p { margin: 2px 0; }
+    .nit-section { margin-bottom: 16px; }
+    .nit-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #111827; border-bottom: 1px solid #1f2937; padding-bottom: 4px; margin-bottom: 8px; }
+    table.nit-table { width: 100%; border-collapse: collapse; }
+    table.nit-table th { text-align: left; padding: 6px 8px; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #d1d5db; }
+    table.nit-table td { padding: 6px 8px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+    .nit-exp, .nit-proj { margin-bottom: 12px; }
+    .nit-exp-row { display: flex; justify-content: space-between; align-items: center; }
+    .nit-exp-head, .nit-proj-head { display: flex; align-items: center; gap: 6px; }
+    .nit-company { font-weight: 700; color: #111827; }
+    .nit-dur { font-size: 12px; color: #6b7280; }
+    .nit-role { margin: 2px 0 0; color: #374151; }
+    .nit-tools { margin: 2px 0 0; font-size: 12px; color: #4b5563; }
+    .nit-ul { margin: 4px 0 0; padding-left: 1.25rem; }
+    .nit-ul li { margin: 2px 0; color: #4b5563; }
+  </style>
+</head>
+<body>
+  <div class="nit-header">
+    <div class="nit-header-left">
+      <div>${logoImgLeftHtml(64)}</div>
+      <div>
+        <h1>${esc(p.fullName)}</h1>
+        <p>Bachelor of Technology</p>
+        <p>${esc(p.branch)}</p>
+        <p>${esc(institution)}</p>
+      </div>
+    </div>
+    <div class="nit-header-right">
+      <p>${esc(p.phone)}</p>
+      <p>${esc(p.email)}</p>
+    </div>
+  </div>
+  <div class="nit-section">
+    <h2 class="nit-section-title">Education</h2>
+    <table class="nit-table">
+      <thead><tr><th>Degree/Certificate</th><th>Institute/Board</th><th>CGPA/Percentage</th><th>Year</th></tr></thead>
+      <tbody>${eduRows}</tbody>
+    </table>
+  </div>
+  <div class="nit-section">
+    <h2 class="nit-section-title">Experience</h2>
+    ${expHtml}
+  </div>
+  <div class="nit-section">
+    <h2 class="nit-section-title">Projects</h2>
+    ${projHtml}
+  </div>
+  <div class="nit-section">
+    <h2 class="nit-section-title">Skills</h2>
+    <ul class="nit-ul"><li><strong>Programming Languages / Technologies:</strong> ${skillsLine}</li></ul>
+  </div>
+</body>
+</html>`;
+}
+
 const RENDERERS: Record<ResumeTemplateId, (p: ResumeProfile) => string> = {
   modern: modernHtml,
   classic: classicHtml,
   minimal: minimalHtml,
   professional: professionalHtml,
+  nit: nitHtml,
 };
 
 export function getResumeHtml(profile: ResumeProfile, templateId: ResumeTemplateId): string {

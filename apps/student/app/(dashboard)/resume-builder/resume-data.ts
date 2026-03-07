@@ -67,11 +67,12 @@ export const DUMMY_RESUME_PROFILE: StudentResumeProfile = {
   ],
 };
 
-export type ResumeTemplateId = "modern" | "classic" | "minimal" | "professional";
+export type ResumeTemplateId = "modern" | "classic" | "minimal" | "professional" | "nit";
 
 export const RESUME_TEMPLATES: { id: ResumeTemplateId; name: string; description: string }[] = [
   { id: "modern", name: "Modern", description: "Clean layout with clear sections" },
   { id: "classic", name: "Classic", description: "Traditional single-column format" },
   { id: "minimal", name: "Minimal", description: "Lots of whitespace, simple typography" },
   { id: "professional", name: "Professional", description: "Bold header, subtle accents" },
+  { id: "nit", name: "NIT Style", description: "Institutional format: two-column header, table education" },
 ];

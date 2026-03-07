@@ -5,7 +5,6 @@ import { FileEdit, ArrowLeft, Download, LayoutTemplate, Loader2 } from "lucide-r
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import {
-  DUMMY_RESUME_PROFILE,
   RESUME_TEMPLATES,
   type ResumeTemplateId,
   type StudentResumeProfile,
@@ -16,6 +15,7 @@ import {
   ResumeTemplateClassic,
   ResumeTemplateMinimal,
   ResumeTemplateProfessional,
+  ResumeTemplateNIT,
 } from "./resume-templates";
 
 const TEMPLATE_COMPONENTS: Record<
@@ -26,11 +26,12 @@ const TEMPLATE_COMPONENTS: Record<
   classic: ResumeTemplateClassic,
   minimal: ResumeTemplateMinimal,
   professional: ResumeTemplateProfessional,
+  nit: ResumeTemplateNIT,
 };
 
 export function GenerateResumeTab() {
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplateId | null>(null);
-  const [profile, setProfile] = useState<StudentResumeProfile>(DUMMY_RESUME_PROFILE);
+  const [profile, setProfile] = useState<StudentResumeProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -63,14 +64,18 @@ export function GenerateResumeTab() {
             Profile used for resume
           </CardTitle>
           <CardDescription>
-            {profileLoading ? "Loading profile…" : "Resume is generated from your profile data."}
+            {profileLoading ? "Loading profile..." : profile ? "Resume is generated from your profile data." : "Student profile not found. Complete your profile first."}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           {profileLoading ? (
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Loading…
+              Loading...
+            </div>
+          ) : !profile ? (
+            <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+              Resume profile could not be loaded from backend. Please login as a student and complete your profile.
             </div>
           ) : (
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
@@ -96,8 +101,11 @@ export function GenerateResumeTab() {
             {RESUME_TEMPLATES.map((t) => (
               <Card
                 key={t.id}
-                className="cursor-pointer transition-all hover:shadow-md hover:border-indigo-200 border-2 overflow-hidden"
-                onClick={() => setSelectedTemplate(t.id)}
+                className={`transition-all border-2 overflow-hidden ${profile ? "cursor-pointer hover:shadow-md hover:border-indigo-200" : "opacity-70 cursor-not-allowed"}`}
+                onClick={() => {
+                  if (!profile) return;
+                  setSelectedTemplate(t.id);
+                }}
               >
                 <div className="h-32 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                   <LayoutTemplate className="w-12 h-12 text-slate-400" />
@@ -110,8 +118,10 @@ export function GenerateResumeTab() {
                   <Button
                     size="sm"
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                    disabled={!profile}
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!profile) return;
                       setSelectedTemplate(t.id);
                     }}
                   >
@@ -145,12 +155,12 @@ export function GenerateResumeTab() {
           <Card className="overflow-hidden">
             <CardHeader className="pb-2 border-b bg-gray-50/50">
               <CardTitle className="text-base">Preview — {RESUME_TEMPLATES.find((t) => t.id === selectedTemplate)?.name}</CardTitle>
-              <CardDescription>This is how your resume will look. PDF download will be available after backend is connected.</CardDescription>
+              <CardDescription>This is how your resume will look using backend profile data.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <div className="max-h-[70vh] overflow-auto bg-gray-100 p-6 md:p-8">
                 <div className="shadow-xl rounded-sm overflow-hidden bg-white">
-                  {TEMPLATE_COMPONENTS[selectedTemplate]({ profile })}
+                  {profile && TEMPLATE_COMPONENTS[selectedTemplate]({ profile })}
                 </div>
               </div>
             </CardContent>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ResumeTemplateIdSchema = z.enum(["modern", "classic", "minimal", "professional"]);
+export const ResumeTemplateIdSchema = z.enum(["modern", "classic", "minimal", "professional", "nit"]);
 export type ResumeTemplateId = z.infer<typeof ResumeTemplateIdSchema>;
 
 export const ResumeEducationEntrySchema = z.object({

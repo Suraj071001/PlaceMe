@@ -39,7 +39,7 @@ export default function ProfilePage() {
                 const token = localStorage.getItem("token");
                 if (!token) return;
 
-                const res = await fetch("http://localhost:5000/api/v1/student/profile", {
+                const res = await fetch("http://localhost:5501/api/v1/student/profile", {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
@@ -76,7 +76,7 @@ export default function ProfilePage() {
             const token = localStorage.getItem("token");
             if (!token) return;
 
-            const res = await fetch("http://localhost:5000/api/v1/student/profile", {
+            const res = await fetch("http://localhost:5501/api/v1/student/profile", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
