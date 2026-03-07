@@ -27,15 +27,17 @@ export default function ProfilePage() {
         address: "",
         branch: "",
         batch: "",
+        skills: [] as string[],
     });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const token = localStorage.getItem("token");
-                if (!token) return; // Handle no token scenario
+                if (!token) return;
 
                 const res = await fetch("http://localhost:5000/api/v1/student/profile", {
                     headers: {
@@ -55,6 +57,7 @@ export default function ProfilePage() {
                         address: data.address || "",
                         branch: data.branch?.name || data.branchId || "",
                         batch: data.batch?.name || data.batchId || "",
+                        skills: data.skills || [],
                     });
                 }
             } catch (error) {
@@ -87,6 +90,7 @@ export default function ProfilePage() {
                 alert(`Error: ${errorData.error || "Failed to save profile"}`);
             } else {
                 alert("Profile saved successfully!");
+                setIsEditing(false);
             }
         } catch (error) {
             console.error("Save error", error);
@@ -102,32 +106,46 @@ export default function ProfilePage() {
 
     return (
         <div className="mx-auto max-w-6xl space-y-6 pb-10">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">Profile Settings</h1>
-                <p className="text-muted-foreground">Manage your account information and preferences</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Profile Settings</h1>
+                    <p className="text-muted-foreground">Manage your account information and preferences</p>
+                </div>
+                {!isEditing && (
+                    <Button onClick={() => setIsEditing(true)} className="bg-indigo-600 text-white hover:bg-indigo-700">
+                        Edit Profile
+                    </Button>
+                )}
             </div>
 
             <ProfilePhotoSection />
             <PersonalInfoSection
                 data={personalInfo}
+                isEditing={isEditing}
                 onChange={(key, value) => setPersonalInfo(prev => ({ ...prev, [key]: value }))}
             />
-            <SkillsSection initialSkills={initialSkills} />
+            <SkillsSection
+                skills={personalInfo.skills}
+                isEditing={isEditing}
+                onChange={(skills) => setPersonalInfo(prev => ({ ...prev, skills }))}
+            />
             <ChangePasswordSection />
             <NotificationPreferencesSection preferences={notificationPreferences} />
 
-            <div className="flex justify-end gap-4">
-                <Button variant="outline" className="min-w-[140px]">
-                    Cancel
-                </Button>
-                <Button
-                    className="min-w-[140px] bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                >
-                    {isSaving ? "Saving..." : "Save Changes"}
-                </Button>
-            </div>
+            {isEditing && (
+                <div className="flex justify-end gap-4">
+                    <Button variant="outline" className="min-w-[140px]" onClick={() => setIsEditing(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        className="min-w-[140px] bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? "Saving..." : "Save Changes"}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

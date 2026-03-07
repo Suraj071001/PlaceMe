@@ -24,5 +24,6 @@ export const ROUTES = {
     },
     STUDENT: {
         PROFILE: "/student/profile",
+        BY_ID: "/student/:id",
     }
 };

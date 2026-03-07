@@ -6,26 +6,30 @@ import { Input } from "@repo/ui/components/input";
 import { Button } from "@repo/ui/components/button";
 
 type SkillsSectionProps = {
-    initialSkills: string[];
+    skills: string[];
+    isEditing?: boolean;
+    onChange: (skills: string[]) => void;
 };
 
-export function SkillsSection({ initialSkills }: SkillsSectionProps) {
-    const [skills, setSkills] = useState<string[]>(initialSkills);
+export function SkillsSection({ skills, isEditing = true, onChange }: SkillsSectionProps) {
     const [skillInput, setSkillInput] = useState("");
 
     const addSkill = () => {
+        if (!isEditing) return;
         const trimmed = skillInput.trim();
         if (trimmed && !skills.includes(trimmed)) {
-            setSkills([...skills, trimmed]);
+            onChange([...skills, trimmed]);
             setSkillInput("");
         }
     };
 
-    const removeSkill = (skill: string) => {
-        setSkills(skills.filter((s) => s !== skill));
+    const removeSkill = (skillToRemove: string) => {
+        if (!isEditing) return;
+        onChange(skills.filter((s) => s !== skillToRemove));
     };
 
     const handleSkillKeyDown = (e: React.KeyboardEvent) => {
+        if (!isEditing) return;
         if (e.key === "Enter") {
             e.preventDefault();
             addSkill();
@@ -45,8 +49,9 @@ export function SkillsSection({ initialSkills }: SkillsSectionProps) {
                             value={skillInput}
                             onChange={(e) => setSkillInput(e.target.value)}
                             onKeyDown={handleSkillKeyDown}
+                            disabled={!isEditing}
                         />
-                        <Button variant="outline" size="icon" onClick={addSkill} className="shrink-0">
+                        <Button variant="outline" size="icon" onClick={addSkill} className="shrink-0" disabled={!isEditing}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -60,12 +65,14 @@ export function SkillsSection({ initialSkills }: SkillsSectionProps) {
                                 className="inline-flex items-center gap-1 rounded-full border bg-muted/50 px-3 py-1 text-sm"
                             >
                                 {skill}
-                                <button
-                                    onClick={() => removeSkill(skill)}
-                                    className="ml-0.5 text-muted-foreground transition-colors hover:text-foreground"
-                                >
-                                    ×
-                                </button>
+                                {isEditing && (
+                                    <button
+                                        onClick={() => removeSkill(skill)}
+                                        className="ml-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                                    >
+                                        ×
+                                    </button>
+                                )}
                             </span>
                         ))}
                     </div>

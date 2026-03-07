@@ -29,11 +29,11 @@ export const permissionMiddleware = (permission: string) => {
                 next();
             } else {
                 // Forbidden: User is authenticated but doesn't have the right permission
-                logger.warn(LOG.AUTH_INVALID_TOKEN); // You might want a specific LOG.AUTH_FORBIDDEN
+                logger.warn("AUTH_FORBIDDEN", { required: permission, actual: permissions });
                 res.status(403).json({ message: "Forbidden: You don't have the required permission" });
             }
-        } catch (error) {
-            logger.warn(LOG.AUTH_INVALID_TOKEN);
+        } catch (error: any) {
+            logger.warn(LOG.AUTH_INVALID_TOKEN, { error: error.message });
             res.status(401).json({ message: "Unauthorized: Invalid or expired token" });
         }
     };
