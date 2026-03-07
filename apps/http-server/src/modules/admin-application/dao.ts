@@ -5,10 +5,17 @@ export const getJobApplicationsByStageDAO = async (jobId: string) => {
     return await db.application.findMany({
         where: { jobId, deletedAt: null },
         include: {
+            job: {
+                include: {
+                    company: { select: { name: true } },
+                    department: { select: { name: true } },
+                },
+            },
             student: {
                 include: {
                     user: { select: { firstName: true, lastName: true, email: true } },
-                    branch: { select: { name: true } }
+                    branch: { select: { name: true } },
+                    batch: { select: { name: true } },
                 }
             },
             stage: true,
@@ -27,13 +34,58 @@ export const updateApplicationStageDAO = async (id: string, stageId: string, sta
         where: { id },
         data: dataToUpdate,
         include: {
+            job: {
+                include: {
+                    company: { select: { name: true } },
+                    department: { select: { name: true } },
+                },
+            },
             student: {
                 include: {
                     user: { select: { firstName: true, lastName: true, email: true } },
-                    branch: { select: { name: true } }
+                    branch: { select: { name: true } },
+                    batch: { select: { name: true } },
                 }
             },
             stage: true,
         }
+    });
+};
+
+export const getApplicationFormResponseDAO = async (applicationId: string) => {
+    return db.application.findUnique({
+        where: { id: applicationId },
+        include: {
+            job: {
+                include: {
+                    company: { select: { name: true } },
+                    applicationForms: {
+                        include: {
+                            sections: {
+                                orderBy: { order: "asc" },
+                                include: {
+                                    questions: {
+                                        orderBy: { order: "asc" },
+                                        include: { options: true },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            student: {
+                include: {
+                    user: { select: { firstName: true, lastName: true, email: true } },
+                    branch: { select: { name: true } },
+                    batch: { select: { name: true } },
+                },
+            },
+            formResponse: {
+                include: {
+                    answers: true,
+                },
+            },
+        },
     });
 };

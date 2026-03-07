@@ -65,11 +65,20 @@ async function main() {
   const permissions = [
     { name: "READ_JOBS", description: "View job listings" },
     { name: "READ_COMPANY", description: "View company details" },
+    { name: "DELETE_COMPANY", description: "Delete company" },
     { name: "APPLY_JOB", description: "Apply to jobs" },
     { name: "READ_APPLICATION", description: "View application" },
     { name: "UPDATE_PROFILE", description: "Update profile" },
     { name: "CREATE_COMPANY", description: "Create company" },
     { name: "EDIT_COMPANY", description: "Edit company" },
+    { name: "CREATE_DEPARTMENT", description: "Create department" },
+    { name: "READ_DEPARTMENT", description: "View department details" },
+    { name: "UPDATE_DEPARTMENT", description: "Update department" },
+    { name: "DELETE_DEPARTMENT", description: "Delete department" },
+    { name: "CREATE_HR_CONTACT", description: "Create HR contact" },
+    { name: "READ_HR_CONTACT", description: "View HR contact details" },
+    { name: "UPDATE_HR_CONTACT", description: "Update HR contact" },
+    { name: "DELETE_HR_CONTACT", description: "Delete HR contact" },
     { name: "CREATE_JOB", description: "Create job" },
     { name: "EDIT_JOB", description: "Edit job" },
     { name: "DELETE_JOB", description: "Delete job" },
@@ -82,6 +91,13 @@ async function main() {
     { name: "MANAGE_USERS", description: "Manage users" },
     { name: "READ_REPORTS", description: "View reports" },
     { name: "READ_PROFILE", description: "View profile" },
+    { name: "CREATE_ROLE", description: "Create role" },
+    { name: "READ_ROLE", description: "View roles" },
+    { name: "UPDATE_ROLE", description: "Update role" },
+    { name: "DELETE_ROLE", description: "Delete role" },
+    { name: "READ_PERMISSION", description: "View permissions" },
+    { name: "MANAGE_ROLE_PERMISSION", description: "Assign/revoke role permissions" },
+    { name: "READ_ROLE_PERMISSION", description: "View role permission mappings" },
   ];
 
   const permissionRecords: any[] = [];
@@ -162,6 +178,8 @@ async function main() {
 
     { roleId: recruiterRole.id, permissionId: getPermission("CREATE_JOB").id },
     { roleId: recruiterRole.id, permissionId: getPermission("EDIT_JOB").id },
+    { roleId: recruiterRole.id, permissionId: getPermission("READ_JOBS").id },
+    { roleId: recruiterRole.id, permissionId: getPermission("READ_COMPANY").id },
     {
       roleId: recruiterRole.id,
       permissionId: getPermission("READ_APPLICATION_ADMIN").id,

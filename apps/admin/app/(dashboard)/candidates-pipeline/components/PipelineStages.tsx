@@ -20,9 +20,10 @@ type Props = {
   students: Student[];
   selected: string[];
   toggleSelect: (id: string) => void;
+  onViewForm?: (id: string) => void;
 };
 
-export default function PipelineStage({ stage, students, selected, toggleSelect }: Props) {
+export default function PipelineStage({ stage, students, selected, toggleSelect, onViewForm }: Props) {
   return (
     <div className="min-h-0 w-full min-w-0 rounded-xl border border-gray-100 bg-white/70 p-1">
       {/* Header */}
@@ -41,7 +42,13 @@ export default function PipelineStage({ stage, students, selected, toggleSelect 
         {students.length === 0 && <p className="text-xs text-gray-400 text-center pt-6">No students</p>}
 
         {students.map((student) => (
-          <StudentCard key={student.id} student={student} selected={selected.includes(student.id)} toggleSelect={toggleSelect} />
+          <StudentCard
+            key={student.id}
+            student={student}
+            selected={selected.includes(student.id)}
+            toggleSelect={toggleSelect}
+            onViewForm={onViewForm}
+          />
         ))}
       </div>
     </div>

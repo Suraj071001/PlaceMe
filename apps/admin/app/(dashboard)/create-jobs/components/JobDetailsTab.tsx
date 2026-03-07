@@ -7,7 +7,6 @@ import { useJobDraft } from "../lib/useJobDraft";
 const API_BASE_CANDIDATES = [
   process.env.NEXT_PUBLIC_API_V1_URL?.replace(/\/$/, ""),
   "http://localhost:5501/api/v1",
-  "/api/v1",
 ].filter(Boolean) as string[];
 
 async function fetchFromApi(path: string, token: string | null) {
@@ -21,6 +20,16 @@ async function fetchFromApi(path: string, token: string | null) {
         lastError = new Error(`${res.status} ${res.statusText}`);
         continue;
       }
+
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.toLowerCase().includes("application/json")) {
+        const text = await res.text();
+        lastError = new Error(
+          `Non-JSON response from ${base}${path}: ${text.slice(0, 80)}`,
+        );
+        continue;
+      }
+
       return await res.json();
     } catch (error) {
       lastError = error;

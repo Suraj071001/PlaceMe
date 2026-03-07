@@ -9,29 +9,6 @@ export default function PipelinePage() {
         <p className="text-sm text-gray-500">Track students across placement stages</p>
       </div>
 
-      {/* Drive Info */}
-      <div className="grid w-full grid-cols-2 gap-3 rounded-xl border bg-white p-4 text-center text-sm sm:grid-cols-4 sm:gap-4">
-        <div className="min-w-0">
-          <p className="text-gray-500">Company</p>
-          <p className="font-medium truncate">Amazon</p>
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-gray-500">Role</p>
-          <p className="font-medium truncate">SDE Intern</p>
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-gray-500">Package</p>
-          <p className="font-medium">₹18 LPA</p>
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-gray-500">Applicants</p>
-          <p className="font-medium">120</p>
-        </div>
-      </div>
-
       <div className="flex-1 min-h-0 min-w-0 overflow-hidden">
         <PipelineBoard />
       </div>

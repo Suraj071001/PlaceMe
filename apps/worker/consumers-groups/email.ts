@@ -102,6 +102,11 @@ async function processMessage(message: {
     lines.push(job.description);
   }
 
+  const studentAppBaseUrl = process.env.STUDENT_APP_BASE_URL ?? "http://localhost:3000";
+  const applyLink = `${studentAppBaseUrl.replace(/\/$/, "")}/apply/${job.id}`;
+  lines.push("");
+  lines.push(`Apply here: ${applyLink}`);
+
   const text = lines.join("\n");
 
   const batches = chunkArray(recipients, 50);

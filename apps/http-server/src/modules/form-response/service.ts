@@ -2,8 +2,21 @@ import { createFormResponse, getFormResponseByApplication } from "./dao";
 import { getApplicationById, linkApplicationToPipeline } from "../student-application/dao";
 import type { SubmitFormResponsePayload } from "@repo/zod";
 import logger from "../../utils/logger";
+import client from "@repo/db";
 
-export const submitFormResponseService = async (studentId: string, payload: SubmitFormResponsePayload) => {
+const getStudentIdByUserId = async (userId: string) => {
+    const student = await client.student.findUnique({
+        where: { userId },
+        select: { id: true },
+    });
+    if (!student) {
+        throw new Error("Student profile not found for current user");
+    }
+    return student.id;
+};
+
+export const submitFormResponseService = async (userId: string, payload: SubmitFormResponsePayload) => {
+    const studentId = await getStudentIdByUserId(userId);
     logger.info("Submit form response started", { applicationId: payload.applicationId, studentId });
 
     // Validate application ownership
@@ -31,7 +44,8 @@ export const submitFormResponseService = async (studentId: string, payload: Subm
     return result;
 };
 
-export const getFormResponseService = async (studentId: string, applicationId: string) => {
+export const getFormResponseService = async (userId: string, applicationId: string) => {
+    const studentId = await getStudentIdByUserId(userId);
     // Validate ownership
     const application = await getApplicationById(applicationId);
     if (!application || application.studentId !== studentId) {

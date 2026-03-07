@@ -2,6 +2,7 @@ import axios from "axios";
 import redisClient from "@repo/redis-config/redisClient";
 import { STREAM_ID as JOB_STREAM_ID } from "@repo/redis-config/STREAM";
 import client from "@repo/db";
+import { formatJobMessage } from "../constant/job-builder";
 
 const GOOGLE_CHAT_CONSUMERGROUP_ID = "google-chat";
 
@@ -74,19 +75,7 @@ async function processMessage(message: any) {
     return;
   }
 
-  const textParts: string[] = [];
-  textParts.push(`New job posted: ${job.title}`);
-  textParts.push(`Role: ${job.role}`);
-  textParts.push(`Company: ${job.company.name}`);
-  if (job.department?.name) {
-    textParts.push(`Department: ${job.department.name}`);
-  }
-  if (job.description) {
-    textParts.push("");
-    textParts.push(job.description);
-  }
-
-  const text = textParts.join("\n");
+  const text = formatJobMessage(job);
 
   for (const batch of job.batches) {
 
