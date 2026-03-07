@@ -17,6 +17,7 @@ export const ROUTES = {
   },
   JOB: {
     BASE: "/job",
+    ELIGIBILITY: "/job/eligibility",
     BY_ID: "/job/:id",
   },
   DEPARTMENT: {

@@ -1,7 +1,7 @@
 "use client";
 
-import { type EventItem } from "./data";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { upcomingEvents as staticUpcomingEvents, type EventItem } from "./data";
 
 export function UpcomingEvents() {
   // We'll build a simple static calendar for March (31 days)
@@ -9,25 +9,7 @@ export function UpcomingEvents() {
   const startDayOfWeek = 0; // Assuming March 1st is a Sunday for this demo layout
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [upcomingEvents, setUpcomingEvents] = useState<EventItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/api/v1/analytics/upcoming-events");
-        const json = await res.json();
-        if (json.success && json.data) {
-          setUpcomingEvents(json.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch events", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
-  }, []);
+  const upcomingEvents: EventItem[] = staticUpcomingEvents;
 
   const upcomingDates = upcomingEvents.map((e) => parseInt(e.date, 10));
 
