@@ -9,6 +9,7 @@ import { applicationFormRoutes } from "../modules/application-form/handler";
 
 import { departmentRoutes } from "../modules/department/handler";
 import { studentRoutes } from "../modules/student/handler";
+import { resumeRoutes } from "../modules/resume/handler";
 
 const initV1Routes = (): express.Router => {
     const router = express.Router();
@@ -20,6 +21,7 @@ const initV1Routes = (): express.Router => {
     departmentRoutes(routerAsApp);
     applicationFormRoutes(routerAsApp);
     studentRoutes(routerAsApp);
+    resumeRoutes(routerAsApp);
     return router;
 }
 
