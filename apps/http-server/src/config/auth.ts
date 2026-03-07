@@ -1,5 +1,5 @@
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = "Nitesh130902";
 
-if(!JWT_SECRET) throw new Error("Provide Jwt secret");
+if (!JWT_SECRET) throw new Error("Provide Jwt secret");
 
-export  default JWT_SECRET;
+export default JWT_SECRET;

@@ -59,9 +59,6 @@ export const ROUTES = {
         BY_ROLE: "/role-permission/role/:roleId",
         BY_PERMISSION: "/role-permission/permission/:permissionId",
     },
-<<<<<<< Updated upstream
-};
-=======
     ADMIN_USER: {
         BASE: "/admins",
         BY_ID: "/admins/:id",
@@ -86,4 +83,3 @@ export const ROUTES = {
         GENERATE: "/reports/generate",
     },
 };
->>>>>>> Stashed changes
