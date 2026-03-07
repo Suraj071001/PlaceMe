@@ -76,9 +76,9 @@ export default function ApplicationFormPage() {
   const activeForm = forms.find((f) => f.id === activeFormId);
 
   return (
-    <div className="flex bg-[#f8fafc] h-[calc(100vh-64px)]">
+    <div className="flex h-auto min-h-[calc(100vh-64px)] flex-col bg-[#f8fafc] lg:h-[calc(100vh-64px)] lg:flex-row">
       {/* LEFT SIDEBAR */}
-      <div className="w-[340px] bg-white border-r flex flex-col h-full border-r-slate-200 shadow-[2px_0_8px_-4px_rgba(0,0,0,0.05)] z-10">
+      <div className="z-10 flex w-full flex-col border-b border-r-slate-200 bg-white shadow-[2px_0_8px_-4px_rgba(0,0,0,0.05)] lg:h-full lg:w-[340px] lg:border-b-0 lg:border-r">
         <div className="p-4 border-b border-b-slate-100 shrink-0">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold text-slate-800 text-[15px]">Application Forms</h2>
@@ -130,10 +130,10 @@ export default function ApplicationFormPage() {
 
       {/* RIGHT BUILDER EDITOR */}
       <div className="flex-1 overflow-y-auto bg-[#f8fafc]">
-        <div className="max-w-[840px] mx-auto p-10">
+        <div className="mx-auto max-w-[840px] p-4 sm:p-6 lg:p-10">
           {/* EDITOR HEADER */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-3">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => router.back()}
                 style={{
@@ -160,7 +160,7 @@ export default function ApplicationFormPage() {
                     if (e.key === "Enter") saveTitle();
                     if (e.key === "Escape") setIsEditingTitle(false);
                   }}
-                  className="text-xl font-semibold text-slate-900 border-b border-blue-500 focus:outline-none bg-transparent px-1 min-w-[250px]"
+                  className="min-w-0 w-full border-b border-blue-500 bg-transparent px-1 text-lg font-semibold text-slate-900 focus:outline-none sm:min-w-[250px] sm:text-xl"
                 />
               ) : (
                 <>
@@ -177,7 +177,7 @@ export default function ApplicationFormPage() {
               <span className="bg-emerald-100 text-emerald-700 text-[11px] font-medium px-2 py-0.5 rounded ml-1">Default</span>
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
               <button className="bg-white border border-slate-200 px-4 py-2 rounded-md text-[13px] font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm whitespace-nowrap  cursor-pointer">
                 Save Draft
               </button>

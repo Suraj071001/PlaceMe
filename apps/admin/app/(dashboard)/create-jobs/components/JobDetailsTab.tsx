@@ -33,12 +33,12 @@ export function JobDetailsTab() {
   const [deadline, setDeadline] = useState("");
   const [companyTier, setCompanyTier] = useState("Basic");
 
-  const row: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 20 };
+  const row: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 20 };
 
   const allDepartments = ["Computer Science", "Electronics", "Mechanical", "Civil", "Electrical", "Information Technology", "MBA", "MCA"];
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: "32px 36px" }}>
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: "20px clamp(14px, 3vw, 36px)" }}>
       <SectionTitle>Basic Information</SectionTitle>
 
       {/* Company Name */}

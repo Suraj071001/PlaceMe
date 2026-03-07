@@ -75,16 +75,7 @@ export default function Page() {
   };
 
   return (
-    <div
-      style={{
-        fontFamily: "'Inter', 'Segoe UI', sans-serif",
-        background: "#f5f7fb",
-        minHeight: "100vh",
-        padding: "32px",
-        maxWidth: "1400px",
-        margin: "0 auto",
-      }}
-    >
+    <div className="mx-auto min-h-full w-full max-w-[1400px] bg-[#f5f7fb] px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
       {/* Stats Cards */}
       <StatsCards appliedFilters={appliedFilters} />
 
@@ -111,13 +102,13 @@ export default function Page() {
           {activeView === "graphical" ? <DepartmentChart appliedFilters={appliedFilters} /> : <DepartmentTable appliedFilters={appliedFilters} />}
 
           {/* Performance Summary + Recent Activity */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 17, padding: "0 24px", marginBottom: 20, alignItems: "stretch" }}>
+          <div className="mb-5 grid grid-cols-1 items-stretch gap-4 px-0 md:grid-cols-2 md:px-4">
             <PerformanceSummary appliedFilters={appliedFilters} />
             <RecentActivity appliedFilters={appliedFilters} />
           </div>
 
           {/* Upcoming Events */}
-          <div style={{ padding: "0 24px", marginBottom: 24 }}>
+          <div className="mb-6 px-0 md:px-4">
             <UpcomingEvents />
           </div>
         </>

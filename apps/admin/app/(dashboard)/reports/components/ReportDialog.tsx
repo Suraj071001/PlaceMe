@@ -40,7 +40,7 @@ export default function GenerateReportDialog({ open, setOpen }: any) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[500px]">
+      <DialogContent className="max-h-[90vh] w-[calc(100vw-1rem)] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Generate Report</DialogTitle>
         </DialogHeader>
@@ -105,7 +105,7 @@ export default function GenerateReportDialog({ open, setOpen }: any) {
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <button onClick={() => setOpen(false)} className="border px-4 py-2 rounded-md text-sm hover:bg-slate-50">
               Cancel
             </button>

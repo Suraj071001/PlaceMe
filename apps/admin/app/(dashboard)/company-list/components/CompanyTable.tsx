@@ -105,7 +105,7 @@ export function CompanyTable({ searchQuery, statusFilter, tierFilter }: CompanyT
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
       {/* Column Selector */}
-      <div className="flex justify-end p-3 border-b border-slate-100 relative">
+      <div className="relative flex justify-end border-b border-slate-100 p-3">
         <button onClick={() => setShowMenu(!showMenu)} className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
           <Settings2 className="w-4 h-4" />
           Columns
@@ -123,57 +123,59 @@ export function CompanyTable({ searchQuery, statusFilter, tierFilter }: CompanyT
         )}
       </div>
 
-      <table className="w-full text-sm">
-        {/* Header */}
-        <thead className="bg-slate-50 border-b border-slate-200">
-          <tr className="text-left text-slate-600">
-            <th className="px-5 py-3 font-medium">Company</th>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[960px] text-sm">
+          {/* Header */}
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr className="text-left text-slate-600">
+              <th className="px-5 py-3 font-medium">Company</th>
 
-            {visibleColumns.includes("industry") && <th className="px-5 py-3">Industry</th>}
-            {visibleColumns.includes("tier") && <th className="px-5 py-3">Tier</th>}
-            {visibleColumns.includes("handler") && <th className="px-5 py-3">Handler</th>}
-            {visibleColumns.includes("facultyCoordinator") && <th className="px-5 py-3">Faculty Coordinator</th>}
-            {visibleColumns.includes("branch") && <th className="px-5 py-3">Branch</th>}
-            {visibleColumns.includes("lastVisit") && <th className="px-5 py-3">Last Visit</th>}
-            {visibleColumns.includes("lastYearCTC") && <th className="px-5 py-3">Last Year CTC</th>}
-            {visibleColumns.includes("lastYearPlaced") && <th className="px-5 py-3">Placed Students</th>}
-            {visibleColumns.includes("status") && <th className="px-5 py-3">Status</th>}
+              {visibleColumns.includes("industry") && <th className="px-5 py-3">Industry</th>}
+              {visibleColumns.includes("tier") && <th className="px-5 py-3">Tier</th>}
+              {visibleColumns.includes("handler") && <th className="px-5 py-3">Handler</th>}
+              {visibleColumns.includes("facultyCoordinator") && <th className="px-5 py-3">Faculty Coordinator</th>}
+              {visibleColumns.includes("branch") && <th className="px-5 py-3">Branch</th>}
+              {visibleColumns.includes("lastVisit") && <th className="px-5 py-3">Last Visit</th>}
+              {visibleColumns.includes("lastYearCTC") && <th className="px-5 py-3">Last Year CTC</th>}
+              {visibleColumns.includes("lastYearPlaced") && <th className="px-5 py-3">Placed Students</th>}
+              {visibleColumns.includes("status") && <th className="px-5 py-3">Status</th>}
 
-            <th className="px-5 py-3 text-center">Action</th>
-          </tr>
-        </thead>
-
-        {/* Body */}
-        <tbody>
-          {filtered.map((c) => (
-            <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
-              <td className="px-5 py-4 font-medium text-slate-800">{c.name}</td>
-
-              {visibleColumns.includes("industry") && <td className="px-5 py-4 text-slate-600">{c.industry}</td>}
-              {visibleColumns.includes("tier") && <td className="px-5 py-4 text-slate-600">{c.tier}</td>}
-              {visibleColumns.includes("handler") && <td className="px-5 py-4 text-slate-600">{c.handler}</td>}
-              {visibleColumns.includes("facultyCoordinator") && <td className="px-5 py-4 text-slate-600">{c.facultyCoordinator}</td>}
-              {visibleColumns.includes("branch") && <td className="px-5 py-4 text-slate-600">{c.branch}</td>}
-              {visibleColumns.includes("lastVisit") && <td className="px-5 py-4 text-slate-600">{c.lastVisit}</td>}
-              {visibleColumns.includes("lastYearCTC") && <td className="px-5 py-4 text-slate-600">{c.lastYearCTC}</td>}
-              {visibleColumns.includes("lastYearPlaced") && <td className="px-5 py-4 text-slate-600">{c.lastYearPlaced}</td>}
-
-              {visibleColumns.includes("status") && (
-                <td className="px-5 py-4">
-                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${statusStyles[c.status]}`}>{c.status}</span>
-                </td>
-              )}
-
-              {/* Delete Action */}
-              <td className="px-5 py-4 text-center">
-                <button onClick={() => handleDelete(c.id)} className="p-2 rounded-lg hover:bg-red-50">
-                  <Trash2 className="w-4 h-4 text-red-600" />
-                </button>
-              </td>
+              <th className="px-5 py-3 text-center">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          {/* Body */}
+          <tbody>
+            {filtered.map((c) => (
+              <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
+                <td className="px-5 py-4 font-medium text-slate-800">{c.name}</td>
+
+                {visibleColumns.includes("industry") && <td className="px-5 py-4 text-slate-600">{c.industry}</td>}
+                {visibleColumns.includes("tier") && <td className="px-5 py-4 text-slate-600">{c.tier}</td>}
+                {visibleColumns.includes("handler") && <td className="px-5 py-4 text-slate-600">{c.handler}</td>}
+                {visibleColumns.includes("facultyCoordinator") && <td className="px-5 py-4 text-slate-600">{c.facultyCoordinator}</td>}
+                {visibleColumns.includes("branch") && <td className="px-5 py-4 text-slate-600">{c.branch}</td>}
+                {visibleColumns.includes("lastVisit") && <td className="px-5 py-4 text-slate-600">{c.lastVisit}</td>}
+                {visibleColumns.includes("lastYearCTC") && <td className="px-5 py-4 text-slate-600">{c.lastYearCTC}</td>}
+                {visibleColumns.includes("lastYearPlaced") && <td className="px-5 py-4 text-slate-600">{c.lastYearPlaced}</td>}
+
+                {visibleColumns.includes("status") && (
+                  <td className="px-5 py-4">
+                    <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${statusStyles[c.status]}`}>{c.status}</span>
+                  </td>
+                )}
+
+                {/* Delete Action */}
+                <td className="px-5 py-4 text-center">
+                  <button onClick={() => handleDelete(c.id)} className="p-2 rounded-lg hover:bg-red-50">
+                    <Trash2 className="w-4 h-4 text-red-600" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

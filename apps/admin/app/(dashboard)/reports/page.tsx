@@ -11,7 +11,7 @@ export default function ReportsPage() {
   const filteredReports = reports.filter((report) => report.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="max-w-[1100px] mx-auto px-8 py-7 space-y-6">
+    <div className="mx-auto max-w-[1100px] space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
       {/* Header */}
       <div>
         <h1 className="text-[22px] font-semibold">Reports</h1>
@@ -19,7 +19,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-[320px]">
+      <div className="relative w-full max-w-[320px]">
         <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
         <input
           type="text"

@@ -11,42 +11,24 @@ const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
 
 export default function CreateJobTabs({ activeTab, setActiveTab }: { activeTab: TabKey; setActiveTab: (tab: TabKey) => void }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 0,
-        maxWidth: 1200,
-        margin: "18px auto 0",
-      }}
-    >
-      {tabs.map((t) => {
-        const isActive = activeTab === t.key;
+    <div className="mx-auto mt-3 w-full max-w-[1200px] overflow-x-auto px-3 sm:mt-4 sm:px-5 lg:px-8">
+      <div className="flex min-w-max gap-0 border-b border-slate-200">
+        {tabs.map((t) => {
+          const isActive = activeTab === t.key;
 
-        return (
-          <button
-            key={t.key}
-            onClick={() => setActiveTab(t.key)}
-            style={{
-              flex: 1,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 7,
-              padding: "10px 0",
-              fontSize: 13,
-              fontWeight: isActive ? 600 : 500,
-              color: isActive ? "#2563eb" : "#64748b",
-              background: "none",
-              border: "none",
-              borderBottom: isActive ? "2.5px solid #2563eb" : "2.5px solid transparent",
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-            }}
-          >
-            {t.icon} {t.label}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`inline-flex min-w-[150px] items-center justify-center gap-1.5 border-b-2 px-4 py-2 text-sm transition-colors ${
+                isActive ? "border-blue-600 font-semibold text-blue-600" : "border-transparent font-medium text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {t.icon} {t.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

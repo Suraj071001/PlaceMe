@@ -7,79 +7,25 @@ export function StatsCards({ appliedFilters }: { appliedFilters?: Record<string,
   const displayStats = stats;
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(5, minmax(0,1fr))",
-        gap: 20,
-        marginBottom: 24,
-      }}
-    >
+    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-5">
       {displayStats.map((stat) => {
         const Icon = stat.icon;
 
         return (
-          <div
-            key={stat.title}
-            style={{
-              background: "#fff",
-              border: "1px solid #e2e8f0",
-              borderRadius: 12,
-              padding: 20,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)")}
-            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04)")}
-          >
+          <div key={stat.title} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
             {/* Icon Container */}
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                background: stat.iconBg,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 10,
-              }}
-            >
+            <div className="mb-2.5 flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: stat.iconBg }}>
               <Icon size={18} color={stat.iconColor} />
             </div>
 
             {/* Title */}
-            <div
-              style={{
-                fontSize: 13,
-                color: "#64748b",
-                marginBottom: 4,
-              }}
-            >
-              {stat.title}
-            </div>
+            <div className="mb-1 text-[13px] text-slate-500">{stat.title}</div>
 
             {/* Value */}
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 500,
-                color: "#0f172a",
-              }}
-            >
-              {stat.value}
-            </div>
+            <div className="text-xl font-semibold text-slate-900 sm:text-[22px]">{stat.value}</div>
 
             {/* Change */}
-            <div
-              style={{
-                fontSize: 12,
-                color: "#22c55e",
-                marginTop: 4,
-              }}
-            >
-              {(stat as any).change}
-            </div>
+            <div className="mt-1 text-xs text-green-500">{(stat as any).change}</div>
           </div>
         );
       })}

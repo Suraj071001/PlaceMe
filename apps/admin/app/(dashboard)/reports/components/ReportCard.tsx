@@ -9,14 +9,14 @@ export default function ReportCard({ report }: any) {
 
   return (
     <>
-      <div className="bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-start hover:shadow-sm transition">
+      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 transition hover:shadow-sm sm:flex-row sm:items-start sm:justify-between sm:p-5">
         {/* Left side */}
-        <div className="flex gap-4">
+        <div className="flex min-w-0 gap-3 sm:gap-4">
           <div className="w-11 h-11 flex items-center justify-center bg-indigo-100 rounded-lg">
             <FileText size={20} className="text-indigo-600" />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h3 className="text-[16px] font-semibold text-slate-800">{report.title}</h3>
 
             <p className="text-sm text-slate-500 mt-1">{report.description}</p>
@@ -28,10 +28,10 @@ export default function ReportCard({ report }: any) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex w-full gap-2 sm:w-auto">
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 border border-slate-200 px-3 py-2 rounded-md text-sm hover:bg-slate-50 cursor-pointer"
+            className="flex flex-1 items-center justify-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50 sm:flex-none"
           >
             <Eye size={16} />
             View
@@ -40,7 +40,7 @@ export default function ReportCard({ report }: any) {
           <a
             href={report.file}
             download
-            className="flex items-center gap-2 bg-blue-500 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-600 cursor-pointer"
+            className="flex flex-1 items-center justify-center gap-2 rounded-md bg-blue-500 px-3 py-2 text-sm text-white hover:bg-blue-600 sm:flex-none"
           >
             <Download size={16} />
             Download

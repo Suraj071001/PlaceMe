@@ -33,16 +33,16 @@ export default function AllJobsPage() {
   const paginatedJobs = filteredJobs.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   return (
-    <div className="max-w-[1200px] mx-auto px-8 py-7">
+    <div className="mx-auto w-full max-w-[1200px] px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-[22px] font-semibold">Placement Drives</h1>
           <p className="text-sm text-slate-500">Manage internship and placement opportunities</p>
         </div>
 
         <button
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 cursor-pointer"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto"
           onClick={() => router.push("/create-jobs")}
         >
           <Plus size={16} />
@@ -51,7 +51,7 @@ export default function AllJobsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-6 flex-wrap">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-slate-200 rounded-md px-3 py-2 text-sm bg-white shadow-sm">
           <option value="All">All Status</option>
           <option value="Open">Open</option>
@@ -112,69 +112,71 @@ export default function AllJobsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b">
-            <tr className="text-slate-600">
-              <th className="px-5 py-3 text-center font-semibold">Company</th>
-              <th className="px-5 py-3 text-center font-semibold">Role</th>
-              <th className="px-5 py-3 text-center font-semibold">Eligible Branch</th>
-              <th className="px-5 py-3 text-center font-semibold">Package</th>
-              <th className="px-5 py-3 text-center font-semibold">Applicants</th>
-              <th className="px-5 py-3 text-center font-semibold">Deadline</th>
-              <th className="px-5 py-3 text-center font-semibold">Status</th>
-              <th className="px-5 py-3 text-center font-semibold">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {paginatedJobs.map((job, i) => (
-              <tr key={i} className="border-t hover:bg-slate-50 text-center">
-                <td className="px-5 py-4 font-medium">{job.company}</td>
-                <td className="px-5 py-4">{job.role}</td>
-                <td className="px-5 py-4">{job.branch}</td>
-                <td className="px-5 py-4">{job.package}</td>
-
-                <td className="px-5 py-4 flex flex-col items-center justify-center">
-                  {job.applicants}
-                  <div className="h-[4px] w-[60%] bg-slate-200 rounded-full mt-2">
-                    <div className="h-full w-[55%] bg-slate-900 rounded-full"></div>
-                  </div>
-                </td>
-
-                <td className="px-5 py-4">{job.deadline}</td>
-
-                <td className="px-5 py-4">
-                  <span className="bg-green-100 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full">{job.status}</span>
-                </td>
-
-                <td className="px-5 py-4">
-                  <div className="flex justify-center gap-2">
-                    <button className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100">View</button>
-
-                    <button
-                      className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100"
-                      onClick={() => router.push("/candidates-pipeline")}
-                    >
-                      Applicants
-                    </button>
-
-                    <button className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100">Close</button>
-                  </div>
-                </td>
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[980px] text-sm">
+            <thead className="bg-slate-50 border-b">
+              <tr className="text-slate-600">
+                <th className="px-5 py-3 text-center font-semibold">Company</th>
+                <th className="px-5 py-3 text-center font-semibold">Role</th>
+                <th className="px-5 py-3 text-center font-semibold">Eligible Branch</th>
+                <th className="px-5 py-3 text-center font-semibold">Package</th>
+                <th className="px-5 py-3 text-center font-semibold">Applicants</th>
+                <th className="px-5 py-3 text-center font-semibold">Deadline</th>
+                <th className="px-5 py-3 text-center font-semibold">Status</th>
+                <th className="px-5 py-3 text-center font-semibold">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {paginatedJobs.map((job, i) => (
+                <tr key={i} className="border-t hover:bg-slate-50 text-center">
+                  <td className="px-5 py-4 font-medium">{job.company}</td>
+                  <td className="px-5 py-4">{job.role}</td>
+                  <td className="px-5 py-4">{job.branch}</td>
+                  <td className="px-5 py-4">{job.package}</td>
+
+                  <td className="px-5 py-4 flex flex-col items-center justify-center">
+                    {job.applicants}
+                    <div className="h-[4px] w-[60%] bg-slate-200 rounded-full mt-2">
+                      <div className="h-full w-[55%] bg-slate-900 rounded-full"></div>
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4">{job.deadline}</td>
+
+                  <td className="px-5 py-4">
+                    <span className="bg-green-100 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full">{job.status}</span>
+                  </td>
+
+                  <td className="px-5 py-4">
+                    <div className="flex justify-center gap-2">
+                      <button className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100">View</button>
+
+                      <button
+                        className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100"
+                        onClick={() => router.push("/candidates-pipeline")}
+                      >
+                        Applicants
+                      </button>
+
+                      <button className="border border-slate-200 px-3 py-1 rounded-md text-xs hover:bg-slate-100">Close</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-6 text-sm text-slate-600">
+      <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
         <span>
           Showing {(page - 1) * ITEMS_PER_PAGE + 1} - {Math.min(page * ITEMS_PER_PAGE, filteredJobs.length)} of {filteredJobs.length}
         </span>
 
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-wrap items-center gap-2">
           <button disabled={page === 1} onClick={() => setPage(page - 1)} className="border px-3 py-1 rounded-md disabled:opacity-40 bg-slate-300 text-black">
             Prev
           </button>
