@@ -1,30 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { departments } from "./data";
 
-export function PerformanceSummary({ appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/api/v1/analytics/stats");
-        const json = await res.json();
-        if (json.success && json.data) {
-          setStats(json.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch stats", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, [appliedFilters]);
-
-  if (loading || !stats) {
-    return <div className="h-full w-full min-h-[200px] animate-pulse bg-slate-100 rounded-xl flex items-center justify-center text-sm text-slate-400">Loading Summary...</div>;
-  }
+export function PerformanceSummary({ appliedFilters: _appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
+  const eligibleStudents = departments.reduce((sum, dept) => sum + dept.eligibleStudents, 0);
+  const studentsPlaced = departments.reduce((sum, dept) => sum + dept.studentsPlaced, 0);
+  const placementRate = eligibleStudents > 0 ? `${Math.round((studentsPlaced / eligibleStudents) * 100)}%` : "0%";
+  const companiesVisited = 87;
 
   return (
     <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: "16px 20px", height: "100%", boxSizing: "border-box" }}>
@@ -33,11 +14,17 @@ export function PerformanceSummary({ appliedFilters }: { appliedFilters?: Record
       {/* Placement Rate Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <span style={{ fontSize: 14, color: "#6366f1", fontWeight: 500 }}>Overall Placement Rate</span>
-        <span style={{ fontSize: 20, fontWeight: 700, color: "#6366f1" }}>{stats.placementRate}</span>
+        <span style={{ fontSize: 20, fontWeight: 700, color: "#6366f1" }}>{placementRate}</span>
       </div>
       <div style={{ height: 6, background: "#e2e8f0", borderRadius: 4, marginBottom: 16, overflow: "hidden" }}>
         <div
-          style={{ height: "100%", width: stats.placementRate, background: "linear-gradient(90deg, #6366f1, #22c55e)", borderRadius: 4, transition: "width 0.5s ease" }}
+          style={{
+            height: "100%",
+            width: placementRate,
+            background: "linear-gradient(90deg, #6366f1, #22c55e)",
+            borderRadius: 4,
+            transition: "width 0.5s ease",
+          }}
         />
       </div>
 
@@ -59,9 +46,9 @@ export function PerformanceSummary({ appliedFilters }: { appliedFilters?: Record
       {/* Totals */}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {[
-          { label: "Total Placements", value: `${stats.studentsPlaced} students` },
-          { label: "Total Target (Eligible)", value: `${stats.eligibleStudents} students` },
-          { label: "Total Visiting Companies", value: `${stats.companiesVisited} companies` },
+          { label: "Total Placements", value: `${studentsPlaced} students` },
+          { label: "Total Target (Eligible)", value: `${eligibleStudents} students` },
+          { label: "Total Visiting Companies", value: `${companiesVisited} companies` },
         ].map((item) => (
           <div key={item.label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
             <span style={{ color: "#64748b" }}>{item.label}</span>

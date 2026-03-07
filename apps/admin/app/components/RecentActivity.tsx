@@ -1,35 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@repo/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@repo/ui/components/dialog";
-import { type ActivityItem } from "./data";
+import { recentActivity as staticRecentActivity, type ActivityItem } from "./data";
 
-export function RecentActivity({ appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
+export function RecentActivity({ appliedFilters: _appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
   const [open, setOpen] = useState(false);
-  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchActivity = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/api/v1/analytics/recent-activity");
-        const json = await res.json();
-        if (json.success && json.data) {
-          setRecentActivity(json.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch activity", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchActivity();
-  }, [appliedFilters]);
-
-  if (loading) {
-    return <div className="h-full w-full min-h-[200px] animate-pulse bg-slate-100 rounded-xl flex items-center justify-center text-sm text-slate-400">Loading Activity...</div>;
-  }
+  const recentActivity = staticRecentActivity;
 
   return (
     <>

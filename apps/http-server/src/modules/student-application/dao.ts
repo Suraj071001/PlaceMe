@@ -66,3 +66,27 @@ export const getStudentApplications = async (studentId: string) => {
         orderBy: { createdAt: 'desc' }
     });
 };
+
+export const getJobWithApplicationForm = async (jobId: string) => {
+    return await client.job.findUnique({
+        where: { id: jobId },
+        include: {
+            company: true,
+            applicationForms: {
+                include: {
+                    sections: {
+                        orderBy: { order: "asc" },
+                        include: {
+                            questions: {
+                                orderBy: { order: "asc" },
+                                include: {
+                                    options: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+};

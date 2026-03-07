@@ -1,7 +1,12 @@
-import "dotenv/config.js";
+import { config } from "dotenv";
+import { resolve } from "node:path";
 
 import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+
+// Always load env from packages/db/.env regardless of current working directory.
+const envDir = new URL(".", import.meta.url).pathname;
+config({ path: resolve(envDir, ".env") });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
