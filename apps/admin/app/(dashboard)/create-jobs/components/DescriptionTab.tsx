@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Paperclip, X } from "lucide-react";
+import { useJobDraft } from "../lib/useJobDraft";
 
 /* ─── helpers ─── */
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -102,13 +103,19 @@ function BulletList({ items, onChange, placeholder }: { items: string[]; onChang
 
 /* ─── Main ─── */
 export function DescriptionTab() {
-  const [aboutCompany, setAboutCompany] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [responsibilities, setResponsibilities] = useState<string[]>([]);
-  const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
-  const [preferredSkills, setPreferredSkills] = useState<string[]>([]);
-  const [selectionProcess, setSelectionProcess] = useState<string[]>([]);
-  const [benefits, setBenefits] = useState<string[]>([]);
+  const { draft, patch } = useJobDraft();
+
+  const aboutCompany = (draft.additionalDetails?.aboutCompany as string | undefined) ?? "";
+  const jobDescription = draft.description ?? "";
+  const responsibilities = (draft.additionalDetails?.responsibilities as string[] | undefined) ?? [];
+  const requiredSkills = (draft.additionalDetails?.requiredSkills as string[] | undefined) ?? [];
+  const preferredSkills = (draft.additionalDetails?.preferredSkills as string[] | undefined) ?? [];
+  const selectionProcess = (draft.additionalDetails?.selectionProcess as string[] | undefined) ?? [];
+  const benefits = (draft.additionalDetails?.benefits as string[] | undefined) ?? [];
+
+  const updateDetails = (next: Record<string, unknown>) => {
+    patch({ additionalDetails: { ...(draft.additionalDetails ?? {}), ...next } });
+  };
 
   const sectionGap: React.CSSProperties = { marginBottom: 32 };
 
@@ -117,43 +124,53 @@ export function DescriptionTab() {
       {/* About Company */}
       <div style={sectionGap}>
         <SectionTitle>About Company</SectionTitle>
-        <TextArea placeholder="Write a brief overview about the company..." value={aboutCompany} onChange={setAboutCompany} rows={4} />
+        <TextArea
+          placeholder="Write a brief overview about the company..."
+          value={aboutCompany}
+          onChange={(v) => updateDetails({ aboutCompany: v })}
+          rows={4}
+        />
       </div>
 
       {/* Job Description */}
       <div style={sectionGap}>
         <SectionTitle>Job Description</SectionTitle>
-        <TextArea placeholder="Describe the role, day-to-day tasks, and expectations..." value={jobDescription} onChange={setJobDescription} rows={5} />
+        <TextArea
+          placeholder="Describe the role, day-to-day tasks, and expectations..."
+          value={jobDescription}
+          onChange={(v) => patch({ description: v })}
+          rows={5}
+        />
       </div>
 
       {/* Responsibilities */}
       <div style={sectionGap}>
         <SectionTitle>Responsibilities</SectionTitle>
-        <BulletList items={responsibilities} onChange={setResponsibilities} placeholder="Add a responsibility..." />
+        <BulletList items={responsibilities} onChange={(items) => updateDetails({ responsibilities: items })} placeholder="Add a responsibility..." />
       </div>
 
       {/* Required Skills */}
       <div style={sectionGap}>
         <SectionTitle>Required Skills</SectionTitle>
-        <BulletList items={requiredSkills} onChange={setRequiredSkills} placeholder="Add a required skill..." />
+        <BulletList items={requiredSkills} onChange={(items) => updateDetails({ requiredSkills: items })} placeholder="Add a required skill..." />
       </div>
 
       {/* Preferred Skills */}
       <div style={sectionGap}>
         <SectionTitle>Preferred Skills</SectionTitle>
-        <BulletList items={preferredSkills} onChange={setPreferredSkills} placeholder="Add a preferred skill..." />
+        <BulletList items={preferredSkills} onChange={(items) => updateDetails({ preferredSkills: items })} placeholder="Add a preferred skill..." />
       </div>
 
       {/* Selection Process */}
       <div style={sectionGap}>
         <SectionTitle>Selection Process</SectionTitle>
-        <BulletList items={selectionProcess} onChange={setSelectionProcess} placeholder="e.g., Online Test → Technical Interview → HR Round" />
+        <BulletList items={selectionProcess} onChange={(items) => updateDetails({ selectionProcess: items })} placeholder="e.g., Online Test → Technical Interview → HR Round" />
       </div>
 
       {/* Benefits */}
       <div style={sectionGap}>
         <SectionTitle>Benefits</SectionTitle>
-        <BulletList items={benefits} onChange={setBenefits} placeholder="Add a benefit or perk..." />
+        <BulletList items={benefits} onChange={(items) => updateDetails({ benefits: items })} placeholder="Add a benefit or perk..." />
       </div>
     </div>
   );

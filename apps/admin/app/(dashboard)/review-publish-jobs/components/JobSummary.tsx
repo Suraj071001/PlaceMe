@@ -1,14 +1,26 @@
-export default function JobSummary() {
+import type { JobDraft } from "../../create-jobs/lib/jobDraft";
+
+export default function JobSummary({ draft }: { draft: JobDraft }) {
   const job = {
-    company: "Amazon",
-    role: "SDE Intern",
-    type: "Internship",
-    location: "Bangalore",
-    tier: "Dream",
-    package: "₹50k/month",
-    openings: 5,
-    deadline: "10 Apr 2026",
-    departments: "CSE, ECE",
+    company: draft.companyName ?? "-",
+    role: draft.role ?? draft.title ?? "-",
+    type:
+      draft.employmentType === "FULL_TIME"
+        ? "Full-Time"
+        : draft.employmentType === "PART_TIME"
+          ? "Part-Time"
+          : draft.employmentType === "CONTRACT"
+            ? "Contract"
+            : draft.employmentType === "TEMPORARY"
+              ? "Temporary"
+              : draft.employmentType === "INTERNSHIP"
+                ? "Internship"
+                : "-",
+    location: (draft as any).location ?? "-",
+    tier: draft.tier === "BASIC" ? "Basic" : draft.tier === "STANDARD" ? "Standard" : draft.tier === "DREAM" ? "Dream" : "-",
+    package: draft.ctc ?? "-",
+    deadline: draft.closeAt ? new Date(draft.closeAt).toDateString() : "-",
+    departments: (draft.departmentNames ?? []).join(", ") || "-",
   };
 
   return (
@@ -44,11 +56,6 @@ export default function JobSummary() {
         <div>
           <p className="text-slate-500">Package</p>
           <p className="font-medium">{job.package}</p>
-        </div>
-
-        <div>
-          <p className="text-slate-500">Openings</p>
-          <p className="font-medium">{job.openings}</p>
         </div>
 
         <div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Mail, MessageSquare } from "lucide-react";
+import { useJobDraft } from "../lib/useJobDraft";
 
 /* ─── helpers ─── */
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -119,9 +119,9 @@ function CheckboxRow({ label, checked, onChange }: { label: string; checked: boo
 
 /* ─── Main ─── */
 export function SettingsTab() {
-  /* Distribution channels */
-  const [googleChat, setGoogleChat] = useState(false);
-  const [email, setEmail] = useState(false);
+  const { draft, patch } = useJobDraft();
+  const googleChat = Boolean(draft.google_chat);
+  const email = Boolean(draft.email);
 
   return (
     <div
@@ -141,7 +141,7 @@ export function SettingsTab() {
         label="Google Chat"
         description="Send job posting to Google Chat spaces and groups"
         enabled={googleChat}
-        onToggle={() => setGoogleChat(!googleChat)}
+        onToggle={() => patch({ google_chat: !googleChat })}
       />
 
       <ChannelRow
@@ -149,7 +149,7 @@ export function SettingsTab() {
         label="Email"
         description="Notify students and faculty via email notification"
         enabled={email}
-        onToggle={() => setEmail(!email)}
+        onToggle={() => patch({ email: !email })}
       />
     </div>
   );

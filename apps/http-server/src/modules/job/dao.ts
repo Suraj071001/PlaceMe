@@ -4,9 +4,52 @@ import redisClient from "@repo/redis-config/redisClient";
 import { STREAM_ID as JOB_STREAM_ID } from "@repo/redis-config/STREAM";
 
 export const createJob = async (data: CreateJobPayload) => {
-  const { batchIds, ...jobData } = data;
+  const { batchIds, applicationForm, ...jobData } = data;
 
   return await client.$transaction(async (tx) => {
+    // Determine the application form connection/creation payload
+    let applicationFormsPayload = {};
+
+    if (applicationForm) {
+      applicationFormsPayload = {
+        applicationForms: {
+          create: {
+            title: applicationForm.title,
+            isDefault: false,
+            // Fallback to a department ID from the job if possible, or any department for now. Prisma schema requires departmentId for ApplicationForm.
+            // Actually, we must fetch a department to link. Let's use jobData.departmentId or finding a random one.
+            department: jobData.departmentId
+              ? { connect: { id: jobData.departmentId } }
+              : { connect: { id: (await tx.department.findFirst())?.id } },
+            sections: {
+              create: applicationForm.sections?.map((section) => ({
+                title: section.title,
+                order: section.order,
+                description: section.description,
+                questions: {
+                  create: section.questions?.map((q) => ({
+                    label: q.label,
+                    type: q.type,
+                    order: q.order,
+                    required: q.required,
+                    isPrivate: q.isPrivate,
+                    description: q.description,
+                    systemNote: q.systemNote,
+                    options: {
+                      create: q.options?.map((opt) => ({
+                        label: opt.label,
+                        value: opt.value,
+                      })),
+                    },
+                  })),
+                },
+              })),
+            },
+          },
+        },
+      };
+    }
+
     const job = await tx.job.create({
       data: {
         ...jobData,
@@ -17,6 +60,7 @@ export const createJob = async (data: CreateJobPayload) => {
             },
           }
           : {}),
+        ...applicationFormsPayload,
       },
     });
 
@@ -24,16 +68,16 @@ export const createJob = async (data: CreateJobPayload) => {
       JOB_STREAM_ID,
       "*",
       {
-        role: job.role,
-        companyId: job.companyId,
-        title: job.title,
-        slug: job.slug as string,
-        description: job.description as string,
-        location: job.location as string,
-        departmentId: job.departmentId as string,
-        employmentType: job.employmentType,
-        closeAt: JSON.stringify(job.closeAt),
-        jobId: job.id,
+        role: String(job.role),
+        companyId: String(job.companyId),
+        title: String(job.title),
+        slug: job.slug ?? "",
+        description: job.description ?? "",
+        location: job.location ?? "",
+        departmentId: job.departmentId ?? "",
+        employmentType: String(job.employmentType),
+        closeAt: job.closeAt ? job.closeAt.toISOString() : "",
+        jobId: String(job.id),
       },
       {
         TRIM: {

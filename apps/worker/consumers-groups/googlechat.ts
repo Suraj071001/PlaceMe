@@ -59,6 +59,11 @@ async function processMessage(message: any) {
     return;
   }
 
+  if (!job.google_chat) {
+    console.info("Google Chat notifications disabled for job, skipping", { jobId });
+    return;
+  }
+
   if (!job.batches || job.batches.length === 0) {
     console.info(
       "Job has no batches configured, skipping Google Chat notification",
@@ -98,9 +103,17 @@ async function processMessage(message: any) {
 async function Main() {
   const WorkerId = 1;
 
-  // await redisClient.xGroupCreate(JOB_STREAM_ID, GOOGLE_CHAT_CONSUMERGROUP_ID, "$", {
-  //   MKSTREAM: true,
-  // });
+  try {
+    await redisClient.xGroupCreate(JOB_STREAM_ID, GOOGLE_CHAT_CONSUMERGROUP_ID, "$", {
+      MKSTREAM: true,
+    });
+  } catch (err: any) {
+    const message = String(err?.message ?? "");
+    if (!message.includes("BUSYGROUP")) {
+      console.error("Failed to create google-chat consumer group", err);
+      throw err;
+    }
+  }
 
   while (1) {
     const response = (await redisClient.xReadGroup(

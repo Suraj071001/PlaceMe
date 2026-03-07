@@ -8,6 +8,7 @@ import QuestionCard, { Question } from "./components/QuestionCard";
 import QuestionTypeDialog from "./components/QuestionDialogType";
 import QuestionConfigDialog from "./components/QuestionConfigDialog";
 import { useRouter } from "next/navigation";
+import { useJobDraft } from "../create-jobs/lib/useJobDraft";
 
 const mockForms = [
   { id: 1, title: "Default Application Form", category: "Uncategorized" },
@@ -30,6 +31,34 @@ export default function ApplicationFormPage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editingTitleValue, setEditingTitleValue] = useState("");
   const router = useRouter();
+  const { patch } = useJobDraft();
+
+  const mapTypeToEnum = (type: string): any => {
+    switch (type) {
+      case "Short Answer":
+        return "SHORT_TEXT";
+      case "Long Unformatted Answer":
+        return "LONG_TEXT";
+      case "Email":
+        return "EMAIL";
+      case "Phone":
+        return "PHONE";
+      case "Multiple Choice":
+        return "MULTIPLE_CHOICE";
+      case "Checkboxes":
+        return "CHECKBOX";
+      case "Date":
+        return "DATE";
+      case "Yes/No":
+        return "YES_NO";
+      case "File Upload":
+        return "FILE_UPLOAD";
+      case "Resume Link":
+        return "URL";
+      default:
+        return "SHORT_TEXT";
+    }
+  };
 
   function deleteQuestion(id: string | number) {
     setQuestions(questions.filter((q) => q.id !== id));
@@ -183,7 +212,30 @@ export default function ApplicationFormPage() {
               </button>
               <button
                 className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-md text-[13px] font-medium transition-colors shadow-sm flex items-center gap-1.5 whitespace-nowrap  cursor-pointer"
-                onClick={() => router.push("/review-publish-jobs")}
+                onClick={() => {
+                  const formTitle = activeForm?.title ?? "Application Form";
+                  patch({
+                    applicationForm: {
+                      title: formTitle,
+                      sections: [
+                        {
+                          title: "Default Section",
+                          order: 0,
+                          description: null,
+                          questions: questions.map((q, idx) => ({
+                            label: String(q.label ?? ""),
+                            type: mapTypeToEnum(String(q.type ?? "")),
+                            order: idx,
+                            required: Boolean((q as any).required),
+                            isPrivate: Boolean((q as any).private),
+                            description: ((q as any).description ?? null) as any,
+                          })),
+                        },
+                      ],
+                    },
+                  });
+                  router.push("/review-publish-jobs");
+                }}
               >
                 Continue <span className="text-slate-400 opacity-80">&rarr;</span>
               </button>

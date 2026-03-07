@@ -45,6 +45,30 @@ export const CreateJobSchema = z.object({
     batchIds: z.array(z.string().uuid("Invalid batch ID")).optional(),
     google_chat: z.boolean().optional(),
     email: z.boolean().optional(),
+    applicationForm: z.object({
+        title: z.string().min(1, "Form title is required"),
+        sections: z.array(z.object({
+            title: z.string().min(1, "Section title is required"),
+            order: z.number().int().min(0, "Order must be a non-negative number"),
+            description: z.string().optional().nullable(),
+            questions: z.array(z.object({
+                label: z.string().min(1, "Question label is required"),
+                type: z.enum([
+                    "SHORT_TEXT", "LONG_TEXT", "EMAIL", "PHONE", "YES_NO",
+                    "CHECKBOX", "MULTIPLE_CHOICE", "DATE", "FILE_UPLOAD", "URL"
+                ]),
+                order: z.number().int().min(0, "Order must be a non-negative number"),
+                required: z.boolean().default(false),
+                isPrivate: z.boolean().default(false),
+                description: z.string().optional().nullable(),
+                systemNote: z.string().optional().nullable(),
+                options: z.array(z.object({
+                    label: z.string().min(1, "Option label is required"),
+                    value: z.string().min(1, "Option value is required"),
+                })).optional(),
+            })).optional().default([]),
+        })).optional(),
+    }).optional(),
 });
 
 export const UpdateJobSchema = z.object({

@@ -4,9 +4,64 @@ import JobSummary from "./components/JobSummary";
 import ApplicationFormPreview from "./components/ApplicationFormPreview";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { useJobDraft } from "../create-jobs/lib/useJobDraft";
 
 export default function ReviewJobPage() {
   const router = useRouter();
+  const { draft, reset, isPublishable } = useJobDraft();
+
+  const publish = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.alert("Not logged in");
+      return;
+    }
+
+    const payload: any = {
+      companyId: draft.companyId,
+      title: draft.title,
+      role: draft.role ?? draft.title,
+      workMode: draft.workMode,
+      closeAt: draft.closeAt,
+      applicationDeadline: draft.applicationDeadline ?? draft.closeAt,
+      ctc: draft.ctc,
+      minimumCGPA: draft.minimumCGPA,
+      passingYear: draft.passingYear,
+      employmentType: draft.employmentType,
+      tier: draft.tier,
+      status: "ACTIVE",
+      google_chat: Boolean(draft.google_chat),
+      email: Boolean(draft.email),
+      description: draft.description,
+      additionalDetails: {
+        ...(draft.additionalDetails ?? {}),
+        eligibleDepartments: draft.departmentNames ?? [],
+      },
+      departmentId: draft.departmentId,
+      applicationForm: draft.applicationForm,
+    };
+
+    try {
+      const res = await fetch("http://localhost:5501/api/v1/job", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        window.alert(json?.error ?? "Failed to publish job");
+        return;
+      }
+
+      reset();
+      router.push("/all-jobs");
+    } catch (err: any) {
+      window.alert(err?.message ?? "Failed to publish job");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
@@ -23,18 +78,21 @@ export default function ReviewJobPage() {
       </div>
 
       {/* Job Summary */}
-      <JobSummary />
+      <JobSummary draft={draft} />
 
       {/* Form Preview */}
-      <ApplicationFormPreview />
+      <ApplicationFormPreview draft={draft} />
 
       {/* Bottom Buttons */}
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end sm:gap-3">
         <button className="border border-slate-200 px-4 py-2 rounded-md text-sm hover:bg-slate-50  cursor-pointer">Save Draft</button>
 
         <button
-          className="bg-green-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-green-700 cursor-pointer"
-          onClick={() => router.push("/all-jobs")}
+          className={`text-white px-5 py-2 rounded-md text-sm font-medium cursor-pointer ${
+            isPublishable ? "bg-green-600 hover:bg-green-700" : "bg-slate-400 cursor-not-allowed"
+          }`}
+          disabled={!isPublishable}
+          onClick={publish}
         >
           Publish Job
         </button>
