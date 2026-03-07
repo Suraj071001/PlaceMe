@@ -9,7 +9,7 @@ export default function ReviewJobPage() {
   const router = useRouter();
 
   return (
-    <div className="max-w-[1100px] mx-auto px-8 py-7 space-y-6">
+    <div className="mx-auto max-w-[1100px] space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
       {/* Header */}
       <div className="flex items-start gap-4">
         <button onClick={() => router.back()} className="flex items-center justify-center w-9 h-9 text-slate-600 cursor-pointer">
@@ -29,7 +29,7 @@ export default function ReviewJobPage() {
       <ApplicationFormPreview />
 
       {/* Bottom Buttons */}
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end sm:gap-3">
         <button className="border border-slate-200 px-4 py-2 rounded-md text-sm hover:bg-slate-50  cursor-pointer">Save Draft</button>
 
         <button

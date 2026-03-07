@@ -12,10 +12,10 @@ export default function CompaniesPage() {
   const [tierFilter, setTierFilter] = useState("all");
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 py-6 space-y-6">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:px-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3 sm:items-center">
           <Building2 className="w-6 h-6 text-indigo-600" />
 
           <div className="flex flex-col">

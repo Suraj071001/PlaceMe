@@ -104,8 +104,8 @@ export function DepartmentTable({ appliedFilters }: { appliedFilters?: Record<st
   };
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 24, margin: "0 24px 24px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 16, margin: "0 0 24px" }} className="sm:p-6 md:mx-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 style={{ fontSize: 18, fontWeight: 600, color: "#1e293b", margin: "0 0 4px" }}>Department-wise Performance Data</h3>
           <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Comprehensive department statistics - customize visible columns</p>
@@ -161,33 +161,52 @@ export function DepartmentTable({ appliedFilters }: { appliedFilters?: Record<st
         </div>
       </div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "2px solid #f1f5f9" }}>
-            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: 13, color: "#64748b", fontWeight: 600 }}>Department</th>
-            {orderedSelectedColumns.map((key) => {
-              const col = allColumns.find((c) => c.key === key)!;
-              return (
-                <th
-                  key={key}
-                  style={{
-                    textAlign: cellAlign(key),
-                    padding: "12px 8px",
-                    fontSize: 13,
-                    color: "#64748b",
-                    fontWeight: 600,
-                  }}
-                >
-                  {col.label}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody>
-          {filteredDepartments.map((dept) => (
-            <tr key={dept.name} style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <td style={{ padding: "14px 8px", fontSize: 14, fontWeight: 500, color: "#1e293b" }}>{dept.name}</td>
+      <div className="overflow-x-auto">
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
+          <thead>
+            <tr style={{ borderBottom: "2px solid #f1f5f9" }}>
+              <th style={{ textAlign: "left", padding: "12px 8px", fontSize: 13, color: "#64748b", fontWeight: 600 }}>Department</th>
+              {orderedSelectedColumns.map((key) => {
+                const col = allColumns.find((c) => c.key === key)!;
+                return (
+                  <th
+                    key={key}
+                    style={{
+                      textAlign: cellAlign(key),
+                      padding: "12px 8px",
+                      fontSize: 13,
+                      color: "#64748b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {col.label}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredDepartments.map((dept) => (
+              <tr key={dept.name} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <td style={{ padding: "14px 8px", fontSize: 14, fontWeight: 500, color: "#1e293b" }}>{dept.name}</td>
+                {orderedSelectedColumns.map((key) => (
+                  <td
+                    key={key}
+                    style={{
+                      textAlign: cellAlign(key),
+                      padding: "14px 8px",
+                      fontSize: 14,
+                      color: key === "placements" ? "#6366f1" : key === "internships" ? "#22c55e" : "#334155",
+                      fontWeight: key === "placements" || key === "internships" ? 600 : 500,
+                    }}
+                  >
+                    {renderValue(dept as Department, key)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            <tr style={{ borderTop: "2px solid #e2e8f0" }}>
+              <td style={{ padding: "14px 8px", fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Total</td>
               {orderedSelectedColumns.map((key) => (
                 <td
                   key={key}
@@ -195,34 +214,17 @@ export function DepartmentTable({ appliedFilters }: { appliedFilters?: Record<st
                     textAlign: cellAlign(key),
                     padding: "14px 8px",
                     fontSize: 14,
-                    color: key === "placements" ? "#6366f1" : key === "internships" ? "#22c55e" : "#334155",
-                    fontWeight: key === "placements" || key === "internships" ? 600 : 500,
+                    fontWeight: 700,
+                    color: key === "placements" ? "#6366f1" : key === "internships" ? "#22c55e" : "#1e293b",
                   }}
                 >
-                  {renderValue(dept as Department, key)}
+                  {renderTotal(key)}
                 </td>
               ))}
             </tr>
-          ))}
-          <tr style={{ borderTop: "2px solid #e2e8f0" }}>
-            <td style={{ padding: "14px 8px", fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Total</td>
-            {orderedSelectedColumns.map((key) => (
-              <td
-                key={key}
-                style={{
-                  textAlign: cellAlign(key),
-                  padding: "14px 8px",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: key === "placements" ? "#6366f1" : key === "internships" ? "#22c55e" : "#1e293b",
-                }}
-              >
-                {renderTotal(key)}
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

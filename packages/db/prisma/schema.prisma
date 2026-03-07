@@ -218,7 +218,7 @@ model Student {
 
   enrollment   String
   address      String
-  registration String
+  skills       String[]
   branchId       String
   batchId       String
 
@@ -260,30 +260,6 @@ model Application {
 }
 
 
-model FormResponse {
-  id            String   @id @default(uuid())
-  applicationId String   @unique
-  formId        String
-  createdAt     DateTime @default(now())
-
-  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  form          ApplicationForm @relation(fields: [formId], references: [id])
-
-  answers       FormAnswer[]
-}
-
-model FormAnswer {
-  id          String @id @default(uuid())
-  responseId  String
-  questionId  String
-  answer      Json
-
-  response    FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
-  question    FormQuestion @relation(fields: [questionId], references: [id])
-
-  @@index([responseId])
-  @@index([questionId])
-}
 
 model Pipeline {
   id        String   @id @default(uuid())

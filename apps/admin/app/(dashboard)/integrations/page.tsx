@@ -3,7 +3,7 @@ import IntegrationCard from "./components/IntegerationCard";
 
 export default function IntegrationsPage() {
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

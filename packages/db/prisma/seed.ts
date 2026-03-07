@@ -2,8 +2,8 @@ import client from "../index";
 
 async function main() {
   /*
-      PERMISSIONS
-    */
+        PERMISSIONS
+      */
   const permissions = [
     { name: "READ_JOBS", description: "View job listings" },
     { name: "READ_COMPANY", description: "View company details" },
@@ -23,6 +23,7 @@ async function main() {
     { name: "SEND_OFFER", description: "Send offer to candidate" },
     { name: "MANAGE_USERS", description: "Manage users" },
     { name: "READ_REPORTS", description: "View reports" },
+    { name: "READ_PROFILE", description: "View profile" },
   ];
   const permissionRecords: any[] = [];
 
@@ -34,10 +35,7 @@ async function main() {
     });
     permissionRecords.push(record);
   }
-
-  /*
-      ROLES
-    */
+      */
   const adminRole = await client.role.upsert({
     where: { name: "ADMIN" },
     update: {},
@@ -266,6 +264,27 @@ async function main() {
     }
   });
 
+  // Create a dummy Branch and Batch for the student
+  const dummyBranch = await client.branch.upsert({
+    where: { id: "dummy-branch-id" },
+    update: {},
+    create: {
+      id: "dummy-branch-id",
+      name: "Computer Science",
+      departmentId: department.id
+    }
+  });
+
+  const dummyBatch = await client.batch.upsert({
+    where: { id: "dummy-batch-id" },
+    update: {},
+    create: {
+      id: "dummy-batch-id",
+      name: "2024",
+      branchId: dummyBranch.id
+    }
+  });
+
   // Create the Student profile for the dummy student
   await client.student.upsert({
     where: { userId: dummyStudent.id },
@@ -274,8 +293,9 @@ async function main() {
       userId: dummyStudent.id,
       enrollment: "ENR-12345",
       address: "123 Student Rd",
-      registration: "REG-54321",
-      branch: "Computer Science",
+      skills: ["React", "Node.js"],
+      branchId: dummyBranch.id,
+      batchId: dummyBatch.id,
       email: "suraj24mca@gmail.com"
     }
   });

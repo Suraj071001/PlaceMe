@@ -71,7 +71,7 @@ export default function QuestionCard({ question, deleteQuestion }: QuestionCardP
         </button>
       </div>
 
-      <div className="ml-10 pr-6">
+      <div className="ml-0 pr-0 sm:ml-10 sm:pr-6">
         <input
           disabled
           type={isResumeField ? "url" : "text"}

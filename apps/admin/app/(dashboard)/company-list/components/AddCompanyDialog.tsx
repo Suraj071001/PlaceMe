@@ -61,8 +61,8 @@ export function AddCompanyDialog() {
 
       {/* Dialog */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-xl p-6 space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-3 sm:p-4">
+          <div className="max-h-[92vh] w-full max-w-xl space-y-5 overflow-y-auto rounded-xl bg-white p-4 shadow-xl sm:p-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-800">Create Company</h2>
@@ -73,7 +73,7 @@ export function AddCompanyDialog() {
             </div>
 
             {/* Form */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <input
                 name="name"
                 value={form.name}
@@ -155,7 +155,7 @@ export function AddCompanyDialog() {
                 value={form.website}
                 onChange={handleChange}
                 placeholder="Website"
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm col-span-2"
+                className="border border-slate-200 rounded-lg px-3 py-2 text-sm sm:col-span-2"
               />
 
               <input
@@ -163,7 +163,7 @@ export function AddCompanyDialog() {
                 value={form.location}
                 onChange={handleChange}
                 placeholder="Location"
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm col-span-2"
+                className="border border-slate-200 rounded-lg px-3 py-2 text-sm sm:col-span-2"
               />
 
               <textarea
@@ -171,13 +171,13 @@ export function AddCompanyDialog() {
                 value={form.notes}
                 onChange={handleChange}
                 placeholder="Notes"
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm col-span-2"
+                className="border border-slate-200 rounded-lg px-3 py-2 text-sm sm:col-span-2"
                 rows={3}
               />
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
               <button onClick={() => setOpen(false)} className="px-4 py-2 text-sm border border-slate-200 rounded-lg">
                 Cancel
               </button>

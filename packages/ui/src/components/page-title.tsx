@@ -20,5 +20,5 @@ export function PageTitle({ navItems }: { navItems: { title: string; url: string
           )
           .join(" - ") || "Dashboard";
 
-  return <h1 className="text-lg font-semibold ">{current?.title ?? defaultTitle}</h1>;
+  return <h1 className="truncate text-base font-semibold sm:text-lg">{current?.title ?? defaultTitle}</h1>;
 }

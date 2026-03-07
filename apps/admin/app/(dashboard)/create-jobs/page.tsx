@@ -13,18 +13,12 @@ export default function CreateJobPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("details");
 
   return (
-    <div
-      style={{
-        fontFamily: "'Inter', 'Segoe UI', sans-serif",
-        background: "#f5f7fb",
-        minHeight: "100vh",
-      }}
-    >
+    <div className="min-h-screen bg-[#f5f7fb]">
       <CreateJobHeader />
 
       <CreateJobTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px 60px" }}>
+      <div className="mx-auto w-full max-w-[1200px] px-3 pb-10 pt-6 sm:px-5 lg:px-8">
         {activeTab === "details" && <JobDetailsTab />}
         {activeTab === "description" && <DescriptionTab />}
         {activeTab === "settings" && <SettingsTab />}
