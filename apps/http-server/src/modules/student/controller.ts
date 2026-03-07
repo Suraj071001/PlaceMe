@@ -23,6 +23,21 @@ export const getProfileController = async (req: Request, res: Response) => {
     }
 };
 
+export const getStudentByIdController = async (req: Request<{ id: string }>, res: Response) => {
+    try {
+        const { id } = req.params;
+        const profile = await getStudentProfileService(id);
+        res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: profile });
+    } catch (error: any) {
+        logger.error(LOG.STUDENT_FETCH_START, {
+            error: error.message || ERROR.INTERNAL_SERVER_ERROR,
+        });
+        return res
+            .status(400)
+            .json({ error: error.message || ERROR.INTERNAL_SERVER_ERROR });
+    }
+};
+
 export const updateProfileController = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user?.id;
