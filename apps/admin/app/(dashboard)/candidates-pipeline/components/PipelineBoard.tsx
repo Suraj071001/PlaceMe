@@ -74,18 +74,10 @@ async function safeJson(res: Response) {
 const stageStyleMap: Record<string, { label: string; color: string }> = {
   applied: { label: "Applied", color: "bg-blue-100" },
   screening: { label: "Screening", color: "bg-slate-100" },
-  phone_screen: { label: "Phone Screen", color: "bg-violet-100" },
-  online_assessment: { label: "Online Assessment", color: "bg-green-100" },
-  shortlisted: { label: "Shortlisted", color: "bg-purple-100" },
   interview: { label: "Interview", color: "bg-orange-100" },
   technical_interview: { label: "Technical Interview", color: "bg-cyan-100" },
-  hr_interview: { label: "HR Interview", color: "bg-fuchsia-100" },
-  final: { label: "Final Round", color: "bg-yellow-100" },
   offer: { label: "Offer", color: "bg-emerald-100" },
-  selected: { label: "Selected", color: "bg-green-100" },
   hired: { label: "Hired", color: "bg-lime-100" },
-  rejected: { label: "Rejected", color: "bg-red-100" },
-  archived: { label: "Archived", color: "bg-gray-200" },
 };
 
 const typeStyleMap: Record<string, string> = {
@@ -104,18 +96,10 @@ const tierStyleMap: Record<string, string> = {
 const stagePriority = [
   "applied",
   "screening",
-  "phone_screen",
-  "online_assessment",
-  "shortlisted",
   "interview",
   "technical_interview",
-  "hr_interview",
-  "final",
   "offer",
-  "selected",
   "hired",
-  "rejected",
-  "archived",
 ];
 
 const toStageKey = (value?: string | null) => {
@@ -155,6 +139,7 @@ export default function PipelineBoard() {
   const [batchFilter, setBatchFilter] = useState("All Batches");
   const [stageFilter, setStageFilter] = useState("All Stages");
   const [statusFilter, setStatusFilter] = useState("All Status");
+  const [error, setError] = useState<string>("");
 
   const toggleSelect = (id: string) => {
     setSelected((prev) =>
@@ -166,17 +151,29 @@ export default function PipelineBoard() {
     const fetchJobs = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+          setError("No authentication token found. Please log in.");
+          return;
+        }
 
-        const res = await fetch(`${API_BASE}/job?page=1&limit=200`, {
+        const res = await fetch(`${API_BASE}/job?page=1&limit=100`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          const errorText = await res.text();
+          setError(`Failed to fetch jobs: ${res.status} ${errorText}`);
+          setJobs([]);
+          return;
+        }
         const body = await safeJson(res);
         const list = Array.isArray(body?.data) ? (body.data as JobItem[]) : [];
         setJobs(list);
         if (!selectedJobId && list.length > 0) setSelectedJobId(list[0]!.id);
-      } catch {
+        setError("");
+      } catch (err) {
+        setError(
+          `Error fetching jobs: ${err instanceof Error ? err.message : "Unknown error"}`,
+        );
         setJobs([]);
       }
     };
@@ -192,7 +189,11 @@ export default function PipelineBoard() {
       }
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+          setError("No authentication token found. Please log in.");
+          setAllStudents([]);
+          return;
+        }
 
         const res = await fetch(
           `${API_BASE}/admin-applications/job/${selectedJobId}`,
@@ -201,6 +202,8 @@ export default function PipelineBoard() {
           },
         );
         if (!res.ok) {
+          const errorText = await res.text();
+          setError(`Failed to fetch applications: ${res.status} ${errorText}`);
           setAllStudents([]);
           return;
         }
@@ -236,7 +239,11 @@ export default function PipelineBoard() {
         });
 
         setAllStudents(mapped);
-      } catch {
+        setError("");
+      } catch (err) {
+        setError(
+          `Error fetching applications: ${err instanceof Error ? err.message : "Unknown error"}`,
+        );
         setAllStudents([]);
       }
     };
@@ -252,7 +259,11 @@ export default function PipelineBoard() {
       }
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+          setError("No authentication token found. Please log in.");
+          setFilteredStudents([]);
+          return;
+        }
 
         const params = new URLSearchParams();
         if (branchFilter !== "All Branches")
@@ -269,6 +280,10 @@ export default function PipelineBoard() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
+          const errorText = await res.text();
+          setError(
+            `Failed to fetch filtered applications: ${res.status} ${errorText}`,
+          );
           setFilteredStudents([]);
           return;
         }
@@ -305,7 +320,11 @@ export default function PipelineBoard() {
 
         setFilteredStudents(mapped);
         setSelected([]);
-      } catch {
+        setError("");
+      } catch (err) {
+        setError(
+          `Error fetching filtered applications: ${err instanceof Error ? err.message : "Unknown error"}`,
+        );
         setFilteredStudents([]);
       }
     };
@@ -327,18 +346,13 @@ export default function PipelineBoard() {
   }, [allStudents]);
 
   const stageColumns: StageCol[] = useMemo(() => {
-    const stageKeys = Array.from(new Set(filteredStudents.map((s) => s.stage)));
-    stageKeys.sort((a, b) => {
-      const ai = stagePriority.indexOf(a);
-      const bi = stagePriority.indexOf(b);
-      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-    });
-    return stageKeys.map((key) => ({
+    // Always show all stages from stagePriority, even if they're empty
+    return stagePriority.map((key) => ({
       id: key,
       title: toTitle(key),
       color: stageStyleMap[key]?.color ?? "bg-gray-100",
     }));
-  }, [filteredStudents]);
+  }, []);
 
   const stageDbIdByKey = useMemo(() => {
     const map: Record<string, string> = {};
@@ -390,6 +404,11 @@ export default function PipelineBoard() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      {error && (
+        <div className="mx-4 mt-4 rounded-md bg-red-50 p-4 text-red-800">
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-2 px-4 py-3 bg-white border-b">
         <select
           value={selectedJobId}
@@ -546,30 +565,50 @@ export default function PipelineBoard() {
 
       <div className="relative hidden h-full min-h-0 md:block">
         <div className="h-full w-full overflow-y-hidden overflow-x-hidden">
-          <div
-            className="grid h-full gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6"
-            style={{
-              gridTemplateColumns: `repeat(${Math.max(stageColumns.length, 1)}, minmax(0, 1fr))`,
-            }}
-          >
-            {stageColumns.map((stage) => {
-              const stageStudents = filteredStudents
-                .filter((s) => s.stage === stage.id)
-                .map((s) => ({ ...s, date: s.appliedDate, branch: s.branch }));
-              return (
-                <PipelineStage
-                  key={stage.id}
-                  stage={stage}
-                  students={stageStudents}
-                  selected={selected}
-                  toggleSelect={toggleSelect}
-                  onViewForm={(id) =>
-                    router.push(`/candidates-pipeline/form-response/${id}`)
-                  }
-                />
-              );
-            })}
-          </div>
+          {stageColumns.length === 0 ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No applications
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {selectedJob
+                    ? `No applications found for ${selectedJob.title || selectedJob.role}`
+                    : "Select a job to view applications"}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="grid h-full gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6"
+              style={{
+                gridTemplateColumns: `repeat(${Math.max(stageColumns.length, 1)}, minmax(0, 1fr))`,
+              }}
+            >
+              {stageColumns.map((stage) => {
+                const stageStudents = filteredStudents
+                  .filter((s) => s.stage === stage.id)
+                  .map((s) => ({
+                    ...s,
+                    date: s.appliedDate,
+                    branch: s.branch,
+                  }));
+                return (
+                  <PipelineStage
+                    key={stage.id}
+                    stage={stage}
+                    students={stageStudents}
+                    selected={selected}
+                    toggleSelect={toggleSelect}
+                    onViewForm={(id) =>
+                      router.push(`/candidates-pipeline/form-response/${id}`)
+                    }
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
