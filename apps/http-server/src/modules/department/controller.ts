@@ -28,12 +28,7 @@ export const createDepartmentController = async (req: Request, res: Response) =>
 
 export const getDepartmentsController = async (req: Request, res: Response) => {
     try {
-        const companyId = req.query.companyId as string;
-        if (!companyId) {
-            return res.status(400).json({ error: "companyId query parameter is required" });
-        }
-
-        const departments = await getDepartmentsService(companyId);
+        const departments = await getDepartmentsService();
 
         res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: departments });
     } catch (error: any) {
@@ -49,12 +44,8 @@ export const getDepartmentsController = async (req: Request, res: Response) => {
 export const getDepartmentByIdController = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const companyId = req.query.companyId as string;
-        if (!companyId) {
-            return res.status(400).json({ error: "companyId query parameter is required" });
-        }
 
-        const department = await getDepartmentByIdService(id as string, companyId);
+        const department = await getDepartmentByIdService(id as string);
 
         res.status(200).json({ message: SUCCESS.DATA_FETCHED, data: department });
     } catch (error: any) {
@@ -70,13 +61,9 @@ export const getDepartmentByIdController = async (req: Request, res: Response) =
 export const updateDepartmentController = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const companyId = req.query.companyId as string;
-        if (!companyId) {
-            return res.status(400).json({ error: "companyId query parameter is required" });
-        }
 
         const payload = UpdateDepartmentSchema.parse(req.body);
-        const department = await updateDepartmentService(id as string, companyId, payload);
+        const department = await updateDepartmentService(id as string, payload);
 
         res.status(200).json({ message: "Department updated successfully", data: department });
     } catch (error: any) {
@@ -92,12 +79,8 @@ export const updateDepartmentController = async (req: Request, res: Response) =>
 export const deleteDepartmentController = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const companyId = req.query.companyId as string;
-        if (!companyId) {
-            return res.status(400).json({ error: "companyId query parameter is required" });
-        }
 
-        await deleteDepartmentService(id as string, companyId);
+        await deleteDepartmentService(id as string);
 
         res.status(200).json({ message: "Department deleted successfully" });
     } catch (error: any) {

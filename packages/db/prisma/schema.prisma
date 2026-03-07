@@ -11,21 +11,25 @@ datasource db {
 
 
 model Company {
-  id          String        @id @default(uuid())
-  name        String        @unique
-  domain      String?       @unique
-  createdAt   DateTime      @default(now())
-  deletedAt   DateTime?
-  status      CompanyStatus
-  tier        TIER          @default(BASIC)
+  id          String   @id @default(uuid())
+  name        String   @unique
+  domain      String?  @unique
+  createdAt   DateTime @default(now())
 
-  departments Department[]  @relation("CompanyToDepartment")
-  jobs        Job[]         @relation("CompanyToJob")
-  pipeline    Pipeline[]    @relation("CompanyToPipeline")
-  offers      Offer[]       @relation("CompanyToOffer")
+  industry    String
+  faculty_coordinator String
+
+  status      CompanyStatus
+  deletedAt   DateTime?
+
+  branchId    String
+  branch      Branch @relation(fields: [branchId], references: [id])
+
+  jobs        Job[]      @relation("CompanyToJob")
+  pipeline    Pipeline[] @relation("CompanyToPipeline")
+  offers      Offer[]    @relation("CompanyToOffer")
   hrContacts  HRContact[]
 }
-
 model HRContact {
   id          String   @id @default(uuid())
   name        String
@@ -111,14 +115,11 @@ model IC {
 
 model Department {
   id        String   @id @default(uuid())
-  companyId String
 
   name      String
   deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  company   Company  @relation("CompanyToDepartment", fields: [companyId], references: [id])
   jobs      Job[]    @relation("DepartmentToJob")
   branches  Branch[]
   applicationForms ApplicationForm[]
@@ -172,16 +173,18 @@ model Job {
 }
 
 model Branch {
-  id          String      @id @default(uuid())
+  id           String @id @default(uuid())
   departmentId String
 
-  name        String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  student    Student[]
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  department  Department @relation(fields: [departmentId], references: [id])
-  batches     Batch[]
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  students     Student[]
+  batches      Batch[]
+  companies    Company[]   // ← ADD THIS
 }
 
 model Batch {

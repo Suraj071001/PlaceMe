@@ -5,15 +5,13 @@ export const createDepartment = async (payload: CreateDepartmentPayload) => {
   return await prisma.department.create({
     data: {
       name: payload.name,
-      companyId: payload.companyId,
     },
   });
 };
 
-export const getDepartmentsByCompany = async (companyId: string) => {
+export const getDepartments = async () => {
   return await prisma.department.findMany({
     where: {
-      companyId,
       deletedAt: null,
     },
     orderBy: {
@@ -22,11 +20,10 @@ export const getDepartmentsByCompany = async (companyId: string) => {
   });
 };
 
-export const getDepartmentById = async (id: string, companyId: string) => {
+export const getDepartmentById = async (id: string) => {
   return await prisma.department.findFirst({
     where: {
       id,
-      companyId,
       deletedAt: null,
     },
   });
