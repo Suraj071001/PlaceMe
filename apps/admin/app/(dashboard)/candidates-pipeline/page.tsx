@@ -2,7 +2,7 @@ import PipelineBoard from "./components/PipelineBoard";
 
 export default function PipelinePage() {
   return (
-    <div className="px-8 pt-8 pb-4 flex flex-col h-full gap-6">
+    <div className="flex h-full flex-col gap-6 px-3 pb-4 pt-4 sm:px-5 sm:pt-6 lg:px-8 lg:pt-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Placement Pipeline</h1>
@@ -10,7 +10,7 @@ export default function PipelinePage() {
       </div>
 
       {/* Drive Info */}
-      <div className="bg-white border rounded-xl p-4 flex justify-around text-sm mr-200 text-center">
+      <div className="grid grid-cols-2 gap-4 rounded-xl border bg-white p-4 text-center text-sm lg:grid-cols-4 mr-100">
         <div>
           <p className="text-gray-500">Company</p>
           <p className="font-medium">Amazon</p>

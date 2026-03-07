@@ -71,14 +71,14 @@ function BulletList({ items, onChange, placeholder }: { items: string[]; onChang
           ))}
         </ul>
       )}
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         <input
           type="text"
           placeholder={placeholder}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
-          style={{ flex: 1, padding: "9px 14px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 13, outline: "none" }}
+          style={{ flex: 1, minWidth: 180, padding: "9px 14px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 13, outline: "none" }}
         />
         <button
           onClick={add}
@@ -113,7 +113,7 @@ export function DescriptionTab() {
   const sectionGap: React.CSSProperties = { marginBottom: 32 };
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: "32px 36px" }}>
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: "20px clamp(14px, 3vw, 36px)" }}>
       {/* About Company */}
       <div style={sectionGap}>
         <SectionTitle>About Company</SectionTitle>

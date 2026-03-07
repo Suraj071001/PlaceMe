@@ -161,8 +161,8 @@ export function UserTable() {
 
   return (
     <div className="w-full">
-      <div className="flex gap-4 items-center p-3 border-b border-slate-100">
-        <div className="relative flex-1 text-slate-500">
+      <div className="flex flex-col gap-3 border-b border-slate-100 p-3 lg:flex-row lg:items-center">
+        <div className="relative w-full flex-1 text-slate-500">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
           <Input
             placeholder="Search users..."
@@ -171,7 +171,7 @@ export function UserTable() {
             className="pl-9 bg-slate-50/50 border-slate-200 shadow-none focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-lg text-slate-600"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 lg:w-auto">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
@@ -212,86 +212,88 @@ export function UserTable() {
         </div>
       </div>
 
-      <table className="w-full text-sm text-left">
-        <thead className="text-sm text-slate-500 font-medium border-b border-slate-100">
-          <tr>
-            <th className="px-4 py-3 font-medium">Name</th>
-            <th className="px-4 py-3 font-medium">Email</th>
-            <th className="px-4 py-3 font-medium">Role</th>
-            <th className="px-4 py-3 font-medium">Responsibility</th>
-            <th className="px-4 py-3 font-medium">Department</th>
-            <th className="px-4 py-3 font-medium">Branch</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedUsers.length > 0 ? (
-            paginatedUsers.map((user) => (
-              <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
-                <td className="px-4 py-4 font-medium text-slate-800">{user.name}</td>
-                <td className="px-4 py-4 text-slate-500">
-                  <span className="flex items-center gap-1">
-                    {user.email}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-external-link"
-                    >
-                      <path d="M15 3h6v6" />
-                      <path d="M10 14 21 3" />
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    </svg>
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-slate-700">{user.role}</td>
-                <td className="px-4 py-4 text-slate-700">{user.responsibility}</td>
-                <td className="px-4 py-4 text-slate-600 font-medium">{user.department}</td>
-                <td className="px-4 py-4 text-slate-600 font-medium">{user.branch}</td>
-                <td className="px-4 py-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100/50">
-                    {user.status}
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    {canViewPermissions(user) && <PermissionsDialog userName={user.name} role={user.role} permissions={user.permissions} />}
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[860px] text-left text-sm">
+          <thead className="text-sm text-slate-500 font-medium border-b border-slate-100">
+            <tr>
+              <th className="px-4 py-3 font-medium">Name</th>
+              <th className="px-4 py-3 font-medium">Email</th>
+              <th className="px-4 py-3 font-medium">Role</th>
+              <th className="px-4 py-3 font-medium">Responsibility</th>
+              <th className="px-4 py-3 font-medium">Department</th>
+              <th className="px-4 py-3 font-medium">Branch</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedUsers.length > 0 ? (
+              paginatedUsers.map((user) => (
+                <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
+                  <td className="px-4 py-4 font-medium text-slate-800">{user.name}</td>
+                  <td className="px-4 py-4 text-slate-500">
+                    <span className="flex items-center gap-1">
+                      {user.email}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-external-link"
+                      >
+                        <path d="M15 3h6v6" />
+                        <path d="M10 14 21 3" />
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      </svg>
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-slate-700">{user.role}</td>
+                  <td className="px-4 py-4 text-slate-700">{user.responsibility}</td>
+                  <td className="px-4 py-4 text-slate-600 font-medium">{user.department}</td>
+                  <td className="px-4 py-4 text-slate-600 font-medium">{user.branch}</td>
+                  <td className="px-4 py-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+                      {user.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      {canViewPermissions(user) && <PermissionsDialog userName={user.name} role={user.role} permissions={user.permissions} />}
 
-                    {canEditUser(user.role) && (
-                      <EditPermissionsDialog
-                        userName={user.name}
-                        role={user.role}
-                        permissions={user.permissions}
-                        onSave={(newPerms) => handleUpdatePermissions(user.id, newPerms)}
-                      />
-                    )}
-                  </div>
+                      {canEditUser(user.role) && (
+                        <EditPermissionsDialog
+                          userName={user.name}
+                          role={user.role}
+                          permissions={user.permissions}
+                          onSave={(newPerms) => handleUpdatePermissions(user.id, newPerms)}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={8} className="px-4 py-10 text-center text-sm text-slate-500">
+                  No users found for current filters.
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={8} className="px-4 py-10 text-center text-sm text-slate-500">
-                No users found for current filters.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-sm">
+      <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-slate-500">
           Showing {filteredUsers.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
         </p>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}

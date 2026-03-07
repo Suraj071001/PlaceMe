@@ -7,85 +7,26 @@ import { useRouter } from "next/navigation";
 export default function CreateJobHeader() {
   const router = useRouter();
   return (
-    <div
-      style={{
-        background: "#fff",
-        borderBottom: "1px solid #e5e7eb",
-        padding: "16px 32px",
-        position: "sticky",
-        top: 0,
-        zIndex: 20,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
+    <div className="sticky top-0 z-20 border-b border-slate-200 bg-white px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         {/* Title Section */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <button
-            onClick={() => router.back()}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              background: "#fff",
-              cursor: "pointer",
-              color: "#64748b",
-            }}
-          >
+        <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+          <button onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-slate-500">
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1
-              style={{
-                fontSize: 20,
-                fontWeight: 600,
-                color: "#0f172a",
-                margin: 0,
-              }}
-            >
-              Create Job Posting
-            </h1>
+            <h1 className="m-0 text-lg font-semibold text-slate-900 sm:text-xl">Create Job Posting</h1>
 
-            <p
-              style={{
-                fontSize: 13,
-                color: "#64748b",
-                margin: "4px 0 0",
-              }}
-            >
-              Define your role and start receiving applications
-            </p>
+            <p className="mt-1 text-xs text-slate-500 sm:text-sm">Define your role and start receiving applications</p>
           </div>
         </div>
 
         {/* Right Actions */}
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2.5">
           <ActionBtn label="Save Draft" icon={<Save size={15} />} />
 
           <button
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: 7,
-              padding: "8px 18px",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             onClick={() => router.push("/application-form")}
           >
             <Plus size={15} /> Next Application Form

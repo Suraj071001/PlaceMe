@@ -9,12 +9,12 @@ export function AddUserDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm">
+        <Button className="w-full rounded-lg bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Add User
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-h-[90vh] w-[calc(100vw-1rem)] overflow-y-auto sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Add New User</DialogTitle>
           <DialogDescription className="text-slate-500">
@@ -124,7 +124,7 @@ export function AddUserDialog() {
             </select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 mt-2">
+          <div className="mt-2 flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
             <DialogClose asChild>
               <Button type="button" variant="outline" className="text-slate-700 rounded-lg shadow-sm border-slate-200 hover:bg-slate-50">
                 Cancel

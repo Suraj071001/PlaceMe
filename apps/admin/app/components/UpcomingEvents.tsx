@@ -15,7 +15,7 @@ export function UpcomingEvents() {
   const filteredEvents = selectedDate ? upcomingEvents.filter((e) => e.date === selectedDate) : upcomingEvents;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
       {/* Left Card: Calendar */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: "16px 20px" }}>
         <div style={{ marginBottom: 12 }}>
@@ -43,6 +43,7 @@ export function UpcomingEvents() {
                 key={day}
                 onClick={() => setSelectedDate(isSelected ? null : day.toString())}
                 style={{
+                  position: "relative",
                   height: 32,
                   display: "flex",
                   alignItems: "center",

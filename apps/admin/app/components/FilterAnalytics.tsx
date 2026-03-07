@@ -35,51 +35,25 @@ interface FilterAnalyticsProps {
 export function FilterAnalytics({ filters, appliedFilters, showGenerateReport, onFilterChange, onApply, onClearAll, onRemoveFilter }: FilterAnalyticsProps) {
   const [openReportDialog, setOpenReportDialog] = useState(false);
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 24, margin: "0 2px 24px" }}>
+    <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1e293b", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="m-0 flex items-center gap-2 text-base font-semibold text-slate-800">
           <Funnel size={16} color="#6366f1" /> Filter Analytics Data
         </h3>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
           {showGenerateReport && (
             <button
               onClick={() => setOpenReportDialog(true)}
               disabled={Object.keys(appliedFilters).length === 0}
-              style={{
-                background: "#e0e7ff",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                color: "#4338ca",
-                border: "none",
-                borderRadius: 10,
-                padding: "10px 14px",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(67, 56, 202, 0.15)",
-              }}
+              className="flex items-center gap-2 rounded-lg bg-indigo-100 px-3.5 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition-colors hover:bg-indigo-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FileText size={16} />
               Generate Report
             </button>
           )}
           {Object.keys(appliedFilters).length > 0 && (
-            <button
-              onClick={onClearAll}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#64748b",
-                cursor: "pointer",
-                fontSize: 14,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "10px 0",
-              }}
-            >
+            <button onClick={onClearAll} className="flex items-center gap-1 bg-transparent py-2 text-sm text-slate-500 transition-colors hover:text-slate-700">
               ✕ Clear All
             </button>
           )}
@@ -87,7 +61,7 @@ export function FilterAnalytics({ filters, appliedFilters, showGenerateReport, o
       </div>
 
       {/* Dropdowns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16, marginBottom: 16 }}>
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {(Object.keys(filterOptions) as FilterKeys[]).map((key) => {
           const options = filterOptions[key].filter((opt) => opt !== defaultFilterValues[key]);
           return (
@@ -106,36 +80,13 @@ export function FilterAnalytics({ filters, appliedFilters, showGenerateReport, o
 
       {/* Active filter tags */}
       {Object.keys(appliedFilters).length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-          <span style={{ fontSize: 13, color: "#64748b", alignSelf: "center" }}>Active Filters:</span>
+        <div className="mb-4 flex flex-wrap gap-2">
+          <span className="self-center text-[13px] text-slate-500">Active Filters:</span>
           {Object.entries(appliedFilters).flatMap(([key, values]) =>
             values.map((value) => (
-              <span
-                key={`${key}-${value}`}
-                style={{
-                  background: "#ede9fe",
-                  color: "#6366f1",
-                  borderRadius: 20,
-                  padding: "4px 12px",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
+              <span key={`${key}-${value}`} className="flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-indigo-600">
                 {key}: {value}
-                <button
-                  onClick={() => onRemoveFilter(key, value)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#6366f1",
-                    fontSize: 14,
-                    padding: 0,
-                  }}
-                >
+                <button onClick={() => onRemoveFilter(key, value)} className="cursor-pointer border-0 bg-transparent p-0 text-sm text-indigo-600">
                   ×
                 </button>
               </span>
@@ -147,22 +98,7 @@ export function FilterAnalytics({ filters, appliedFilters, showGenerateReport, o
       {/* Apply button */}
       <button
         onClick={onApply}
-        style={{
-          width: "100%",
-          padding: "12px",
-          borderRadius: 8,
-          border: "none",
-          cursor: "pointer",
-          background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-          boxShadow: "0 8px 20px rgba(99,102,241,0.25)",
-          color: "#fff",
-          fontSize: 14,
-          fontWeight: 600,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-        }}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(99,102,241,0.25)] transition-transform hover:-translate-y-0.5"
       >
         <BarChart3 size={16} /> Apply Filters & View Analytics
       </button>

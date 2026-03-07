@@ -60,7 +60,9 @@ function ChannelRow({
     <div
       style={{
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
+        flexWrap: "wrap",
+        gap: 12,
         justifyContent: "space-between",
         padding: "14px 16px",
         borderRadius: 8,
@@ -70,7 +72,7 @@ function ChannelRow({
         transition: "background 0.15s",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 220 }}>
         <div
           style={{
             width: 36,
@@ -127,7 +129,7 @@ export function SettingsTab() {
         background: "#fff",
         borderRadius: 12,
         border: "1px solid #e5e7eb",
-        padding: "32px 36px",
+        padding: "20px clamp(14px, 3vw, 36px)",
       }}
     >
       {/* ── Job Post Distribution ── */}
