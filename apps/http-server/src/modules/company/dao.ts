@@ -28,8 +28,11 @@ export const getCompanies = async (skip: number, take: number, filters: any = {}
     if (filters.status) {
         where.status = filters.status;
     }
-    if (filters.tier) {
-        where.tier = filters.tier;
+    if (filters.industry) {
+        where.industry = { contains: filters.industry, mode: "insensitive" };
+    }
+    if (filters.faculty_coordinator) {
+        where.faculty_coordinator = { contains: filters.faculty_coordinator, mode: "insensitive" };
     }
 
     const [data, total] = await Promise.all([

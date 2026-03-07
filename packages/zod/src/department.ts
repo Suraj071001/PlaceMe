@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const CreateDepartmentSchema = z.object({
-    companyId: z.string().uuid("Invalid company ID"),
     name: z.string().min(1, "Name is required"),
 });
 
