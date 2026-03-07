@@ -78,7 +78,10 @@ export function ResumeEditorTab() {
   const updateEducation = (index: number, field: "degree" | "institution" | "year", value: string) => {
     setForm((prev) => {
       const next = [...prev.education];
-      next[index] = { ...next[index], [field]: value };
+      const current = next[index] ?? emptyEducation();
+      if (field === "degree") next[index] = { ...current, degree: value };
+      if (field === "institution") next[index] = { ...current, institution: value };
+      if (field === "year") next[index] = { ...current, year: value };
       return { ...prev, education: next };
     });
   };
@@ -98,7 +101,11 @@ export function ResumeEditorTab() {
   ) => {
     setForm((prev) => {
       const next = [...prev.experience];
-      next[index] = { ...next[index], [field]: value };
+      const current = next[index] ?? emptyExperience();
+      if (field === "role" && typeof value === "string") next[index] = { ...current, role: value };
+      if (field === "company" && typeof value === "string") next[index] = { ...current, company: value };
+      if (field === "duration" && typeof value === "string") next[index] = { ...current, duration: value };
+      if (field === "points" && Array.isArray(value)) next[index] = { ...current, points: value };
       return { ...prev, experience: next };
     });
   };
@@ -106,9 +113,10 @@ export function ResumeEditorTab() {
   const updateExperiencePoint = (expIndex: number, pointIndex: number, value: string) => {
     setForm((prev) => {
       const next = [...prev.experience];
-      const points = [...next[expIndex].points];
+      const current = next[expIndex] ?? emptyExperience();
+      const points = [...current.points];
       points[pointIndex] = value;
-      next[expIndex] = { ...next[expIndex], points };
+      next[expIndex] = { ...current, points };
       return { ...prev, experience: next };
     });
   };
@@ -116,7 +124,8 @@ export function ResumeEditorTab() {
   const addExperiencePoint = (expIndex: number) => {
     setForm((prev) => {
       const next = [...prev.experience];
-      next[expIndex] = { ...next[expIndex], points: [...next[expIndex].points, ""] };
+      const current = next[expIndex] ?? emptyExperience();
+      next[expIndex] = { ...current, points: [...current.points, ""] };
       return { ...prev, experience: next };
     });
   };
@@ -124,9 +133,10 @@ export function ResumeEditorTab() {
   const removeExperiencePoint = (expIndex: number, pointIndex: number) => {
     setForm((prev) => {
       const next = [...prev.experience];
+      const current = next[expIndex] ?? emptyExperience();
       next[expIndex] = {
-        ...next[expIndex],
-        points: next[expIndex].points.filter((_, i) => i !== pointIndex),
+        ...current,
+        points: current.points.filter((_, i) => i !== pointIndex),
       };
       return { ...prev, experience: next };
     });
@@ -140,7 +150,10 @@ export function ResumeEditorTab() {
   const updateProject = (index: number, field: "name" | "description" | "tech", value: string) => {
     setForm((prev) => {
       const next = [...prev.projects];
-      next[index] = { ...next[index], [field]: value };
+      const current = next[index] ?? emptyProject();
+      if (field === "name") next[index] = { ...current, name: value };
+      if (field === "description") next[index] = { ...current, description: value };
+      if (field === "tech") next[index] = { ...current, tech: value };
       return { ...prev, projects: next };
     });
   };

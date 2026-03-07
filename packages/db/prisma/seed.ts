@@ -2,8 +2,8 @@ import client from "../index";
 
 async function main() {
     /*
-          PERMISSIONS
-        */
+        PERMISSIONS
+    */
     const permissions = [
         { name: "READ_JOBS", description: "View job listings" },
         { name: "READ_COMPANY", description: "View company details" },
@@ -37,8 +37,8 @@ async function main() {
     }
 
     /*
-          ROLES
-        */
+        ROLES
+    */
     const adminRole = await client.role.upsert({
         where: { name: "ADMIN" },
         update: {},
@@ -203,8 +203,10 @@ async function main() {
 
     const jobCount = await client.job.count({ where: { companyId: company.id } });
     if (jobCount === 0) {
-        await client.job.create({
-            data: {
+        await client.job.upsert({
+            where: { slug: "sde-2-placeme" },
+            update: {},
+            create: {
                 companyId: company.id,
                 departmentId: department.id,
                 title: "Software Development Engineer II",
@@ -237,7 +239,7 @@ async function main() {
 
     /*
         SEED DUMMY STUDENT & ADMIN
-      */
+    */
     const dummyPassword = await Bun.password.hash("password123", {
         algorithm: "bcrypt",
     });
@@ -275,8 +277,8 @@ async function main() {
         create: {
             id: "dummy-branch-id",
             name: "Computer Science",
-            departmentId: department.id
-        }
+            departmentId: department.id,
+        },
     });
 
     const dummyBatch = await client.batch.upsert({
@@ -285,35 +287,9 @@ async function main() {
         create: {
             id: "dummy-batch-id",
             name: "2024",
-            branchId: dummyBranch.id
-        }
+            branchId: dummyBranch.id,
+        },
     });
-
-    let studentBranch = await client.branch.findFirst({
-        where: { name: "Computer Science", departmentId: department.id },
-    });
-
-    if (!studentBranch) {
-        studentBranch = await client.branch.create({
-            data: {
-                name: "Computer Science",
-                departmentId: department.id,
-            },
-        });
-    }
-
-    let studentBatch = await client.batch.findFirst({
-        where: { name: "2024", branchId: studentBranch.id },
-    });
-
-    if (!studentBatch) {
-        studentBatch = await client.batch.create({
-            data: {
-                name: "2024",
-                branchId: studentBranch.id,
-            },
-        });
-    }
 
     // Create the Student profile for the dummy student
     await client.student.upsert({
@@ -323,21 +299,12 @@ async function main() {
             userId: dummyStudent.id,
             enrollment: "ENR-12345",
             address: "123 Student Rd",
-            skills: [],
+            skills: ["React", "Node.js"],
             branchId: dummyBranch.id,
             batchId: dummyBatch.id,
-            email: "suraj24mca@gmail.com"
-        }
+            email: "suraj24mca@gmail.com",
+        },
     });
-
-    console.log("Dummy Users seeding completed");
-    console.log("RBAC and Mock Data seeding completed");
-    console.log("====================================");
-    console.log("Admin Credentials:");
-    console.log("Email: admin@placeme.com");
-    console.log("Password: admin123");
-    console.log("====================================");
-
 
     console.log("Dummy Users seeding completed 🚀");
     console.log("RBAC and Mock Data seeding completed 🚀");

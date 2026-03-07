@@ -2,7 +2,9 @@
 
 import { Download, FileText, Eye } from "lucide-react";
 import { useState } from "react";
-import PdfViewer from "./PdfViewer";
+import dynamic from "next/dynamic";
+
+const PdfViewer = dynamic(() => import("./PdfViewer"), { ssr: false });
 
 export default function ReportCard({ report }: any) {
   const [open, setOpen] = useState(false);
