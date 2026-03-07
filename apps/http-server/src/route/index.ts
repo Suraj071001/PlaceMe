@@ -12,6 +12,9 @@ import { studentRoutes } from "../modules/student/handler";
 import { studentApplicationRoutes } from "../modules/student-application/handler";
 import { formResponseRoutes } from "../modules/form-response/handler";
 import { resumeRoutes } from "../modules/resume/handler";
+import { roleRoutes } from "../modules/role/handler";
+import { permissionRoutes } from "../modules/permission/handler";
+import { rolePermissionRoutes } from "../modules/rolepermission/handler";
 
 const initV1Routes = (): express.Router => {
     const router = express.Router();
@@ -26,6 +29,9 @@ const initV1Routes = (): express.Router => {
     studentApplicationRoutes(routerAsApp);
     formResponseRoutes(routerAsApp);
     resumeRoutes(routerAsApp);
+    roleRoutes(routerAsApp);
+    permissionRoutes(routerAsApp);
+    rolePermissionRoutes(routerAsApp);
     return router;
 }
 
