@@ -2,17 +2,26 @@ import client from "@repo/db/index";
 import { ApplicationStatus } from "@repo/db";
 import type { StudentApplicationQuery } from "@repo/zod";
 
-export const createApplication = async (studentId: string, jobId: string, requiresForm: boolean) => {
+export const createApplication = async (
+  studentId: string,
+  jobId: string,
+  requiresForm: boolean,
+) => {
   return await client.application.create({
     data: {
       studentId,
       jobId,
-      status: requiresForm ? ApplicationStatus.DRAFT : ApplicationStatus.APPLIED,
+      status: requiresForm
+        ? ApplicationStatus.DRAFT
+        : ApplicationStatus.APPLIED,
     },
   });
 };
 
-export const linkApplicationToPipeline = async (applicationId: string, jobId: string) => {
+export const linkApplicationToPipeline = async (
+  applicationId: string,
+  jobId: string,
+) => {
   // 1. Get the job to find the company pipeline
   const job = await client.job.findUnique({
     where: { id: jobId },
@@ -72,7 +81,10 @@ const mapEmploymentTypeFilter = (jobType?: string) => {
   return jobType;
 };
 
-export const getStudentApplications = async (studentId: string, filters: StudentApplicationQuery) => {
+export const getStudentApplications = async (
+  studentId: string,
+  filters: StudentApplicationQuery,
+) => {
   const jobType = mapEmploymentTypeFilter(filters.jobType);
   const tier = mapTierFilter(filters.tier);
 
@@ -86,11 +98,17 @@ export const getStudentApplications = async (studentId: string, filters: Student
               OR: [
                 { title: { contains: filters.search, mode: "insensitive" } },
                 { role: { contains: filters.search, mode: "insensitive" } },
-                { company: { name: { contains: filters.search, mode: "insensitive" } } },
+                {
+                  company: {
+                    name: { contains: filters.search, mode: "insensitive" },
+                  },
+                },
               ],
             }
           : {}),
-        ...(filters.location ? { location: { contains: filters.location, mode: "insensitive" } } : {}),
+        ...(filters.location
+          ? { location: { contains: filters.location, mode: "insensitive" } }
+          : {}),
         ...(jobType ? { employmentType: jobType as any } : {}),
         ...(tier ? { tier: tier as any } : {}),
       },
@@ -112,25 +130,25 @@ export const getStudentApplications = async (studentId: string, filters: Student
 };
 
 export const getJobWithApplicationForm = async (jobId: string) => {
-    return await client.job.findUnique({
-        where: { id: jobId },
+  return await client.job.findUnique({
+    where: { id: jobId },
+    include: {
+      company: true,
+      applicationForms: {
         include: {
-            company: true,
-            applicationForms: {
+          sections: {
+            orderBy: { order: "asc" },
+            include: {
+              questions: {
+                orderBy: { order: "asc" },
                 include: {
-                    sections: {
-                        orderBy: { order: "asc" },
-                        include: {
-                            questions: {
-                                orderBy: { order: "asc" },
-                                include: {
-                                    options: true,
-                                },
-                            },
-                        },
-                    },
+                  options: true,
                 },
+              },
             },
+          },
         },
-    });
+      },
+    },
+  });
 };

@@ -49,9 +49,9 @@ const statusConfig = {
 export function NextImportantActionsSection({
   actions,
 }: NextImportantActionsSectionProps) {
-  const pendingCount =
-    actions.filter((a) => a.status === "Pending" || a.status === "Urgent")
-      .length + 2; // Hardcoding to 3 based on mockup logic or just pass a number
+  const pendingCount = actions.filter(
+    (a) => a.status === "Pending" || a.status === "Urgent",
+  ).length;
 
   return (
     <Card className=" border-2 border-[#4f46e5]/20 shadow-lg">
@@ -65,10 +65,15 @@ export function NextImportantActionsSection({
           </CardTitle>
         </div>
         <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-50 text-red-600">
-          3 Pending
+          {pendingCount} Pending
         </span>
       </CardHeader>
       <CardContent className="space-y-3">
+        {actions.length === 0 && (
+          <div className="rounded-xl border border-gray-100 bg-white p-4 text-sm text-gray-500">
+            No immediate actions. You're all caught up.
+          </div>
+        )}
         {actions.map((action) => {
           const { Icon, color } = iconConfig[action.type];
           return (

@@ -50,6 +50,11 @@ export function EligibleCompaniesSection({
         </Link>
       </CardHeader>
       <CardContent className="space-y-3">
+        {companies.length === 0 && (
+          <div className="rounded-xl border border-gray-100 bg-white p-4 text-sm text-gray-500">
+            No new eligible companies right now.
+          </div>
+        )}
         {companies.map((company) => (
           <div
             key={company.id}
