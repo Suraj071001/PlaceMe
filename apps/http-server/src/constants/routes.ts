@@ -24,5 +24,9 @@ export const ROUTES = {
     },
     STUDENT: {
         PROFILE: "/student/profile",
-    }
+        RESUME_PROFILE: "/student/resume-profile",
+        RESUME_GENERATE_PDF: "/student/resume/generate-pdf",
+        RESUMES_LIST: "/student/resumes",
+        RESUME_FILE: "/student/resumes/:id/file",
+    },
 };
