@@ -44,4 +44,17 @@ export const ROUTES = {
         RESUMES_LIST: "/student/resumes",
         RESUME_FILE: "/student/resumes/:id/file",
     },
+    ROLE: {
+        BASE: "/role",
+        BY_ID: "/role/:id",
+    },
+    PERMISSION: {
+        BASE: "/permission",
+        BY_ID: "/permission/:id",
+    },
+    ROLE_PERMISSION: {
+        BASE: "/role-permission",
+        BY_ROLE: "/role-permission/role/:roleId",
+        BY_PERMISSION: "/role-permission/permission/:permissionId",
+    },
 };

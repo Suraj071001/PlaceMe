@@ -9,3 +9,6 @@ export * from "./src/student";
 export * from "./src/student-application";
 export * from "./src/form-response";
 export * from "./src/resume";
+export * from "./src/role";
+export * from "./src/permission";
+export * from "./src/rolepermission";
