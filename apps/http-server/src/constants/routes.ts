@@ -21,5 +21,8 @@ export const ROUTES = {
     DEPARTMENT: {
         BASE: "/department",
         BY_ID: "/department/:id",
+    },
+    STUDENT: {
+        PROFILE: "/student/profile",
     }
 };

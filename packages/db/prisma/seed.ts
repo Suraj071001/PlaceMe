@@ -23,6 +23,7 @@ async function main() {
         { name: "SEND_OFFER", description: "Send offer to candidate" },
         { name: "MANAGE_USERS", description: "Manage users" },
         { name: "READ_REPORTS", description: "View reports" },
+        { name: "READ_PROFILE", description: "View profile" },
     ];
     const permissionRecords: any[] = [];
 
@@ -199,10 +200,8 @@ async function main() {
 
     const jobCount = await client.job.count({ where: { companyId: company.id } });
     if (jobCount === 0) {
-        await client.job.upsert({
-            where: { slug: "sde-2-placeme" },
-            update: {},
-            create: {
+        await client.job.create({
+            data: {
                 companyId: company.id,
                 departmentId: department.id,
                 title: "Software Development Engineer II",
@@ -266,6 +265,27 @@ async function main() {
         }
     });
 
+    // Create a dummy Branch and Batch for the student
+    const dummyBranch = await client.branch.upsert({
+        where: { id: "dummy-branch-id" },
+        update: {},
+        create: {
+            id: "dummy-branch-id",
+            name: "Computer Science",
+            departmentId: department.id
+        }
+    });
+
+    const dummyBatch = await client.batch.upsert({
+        where: { id: "dummy-batch-id" },
+        update: {},
+        create: {
+            id: "dummy-batch-id",
+            name: "2024",
+            branchId: dummyBranch.id
+        }
+    });
+
     // Create the Student profile for the dummy student
     await client.student.upsert({
         where: { userId: dummyStudent.id },
@@ -274,14 +294,14 @@ async function main() {
             userId: dummyStudent.id,
             enrollment: "ENR-12345",
             address: "123 Student Rd",
-            registration: "REG-54321",
-            branch: "Computer Science",
+            branchId: dummyBranch.id,
+            batchId: dummyBatch.id,
             email: "suraj24mca@gmail.com"
         }
     });
 
-    console.log("Dummy Users seeding completed 🚀");
-    console.log("RBAC and Mock Data seeding completed 🚀");
+    console.log("Dummy Users seeding completed");
+    console.log("RBAC and Mock Data seeding completed");
     console.log("====================================");
     console.log("Admin Credentials:");
     console.log("Email: admin@placeme.com");
