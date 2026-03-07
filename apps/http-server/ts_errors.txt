@@ -1,0 +1,4 @@
+$ tsc --b 
+src/modules/admin-application/controller.ts(19,65): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+error: script "build" exited with code 1

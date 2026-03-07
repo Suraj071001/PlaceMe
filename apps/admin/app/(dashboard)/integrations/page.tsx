@@ -1,7 +1,30 @@
+"use client";
+
 import { integrations } from "../../components/data";
 import IntegrationCard from "./components/IntegerationCard";
+import { useState, useEffect } from "react";
 
 export default function IntegrationsPage() {
+  const [integrationsData, setIntegrationsData] = useState<any[]>(integrations);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchIntegrations = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/v1/integrations");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setIntegrationsData(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch integrations", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIntegrations();
+  }, []);
+
   return (
     <div className="space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:p-8">
       {/* Header */}
@@ -15,9 +38,13 @@ export default function IntegrationsPage() {
 
       {/* Integrations Grid */}
       <div className="grid md:grid-cols-2 gap-6">
-        {integrations.map((integration) => (
-          <IntegrationCard key={integration.id} integration={integration} />
-        ))}
+        {loading ? (
+          <div className="text-slate-500 text-sm">Loading integrations...</div>
+        ) : (
+          integrationsData.map((integration) => (
+            <IntegrationCard key={integration.id} integration={integration} />
+          ))
+        )}
       </div>
     </div>
   );

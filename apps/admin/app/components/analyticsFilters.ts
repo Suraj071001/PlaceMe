@@ -1,4 +1,4 @@
-import { departments, type Department } from "./data";
+import { type Department } from "./data";
 
 type AppliedFilters = Record<string, string[]> | undefined;
 
@@ -55,7 +55,7 @@ const getYearScale = (yearValue?: string) => {
   return clamp(1 - age * 0.04, 0.64, 1);
 };
 
-export function getFilteredDepartmentData(appliedFilters: AppliedFilters): Department[] {
+export function getFilteredDepartmentData(departments: Department[], appliedFilters: AppliedFilters): Department[] {
   const selectedDepartments = appliedFilters?.department ?? [];
   const selectedJobTypes = appliedFilters?.jobType ?? [];
   const selectedTiers = appliedFilters?.placementTier ?? [];

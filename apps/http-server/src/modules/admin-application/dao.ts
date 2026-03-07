@@ -1,0 +1,39 @@
+import db from "@repo/db";
+
+export const getJobApplicationsByStageDAO = async (jobId: string) => {
+    // Fetch applications for a specific job, including student details and current stage/status
+    return await db.application.findMany({
+        where: { jobId, deletedAt: null },
+        include: {
+            student: {
+                include: {
+                    user: { select: { firstName: true, lastName: true, email: true } },
+                    branch: { select: { name: true } }
+                }
+            },
+            stage: true,
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+};
+
+export const updateApplicationStageDAO = async (id: string, stageId: string, status?: any) => {
+    const dataToUpdate: any = { stageId };
+    if (status) {
+        dataToUpdate.status = status;
+    }
+
+    return await db.application.update({
+        where: { id },
+        data: dataToUpdate,
+        include: {
+            student: {
+                include: {
+                    user: { select: { firstName: true, lastName: true, email: true } },
+                    branch: { select: { name: true } }
+                }
+            },
+            stage: true,
+        }
+    });
+};

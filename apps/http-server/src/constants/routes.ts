@@ -59,4 +59,31 @@ export const ROUTES = {
         BY_ROLE: "/role-permission/role/:roleId",
         BY_PERMISSION: "/role-permission/permission/:permissionId",
     },
+<<<<<<< Updated upstream
 };
+=======
+    ADMIN_USER: {
+        BASE: "/admins",
+        BY_ID: "/admins/:id",
+    },
+    ADMIN_APPLICATION: {
+        BY_JOB: "/admin-applications/job/:jobId",
+        UPDATE_STAGE: "/admin-applications/:id/stage",
+    },
+    ANALYTICS: {
+        STATS: "/analytics/stats",
+        DEPARTMENTS: "/analytics/departments",
+        RECENT_ACTIVITY: "/analytics/recent-activity",
+        UPCOMING_EVENTS: "/analytics/upcoming-events",
+    },
+    INTEGRATION: {
+        BASE: "/integrations",
+        CONNECT: "/integrations/:provider/connect",
+        DISCONNECT: "/integrations/:provider/disconnect",
+    },
+    REPORT: {
+        BASE: "/reports",
+        GENERATE: "/reports/generate",
+    },
+};
+>>>>>>> Stashed changes

@@ -15,6 +15,11 @@ import { resumeRoutes } from "../modules/resume/handler";
 import { roleRoutes } from "../modules/role/handler";
 import { permissionRoutes } from "../modules/permission/handler";
 import { rolePermissionRoutes } from "../modules/rolepermission/handler";
+import { analyticsRoutes } from "../modules/analytics/handler";
+import { adminUserRoutes } from "../modules/admin-user/handler";
+import { adminApplicationRoutes } from "../modules/admin-application/handler";
+import { reportRoutes } from "../modules/report/handler";
+import { integrationRoutes } from "../modules/integration/handler";
 
 const initV1Routes = (): express.Router => {
     const router = express.Router();
@@ -32,6 +37,11 @@ const initV1Routes = (): express.Router => {
     roleRoutes(routerAsApp);
     permissionRoutes(routerAsApp);
     rolePermissionRoutes(routerAsApp);
+    analyticsRoutes(routerAsApp);
+    adminUserRoutes(routerAsApp);
+    adminApplicationRoutes(routerAsApp);
+    reportRoutes(routerAsApp);
+    integrationRoutes(routerAsApp);
     return router;
 }
 

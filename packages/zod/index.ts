@@ -12,3 +12,8 @@ export * from "./src/resume";
 export * from "./src/role";
 export * from "./src/permission";
 export * from "./src/rolepermission";
+export * from "./src/analytics";
+export * from "./src/admin-user";
+export * from "./src/admin-application";
+export * from "./src/report";
+export * from "./src/integration";

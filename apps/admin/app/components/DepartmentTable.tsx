@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type Department } from "./data";
 import { getFilteredDepartmentData } from "./analyticsFilters";
 
@@ -18,6 +18,25 @@ const allColumns = [
 export function DepartmentTable({ appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(["placements", "offers", "avgPackage"]);
   const [showColumnSelector, setShowColumnSelector] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/v1/analytics/departments");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setDepartments(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch departments", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const toggleColumn = (col: string) => {
     setSelectedColumns((prev) => (prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]));
@@ -29,7 +48,7 @@ export function DepartmentTable({ appliedFilters }: { appliedFilters?: Record<st
     return Number.isFinite(n) ? n : 0;
   };
 
-  const filteredDepartments = getFilteredDepartmentData(appliedFilters);
+  const filteredDepartments = getFilteredDepartmentData(departments, appliedFilters);
 
   const totals = filteredDepartments.reduce(
     (acc, d: Department) => {

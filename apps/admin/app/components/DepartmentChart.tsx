@@ -10,13 +10,32 @@ import { getFilteredDepartmentData } from "./analyticsFilters";
 export function DepartmentChart({ appliedFilters }: { appliedFilters?: Record<string, string[]> }) {
   const [activeTab, setActiveTab] = useState("overall");
   const [isMobile, setIsMobile] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/v1/analytics/departments");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setDepartments(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch departments", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const parseLpa = (value: string) => {
     const n = Number(value.replace(/[^\d.]/g, ""));
     return Number.isFinite(n) ? n : 0;
   };
 
-  const filteredByDropdown = getFilteredDepartmentData(appliedFilters);
+  const filteredByDropdown = getFilteredDepartmentData(departments, appliedFilters);
   const filteredDepartments =
     activeTab === "overall" ? filteredByDropdown : filteredByDropdown.filter((dept) => dept.name.toLowerCase().replace(/\s/g, "") === activeTab);
 

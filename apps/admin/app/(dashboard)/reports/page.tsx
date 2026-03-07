@@ -2,13 +2,32 @@
 
 import { reports } from "../../components/data";
 import ReportCard from "./components/ReportCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
 export default function ReportsPage() {
   const [search, setSearch] = useState("");
+  const [reportsData, setReportsData] = useState<any[]>(reports);
+  const [loading, setLoading] = useState(true);
 
-  const filteredReports = reports.filter((report) => report.title.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/v1/reports");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setReportsData(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch reports", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  const filteredReports = reportsData.filter((report) => report.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
@@ -32,9 +51,15 @@ export default function ReportsPage() {
 
       {/* Reports Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {filteredReports.map((report) => (
-          <ReportCard key={report.id} report={report} />
-        ))}
+        {loading ? (
+          <div className="text-slate-500 text-sm py-4">Loading reports...</div>
+        ) : filteredReports.length > 0 ? (
+          filteredReports.map((report) => (
+            <ReportCard key={report.id} report={report} />
+          ))
+        ) : (
+          <div className="text-slate-500 text-sm py-4">No reports found matching your search.</div>
+        )}
       </div>
     </div>
   );

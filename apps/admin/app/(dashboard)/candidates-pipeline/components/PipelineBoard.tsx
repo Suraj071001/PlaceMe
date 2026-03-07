@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { stages, students as initialStudents, stageOrder } from "../../../components/data";
 import PipelineStage from "./PipelineStages";
 import { Briefcase } from "lucide-react";
@@ -48,21 +48,71 @@ const typeStyleMap: Record<string, string> = {
 export default function PipelineBoard() {
   const [students, setStudents] = useState<PipelineStudent[]>(initialStudents as PipelineStudent[]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // In a real application, jobId would come from router params or props.
+  const jobId = "1"; // Mock job ID for the current "Amazon SDE Intern" context
+
+  // Fetch applications
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/v1/admin-applications/job/${jobId}`);
+        const json = await res.json();
+        if (json.success && json.data && json.data.length > 0) {
+          // Map DB applications to UI format
+          const mappedStudents = json.data.map((app: any) => ({
+            id: app.id,
+            name: `${app.student?.user?.firstName || ''} ${app.student?.user?.lastName || ''}`.trim() || 'Student',
+            email: app.student?.user?.email,
+            stage: app.stage?.name.toLowerCase() || app.stageId,
+            branch: app.student?.branch?.name || '',
+            company: "Amazon", // Mocked for UI context
+            role: "SDE Intern",
+            type: "Internship",
+            appliedDate: new Date(app.createdAt).toLocaleDateString(),
+          }));
+          setStudents(mappedStudents);
+        }
+      } catch (err) {
+        console.error("Failed to fetch applications", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchApplications();
+  }, []);
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
-  const moveSelectedForward = () => {
-    setStudents((prev) =>
-      prev.map((s) => {
-        if (!selected.includes(String(s.id))) return s;
-        const currentIndex = stageOrder.indexOf(s.stage);
-        const nextStage = stageOrder[currentIndex + 1];
-        if (!nextStage) return s;
-        return { ...s, stage: nextStage };
-      }),
-    );
+  const moveSelectedForward = async () => {
+    const originalStudents = [...students];
+    const updatedStudents = students.map((s) => {
+      if (!selected.includes(String(s.id))) return s;
+      const currentIndex = stageOrder.indexOf(s.stage);
+      const nextStage = stageOrder[currentIndex + 1];
+      if (!nextStage) return s;
+      return { ...s, stage: nextStage };
+    });
+    setStudents(updatedStudents);
+
+    // Call API to update stages in backend
+    for (const studentId of selected) {
+      const student = updatedStudents.find(s => String(s.id) === studentId);
+      if (student) {
+        try {
+          await fetch(`http://localhost:3000/api/v1/admin-applications/${studentId}/stage`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ stageId: student.stage })
+          });
+        } catch (e) {
+          console.error(`Failed to update stage for student ${studentId}`);
+        }
+      }
+    }
     setSelected([]);
   };
 
@@ -126,9 +176,8 @@ export default function PipelineBoard() {
                     key={id}
                     type="button"
                     onClick={() => toggleSelect(id)}
-                    className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left transition ${
-                      isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
-                    }`}
+                    className={`w-full grid grid-cols-[2fr_2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-x-3 items-center px-4 py-3 text-left transition ${isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                      }`}
                   >
                     {/* Company */}
                     <span className="flex items-center gap-1.5 font-semibold text-sm text-gray-900">
@@ -157,9 +206,8 @@ export default function PipelineBoard() {
 
                     {/* Status */}
                     <span
-                      className={`inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium ${
-                        stageStyle?.color ?? "bg-gray-100 text-gray-600 border-gray-200"
-                      }`}
+                      className={`inline-flex w-fit rounded-full border px-2 py-0.5 text-xs font-medium ${stageStyle?.color ?? "bg-gray-100 text-gray-600 border-gray-200"
+                        }`}
                     >
                       {stageStyle?.label ?? s.stage}
                     </span>

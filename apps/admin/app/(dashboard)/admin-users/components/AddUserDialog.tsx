@@ -1,13 +1,79 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@repo/ui/components/dialog";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Plus } from "lucide-react";
 
 export function AddUserDialog() {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    roleId: "",
+  });
+
+  useEffect(() => {
+    // Optionally fetch roles if your backend supports it
+    // For now we assume the backend returns roles or we use a basic string as roleId if DB is not strict.
+    // If backend requires UUID for roleId, we'll fetch them.
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/v1/roles");
+        const json = await res.json();
+        if (json.success && json.roles) {
+          setRoles(json.roles);
+        }
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      // Use the first role ID if no role is selected and roles exist
+      const submitData = {
+        ...formData,
+        roleId: formData.roleId || (roles.length > 0 ? roles[0].id : "00000000-0000-0000-0000-000000000000"), // fallback for type validation
+      };
+
+      const res = await fetch("http://localhost:3000/api/v1/admin-users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submitData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOpen(false);
+        setFormData({ firstName: "", lastName: "", email: "", password: "", roleId: "" });
+        // Optionally trigger a refresh of the parent table
+        window.location.reload();
+      } else {
+        alert(data.message || data.errors || "Failed to create user");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error creating user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full rounded-lg bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
@@ -22,105 +88,57 @@ export function AddUserDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <form className="grid gap-4 py-4" onSubmit={(e) => e.preventDefault()}>
-          <div className="grid gap-2">
-            <label htmlFor="name" className="text-sm font-medium text-slate-700">
-              Name *
-            </label>
-            <Input id="name" placeholder="Enter full name" className="border-indigo-500 ring-2 ring-indigo-500/20 shadow-none" />
+        <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <label htmlFor="firstName" className="text-sm font-medium text-slate-700">
+                First Name *
+              </label>
+              <Input id="firstName" required value={formData.firstName} onChange={handleChange} placeholder="First name" className="border-indigo-500 ring-2 ring-indigo-500/20 shadow-none" />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="lastName" className="text-sm font-medium text-slate-700">
+                Last Name *
+              </label>
+              <Input id="lastName" required value={formData.lastName} onChange={handleChange} placeholder="Last name" className="shadow-none focus-visible:ring-indigo-500" />
+            </div>
           </div>
 
           <div className="grid gap-2">
             <label htmlFor="email" className="text-sm font-medium text-slate-700">
               Email *
             </label>
-            <Input id="email" type="email" placeholder="Enter email address" className="shadow-none focus-visible:ring-indigo-500 text-slate-500" />
+            <Input id="email" type="email" required value={formData.email} onChange={handleChange} placeholder="Enter email address" className="shadow-none focus-visible:ring-indigo-500 text-slate-500" />
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="role" className="text-sm font-medium text-slate-700">
+            <label htmlFor="password" className="text-sm font-medium text-slate-700">
+              Password *
+            </label>
+            <Input id="password" type="password" required value={formData.password} onChange={handleChange} placeholder="Minimum 6 characters" minLength={6} className="shadow-none focus-visible:ring-indigo-500" />
+          </div>
+
+          <div className="grid gap-2">
+            <label htmlFor="roleId" className="text-sm font-medium text-slate-700">
               Role *
             </label>
             <select
-              id="role"
+              id="roleId"
+              value={formData.roleId}
+              onChange={handleChange}
+              required
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 shadow-none"
             >
-              <option value="" disabled selected>
-                Select role
-              </option>
-              <option value="director">Director</option>
-              <option value="placement_officer">Faculty Coordinator</option>
-              <option value="ic">IC</option>
-              <option value="pc">PC</option>
-            </select>
-          </div>
-
-          <div className="grid gap-2">
-            <label htmlFor="responsibility" className="text-sm font-medium text-slate-700">
-              Responsibility *
-            </label>
-            <select
-              id="responsibility"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 shadow-none"
-            >
-              <option value="" disabled selected>
-                Select responsibility
-              </option>
-              <option value="placement_oversight">Placement Oversight</option>
-              <option value="campus_drives">Campus Drives</option>
-              <option value="internship_coordination">Internship Coordination</option>
-              <option value="student_placement">Student Placement</option>
-            </select>
-          </div>
-
-          <div className="grid gap-2">
-            <label htmlFor="department" className="text-sm font-medium text-slate-700">
-              Department *
-            </label>
-            <select
-              id="department"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 shadow-none"
-            >
-              <option value="" disabled selected>
-                Select department
-              </option>
-              <option value="all">All</option>
-              <option value="placement_cell">Placement Cell</option>
-              <option value="cse">CSE</option>
-              <option value="mechanical">Mechanical</option>
-            </select>
-          </div>
-
-          <div className="grid gap-2">
-            <label htmlFor="branch" className="text-sm font-medium text-slate-700">
-              Branch *
-            </label>
-            <select
-              id="branch"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 shadow-none"
-            >
-              <option value="" disabled selected>
-                Select branch
-              </option>
-              <option value="mca">MCA</option>
-              <option value="mba">MBA</option>
-              <option value="msc">MSC</option>
-              <option value="btech">B Tech</option>
-            </select>
-          </div>
-
-          <div className="grid gap-2">
-            <label htmlFor="status" className="text-sm font-medium text-slate-700">
-              Status *
-            </label>
-            <select
-              id="status"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 shadow-none"
-            >
-              <option value="active" selected>
-                Active
-              </option>
-              <option value="inactive">Inactive</option>
+              <option value="" disabled>Select role</option>
+              {roles.map(r => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+              {roles.length === 0 && (
+                <>
+                  <option value="director">Director</option>
+                  <option value="faculty">Faculty Coordinator</option>
+                </>
+              )}
             </select>
           </div>
 
@@ -130,8 +148,8 @@ export function AddUserDialog() {
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm">
-              Add User
+            <Button type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm">
+              {loading ? "Adding..." : "Add User"}
             </Button>
           </div>
         </form>

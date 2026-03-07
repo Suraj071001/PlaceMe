@@ -80,7 +80,37 @@ const initialUsers = [
 ].map((u) => ({ ...u, permissions: getDefaultPermissions(u.role) }));
 
 export function UserTable() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/v1/admin-users");
+        const json = await res.json();
+        if (json.success && json.data) {
+          // Add default permissions to each user since the backend might not return them yet if not fully implemented in schema
+          const usersWithPerms = json.data.map((u: any) => ({
+            ...u,
+            permissions: u.permissions || getDefaultPermissions(u.role),
+            // Map DB fields to UI fields if needed
+            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Admin User',
+            department: u.department || 'All',
+            branch: u.branch || 'All',
+            responsibility: u.responsibility || 'Management',
+            status: u.status || 'Active'
+          }));
+          setUsers(usersWithPerms);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin users", error);
+        setUsers(initialUsers); // Fallback to mock data on error for demo purposes
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
