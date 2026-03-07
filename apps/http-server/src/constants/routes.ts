@@ -37,6 +37,7 @@ export const ROUTES = {
     BY_ID: "/student-application/:id",
     APPLY: "/student-application/apply",
     MINE: "/student-application/mine",
+    FORM_BY_JOB: "/student-application/job/:jobId/form",
   },
   FORM_RESPONSE: {
     BASE: "/form-response",
@@ -68,6 +69,7 @@ export const ROUTES = {
   ADMIN_APPLICATION: {
     BY_JOB: "/admin-applications/job/:jobId",
     UPDATE_STAGE: "/admin-applications/:id/stage",
+    FORM_RESPONSE: "/admin-applications/:id/form-response",
   },
   ANALYTICS: {
     STATS: "/analytics/stats",
@@ -79,6 +81,7 @@ export const ROUTES = {
     BASE: "/integrations",
     CONNECT: "/integrations/:provider/connect",
     DISCONNECT: "/integrations/:provider/disconnect",
+    GOOGLE_CHAT_SPACES: "/integrations/google-chat/spaces",
   },
   REPORT: {
     BASE: "/reports",
