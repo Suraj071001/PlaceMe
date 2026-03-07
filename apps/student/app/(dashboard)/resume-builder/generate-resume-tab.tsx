@@ -33,12 +33,16 @@ export function GenerateResumeTab() {
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplateId | null>(null);
   const [profile, setProfile] = useState<StudentResumeProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     getResumeProfile()
       .then((p) => {
         if (p) setProfile(p);
+      })
+      .catch((err: any) => {
+        setProfileError(err?.message || "Could not load resume profile.");
       })
       .finally(() => setProfileLoading(false));
   }, []);
@@ -47,8 +51,9 @@ export function GenerateResumeTab() {
     if (!selectedTemplate) return;
     setPdfLoading(true);
     try {
-      const ok = await downloadResumePdf(selectedTemplate);
-      if (!ok) alert("Failed to download PDF. Check that you are logged in and have a student profile.");
+      await downloadResumePdf(selectedTemplate);
+    } catch (error: any) {
+      alert(error?.message || "Failed to download PDF.");
     } finally {
       setPdfLoading(false);
     }
@@ -75,7 +80,7 @@ export function GenerateResumeTab() {
             </div>
           ) : !profile ? (
             <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-              Resume profile could not be loaded from backend. Please login as a student and complete your profile.
+              {profileError || "Resume profile could not be loaded from backend. Please login as a student and complete your profile."}
             </div>
           ) : (
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">

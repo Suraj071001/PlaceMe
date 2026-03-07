@@ -4,16 +4,22 @@ import { useEffect, useState } from "react";
 import { Upload, FileText, Eye, Download, Loader2 } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/ui/components/card";
-import { listResumes, openResumeInNewTab, downloadResumeById, type ResumeListItem } from "./resume-api";
+import { listResumes, openResumeInNewTab, downloadResumeById, uploadResumeFile, type ResumeListItem } from "./resume-api";
 
 export function UploadResumeTab() {
     const [resumes, setResumes] = useState<ResumeListItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const loadResumes = () => {
         listResumes()
             .then(setResumes)
             .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        loadResumes();
     }, []);
 
     return (
@@ -24,12 +30,35 @@ export function UploadResumeTab() {
                         <Upload className="w-8 h-8" />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Upload Your Resume</h3>
-                    <p className="text-gray-500 mb-2">Resume upload API is not available yet.</p>
-                    <p className="text-sm text-gray-400 mb-6">Use the Generate tab to create and save resumes from backend data.</p>
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[150px]" disabled>
+                    <p className="text-gray-500 mb-2">Upload a PDF resume and keep it in your resume library.</p>
+                    <p className="text-sm text-gray-400 mb-6">Supported format: PDF, up to 8MB.</p>
+                    <label className={`inline-flex cursor-pointer items-center rounded-md px-4 py-2 text-white min-w-[170px] justify-center ${uploading ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"}`}>
                         <FileText className="w-4 h-4 mr-2" />
-                        Upload Coming Soon
-                    </Button>
+                        {uploading ? "Uploading..." : "Choose PDF"}
+                        <input
+                            type="file"
+                            accept="application/pdf"
+                            className="hidden"
+                            disabled={uploading}
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                e.currentTarget.value = "";
+                                if (!file) return;
+                                setUploadError(null);
+                                setUploading(true);
+                                try {
+                                    await uploadResumeFile(file);
+                                    setLoading(true);
+                                    loadResumes();
+                                } catch (error: any) {
+                                    setUploadError(error?.message || "Failed to upload resume.");
+                                } finally {
+                                    setUploading(false);
+                                }
+                            }}
+                        />
+                    </label>
+                    {uploadError && <p className="text-sm text-red-600 mt-3">{uploadError}</p>}
                 </CardContent>
             </Card>
 

@@ -11,6 +11,91 @@ export async function getStudentByUserId(userId: string) {
   });
 }
 
+async function resolveDefaultAcademicContext(tx: any): Promise<{ branchId: string; batchId: string }> {
+  const existingBatch = await tx.batch.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true, branchId: true },
+  });
+  if (existingBatch) {
+    return { branchId: existingBatch.branchId, batchId: existingBatch.id };
+  }
+
+  let branch = await tx.branch.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+
+  if (!branch) {
+    let department = await tx.department.findFirst({
+      where: { deletedAt: null },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+
+    if (!department) {
+      department = await tx.department.create({
+        data: { name: "General" },
+        select: { id: true },
+      });
+    }
+
+    branch = await tx.branch.create({
+      data: {
+        name: "General",
+        departmentId: department.id,
+      },
+      select: { id: true },
+    });
+  }
+
+  const batch = await tx.batch.create({
+    data: {
+      name: "General",
+      branchId: branch.id,
+    },
+    select: { id: true, branchId: true },
+  });
+
+  return { branchId: batch.branchId, batchId: batch.id };
+}
+
+export async function getOrCreateStudentByUserId(userId: string) {
+  const existing = await getStudentByUserId(userId);
+  if (existing) return existing;
+
+  return client.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (!user) return null;
+
+    const academic = await resolveDefaultAcademicContext(tx);
+
+    await tx.student.upsert({
+      where: { userId },
+      update: {},
+      create: {
+        userId,
+        enrollment: "",
+        address: "",
+        skills: [],
+        branchId: academic.branchId,
+        batchId: academic.batchId,
+      },
+    });
+
+    return tx.student.findFirst({
+      where: { userId },
+      include: {
+        user: true,
+        branch: true,
+        batch: true,
+      },
+    });
+  });
+}
+
 export type ResumeDataJson = {
   skills?: string[];
   education?: { degree: string; institution: string; year: string }[];

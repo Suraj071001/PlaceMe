@@ -10,7 +10,7 @@ export const getStudentProfileService = async (userId: string) => {
     const profile = await getStudentProfile(userId);
     if (!profile) {
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user) throw new Error("User not found");
+        if (!user) throw new Error("Session expired. Please login again.");
         return {
             user,
             enrollment: "",

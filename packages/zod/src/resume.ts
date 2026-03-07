@@ -34,5 +34,15 @@ export const GenerateResumePdfSchema = z.object({
   templateId: ResumeTemplateIdSchema,
 });
 
+export const GenerateResumeAiSchema = z.object({
+  targetRole: z.string().min(2).max(120),
+  targetCompany: z.string().max(120).optional(),
+  tone: z.enum(["concise", "impact", "ats"]).default("impact"),
+  includeProjects: z.boolean().default(true),
+  includeExperience: z.boolean().default(true),
+  extraContext: z.string().max(3000).optional(),
+});
+
 export type UpdateResumeProfilePayload = z.infer<typeof UpdateResumeProfileSchema>;
 export type GenerateResumePdfPayload = z.infer<typeof GenerateResumePdfSchema>;
+export type GenerateResumeAiPayload = z.infer<typeof GenerateResumeAiSchema>;

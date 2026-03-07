@@ -5,18 +5,36 @@ import ReportCard from "./components/ReportCard";
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_V1_URL?.replace(/\/$/, "") || "http://localhost:5501/api/v1";
+
+type ReportItem = {
+  id: number;
+  title: string;
+  description: string;
+  generatedAt: string;
+  type: "Placement" | "Department" | "Company";
+  file: string;
+};
+
 export default function ReportsPage() {
   const [search, setSearch] = useState("");
-  const [reportsData, setReportsData] = useState<any[]>(reports);
+  const [reportsData, setReportsData] = useState<ReportItem[]>(reports as ReportItem[]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/v1/reports");
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API_BASE}/reports`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to fetch reports: ${res.status}`);
+        }
+
         const json = await res.json();
-        if (json.success && json.data) {
-          setReportsData(json.data);
+        if (json.success && Array.isArray(json.data)) {
+          setReportsData(json.data as ReportItem[]);
         }
       } catch (err) {
         console.error("Failed to fetch reports", err);
@@ -31,13 +49,11 @@ export default function ReportsPage() {
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
-      {/* Header */}
       <div>
         <h1 className="text-[22px] font-semibold">Reports</h1>
         <p className="text-sm text-slate-500">Generate and download placement reports</p>
       </div>
 
-      {/* Search */}
       <div className="relative w-full max-w-[320px]">
         <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
         <input
@@ -49,13 +65,12 @@ export default function ReportsPage() {
         />
       </div>
 
-      {/* Reports Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {loading ? (
           <div className="text-slate-500 text-sm py-4">Loading reports...</div>
         ) : filteredReports.length > 0 ? (
           filteredReports.map((report) => (
-            <ReportCard key={report.id} report={report} />
+            <ReportCard key={report.id} report={report} apiBase={API_BASE} />
           ))
         ) : (
           <div className="text-slate-500 text-sm py-4">No reports found matching your search.</div>

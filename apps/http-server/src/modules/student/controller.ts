@@ -17,9 +17,13 @@ export const getProfileController = async (req: Request, res: Response) => {
         logger.error(LOG.STUDENT_FETCH_START, {
             error: error.message || ERROR.INTERNAL_SERVER_ERROR,
         });
+        const statusCode = error?.message === "User not found" ? 401 : 400;
+        const errorMessage = error?.message === "User not found"
+            ? "Session expired. Please login again."
+            : (error.message || ERROR.INTERNAL_SERVER_ERROR);
         return res
-            .status(400)
-            .json({ error: error.message || ERROR.INTERNAL_SERVER_ERROR });
+            .status(statusCode)
+            .json({ error: errorMessage });
     }
 };
 

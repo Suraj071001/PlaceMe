@@ -20,6 +20,7 @@ const emptyProject = () => ({ name: "", description: "", tech: "" });
 export function ResumeEditorTab() {
   const [profile, setProfile] = useState<StudentResumeProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState<StudentResumeProfile>({
@@ -47,6 +48,9 @@ export function ResumeEditorTab() {
           projects: p.projects.length ? p.projects : [emptyProject()],
         });
       }
+    }).catch((err: any) => {
+      setLoadError(err?.message || "Could not load resume profile.");
+    }).finally(() => {
       setLoading(false);
     });
   }, []);
@@ -182,7 +186,7 @@ export function ResumeEditorTab() {
     return (
       <Card>
         <CardContent className="py-8 text-center text-gray-500">
-          You need a student profile to edit resume data. Please complete your profile first.
+          {loadError || "You need a student profile to edit resume data. Please complete your profile first."}
         </CardContent>
       </Card>
     );

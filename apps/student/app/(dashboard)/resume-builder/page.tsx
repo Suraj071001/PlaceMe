@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, FileEdit, Eye, Pencil } from "lucide-react";
+import { Upload, FileEdit, Eye, Pencil, Sparkles } from "lucide-react";
 import { UploadResumeTab } from "./upload-resume-tab";
 import { GenerateResumeTab } from "./generate-resume-tab";
 import { MyResumesTab } from "./my-resumes-tab";
 import { ResumeEditorTab } from "./resume-editor-tab";
+import { AiResumeStudioTab } from "./ai-resume-studio-tab";
 
 export default function ResumeBuilderPage() {
-    const [activeTab, setActiveTab] = useState<"upload" | "edit" | "generate" | "my-resumes">("edit");
+    const [activeTab, setActiveTab] = useState<"upload" | "edit" | "generate" | "my-resumes" | "ai-studio">("edit");
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto">
@@ -56,6 +57,18 @@ export default function ResumeBuilderPage() {
                         Generate Resume
                     </button>
                     <button
+                        onClick={() => setActiveTab("ai-studio")}
+                        className={`
+              whitespace-nowrap flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
+              ${activeTab === "ai-studio"
+                                ? "border-amber-500 text-amber-700"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}
+            `}
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        AI Studio
+                    </button>
+                    <button
                         onClick={() => setActiveTab("my-resumes")}
                         className={`
               whitespace-nowrap flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
@@ -74,6 +87,7 @@ export default function ResumeBuilderPage() {
                 {activeTab === "upload" && <UploadResumeTab />}
                 {activeTab === "edit" && <ResumeEditorTab />}
                 {activeTab === "generate" && <GenerateResumeTab />}
+                {activeTab === "ai-studio" && <AiResumeStudioTab />}
                 {activeTab === "my-resumes" && <MyResumesTab />}
             </div>
         </div>
