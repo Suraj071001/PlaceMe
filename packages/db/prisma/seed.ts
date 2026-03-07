@@ -285,6 +285,7 @@ async function main() {
     }
   });
 
+<<<<<<< HEAD
   // Create the Student profile for the dummy student
   await client.student.upsert({
     where: { userId: dummyStudent.id },
@@ -299,6 +300,57 @@ async function main() {
       email: "suraj24mca@gmail.com"
     }
   });
+=======
+    let studentBranch = await client.branch.findFirst({
+        where: { name: "Computer Science", departmentId: department.id },
+    });
+
+    if (!studentBranch) {
+        studentBranch = await client.branch.create({
+            data: {
+                name: "Computer Science",
+                departmentId: department.id,
+            },
+        });
+    }
+
+    let studentBatch = await client.batch.findFirst({
+        where: { name: "2024", branchId: studentBranch.id },
+    });
+
+    if (!studentBatch) {
+        studentBatch = await client.batch.create({
+            data: {
+                name: "2024",
+                branchId: studentBranch.id,
+            },
+        });
+    }
+
+    // Create the Student profile for the dummy student
+    await client.student.upsert({
+        where: { userId: dummyStudent.id },
+        update: {},
+        create: {
+            userId: dummyStudent.id,
+            enrollment: "ENR-12345",
+            address: "123 Student Rd",
+            skills: [],
+            branchId: dummyBranch.id,
+            batchId: dummyBatch.id,
+            email: "suraj24mca@gmail.com"
+        }
+    });
+
+    console.log("Dummy Users seeding completed");
+    console.log("RBAC and Mock Data seeding completed");
+    console.log("====================================");
+    console.log("Admin Credentials:");
+    console.log("Email: admin@placeme.com");
+    console.log("Password: admin123");
+    console.log("====================================");
+ 
+>>>>>>> 68a0815ea8e6c033939536440a8126e8603c2ca9
 
   console.log("Dummy Users seeding completed 🚀");
   console.log("RBAC and Mock Data seeding completed 🚀");

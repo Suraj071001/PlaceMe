@@ -34,5 +34,11 @@ export const ROUTES = {
     FORM_RESPONSE: {
         BASE: "/form-response",
         BY_APPLICATION_ID: "/form-response/application/:applicationId",
-    }
+    },
+    RESUME: {
+        PROFILE: "/student/resume-profile",
+        GENERATE_PDF: "/student/resume/generate-pdf",
+        RESUMES_LIST: "/student/resumes",
+        RESUME_FILE: "/student/resumes/:id/file",
+    },
 };

@@ -208,7 +208,7 @@ model GoogleChatConfig {
 
   batch Batch  @relation(fields: [batchId], references: [id])
 
-  @@unique([batchId, webhookUrl])
+
 }
 
 model Student {
@@ -227,11 +227,28 @@ model Student {
   branch      Branch @relation(fields: [branchId] , references: [id])
 
   email        String?
+  cgpa         String?
+  resumeData   Json?    // { skills: string[], education: {...}[], experience: {...}[], projects: {...}[] }
   createdAt    DateTime @default(now())
   deletedAt    DateTime?
 
   applications Application[]
+<<<<<<< HEAD
   formResponses FormResponse[]
+=======
+  resumes      Resume[]
+}
+
+model Resume {
+  id         String   @id @default(uuid())
+  studentId  String
+  templateId String   // e.g. "modern" | "classic" | "minimal" | "professional"
+  filePath   String   // path or URL to the stored PDF
+  name       String?  // optional display name, e.g. "Resume - Modern - Mar 2025"
+  createdAt  DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+>>>>>>> 68a0815ea8e6c033939536440a8126e8603c2ca9
 }
 
 model Application {
