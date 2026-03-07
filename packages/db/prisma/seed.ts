@@ -255,6 +255,37 @@ async function main() {
     },
   });
 
+  const extraAdmins = [
+    {
+      email: "operations.admin@placeme.com",
+      firstName: "Operations",
+      lastName: "Admin",
+      phone: "+1234567891",
+    },
+    {
+      email: "placements.admin@placeme.com",
+      firstName: "Placements",
+      lastName: "Lead",
+      phone: "+1234567892",
+    },
+  ];
+
+  for (const extraAdmin of extraAdmins) {
+    await client.user.upsert({
+      where: { email: extraAdmin.email },
+      update: {},
+      create: {
+        email: extraAdmin.email,
+        password: hashedPassword,
+        firstName: extraAdmin.firstName,
+        lastName: extraAdmin.lastName,
+        roleId: adminRole.id,
+        isActive: true,
+        phone: extraAdmin.phone,
+      },
+    });
+  }
+
   /*
   ========================
   DEPARTMENT / BRANCH / BATCH
@@ -456,6 +487,162 @@ async function main() {
       },
     },
   });
+
+  // Additional companies for richer admin dashboards
+  const extraCompanies = [
+    {
+      name: "Nimbus Systems",
+      domain: "nimbus.systems",
+      industry: "Cloud Infrastructure",
+      faculty_coordinator: "Prof Deb",
+      status: "INTERESTED" as const,
+      branchId: "branch-cse",
+      hr: {
+        name: "Riya Menon",
+        email: "riya.hr@nimbus.systems",
+        designation: "HR_MANAGER" as const,
+      },
+      jobs: [
+        {
+          slug: "nimbus-backend-engineer",
+          title: "Backend Engineer",
+          role: "Backend Engineer",
+          location: "Bangalore",
+          workMode: "HYBRID",
+          ctc: "18-24 LPA",
+          minimumCGPA: 7.0,
+          passingYear: 2025,
+          batches: ["batch-2024", "batch-2025"],
+        },
+        {
+          slug: "nimbus-site-reliability-intern",
+          title: "Site Reliability Intern",
+          role: "SRE Intern",
+          location: "Remote",
+          workMode: "REMOTE",
+          ctc: "8-10 LPA",
+          minimumCGPA: 6.8,
+          passingYear: 2026,
+          batches: ["batch-2026"],
+        },
+      ],
+    },
+    {
+      name: "VoltEdge Electronics",
+      domain: "voltedge.io",
+      industry: "Embedded & Hardware",
+      faculty_coordinator: "Prof Choudhury",
+      status: "CONTACTED" as const,
+      branchId: "branch-ece",
+      hr: {
+        name: "Arun Nair",
+        email: "arun.hr@voltedge.io",
+        designation: "TECH_RECRUITER" as const,
+      },
+      jobs: [
+        {
+          slug: "voltedge-embedded-engineer",
+          title: "Embedded Software Engineer",
+          role: "Embedded Engineer",
+          location: "Pune",
+          workMode: "ONSITE",
+          ctc: "12-18 LPA",
+          minimumCGPA: 6.5,
+          passingYear: 2025,
+          batches: ["batch-ece-2024", "batch-ece-2025"],
+        },
+      ],
+    },
+    {
+      name: "Aster Fintech",
+      domain: "asterfintech.com",
+      industry: "FinTech",
+      faculty_coordinator: "Prof Das",
+      status: "INTERESTED" as const,
+      branchId: "branch-mba",
+      hr: {
+        name: "Nikita Rao",
+        email: "nikita.hr@asterfintech.com",
+        designation: "CAMPUS_RECRUITER" as const,
+      },
+      jobs: [
+        {
+          slug: "aster-business-analyst",
+          title: "Business Analyst",
+          role: "Business Analyst",
+          location: "Mumbai",
+          workMode: "HYBRID",
+          ctc: "10-14 LPA",
+          minimumCGPA: 6.0,
+          passingYear: 2025,
+          batches: ["batch-mba-2024", "batch-mba-2025"],
+        },
+      ],
+    },
+  ];
+
+  for (const extraCompany of extraCompanies) {
+    const createdCompany = await client.company.upsert({
+      where: { name: extraCompany.name },
+      update: {},
+      create: {
+        name: extraCompany.name,
+        domain: extraCompany.domain,
+        industry: extraCompany.industry,
+        faculty_coordinator: extraCompany.faculty_coordinator,
+        status: extraCompany.status,
+        branchId: extraCompany.branchId,
+      },
+    });
+
+    const existingExtraHr = await client.hRContact.findFirst({
+      where: {
+        companyId: createdCompany.id,
+        email: extraCompany.hr.email,
+      },
+    });
+
+    if (!existingExtraHr) {
+      await client.hRContact.create({
+        data: {
+          name: extraCompany.hr.name,
+          email: extraCompany.hr.email,
+          designation: extraCompany.hr.designation,
+          phone: "9000000000",
+          companyId: createdCompany.id,
+        },
+      });
+    }
+
+    for (const extraJob of extraCompany.jobs) {
+      await client.job.upsert({
+        where: { slug: extraJob.slug },
+        update: {},
+        create: {
+          companyId: createdCompany.id,
+          departmentId: department.id,
+          title: extraJob.title,
+          slug: extraJob.slug,
+          description: `${extraJob.title} role at ${extraCompany.name}.`,
+          location: extraJob.location,
+          employmentType: "FULL_TIME",
+          workMode: extraJob.workMode,
+          ctc: extraJob.ctc,
+          minimumCGPA: extraJob.minimumCGPA,
+          passingYear: extraJob.passingYear,
+          role: extraJob.role,
+          status: "ACTIVE",
+          openAt: new Date(),
+          closeAt: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+          batches: {
+            connect: extraJob.batches.map((batchId) => ({ id: batchId })),
+          },
+          google_chat: true,
+          email: true,
+        },
+      });
+    }
+  }
 
   /*
   ========================
@@ -770,6 +957,96 @@ async function main() {
       branchId: branch.id,
       batchId: batch.id,
       skills: ["C#", ".NET"],
+    },
+    {
+      email: "maya.sen@example.com",
+      firstName: "Maya",
+      lastName: "Sen",
+      enrollment: "ENR-44557",
+      branchId: "branch-cse",
+      batchId: "batch-2025",
+      skills: ["Rust", "Distributed Systems"],
+    },
+    {
+      email: "noah.paul@example.com",
+      firstName: "Noah",
+      lastName: "Paul",
+      enrollment: "ENR-44558",
+      branchId: "branch-cse",
+      batchId: "batch-2026",
+      skills: ["Next.js", "TypeScript"],
+    },
+    {
+      email: "olivia.roy@example.com",
+      firstName: "Olivia",
+      lastName: "Roy",
+      enrollment: "ENR-44559",
+      branchId: "branch-ece",
+      batchId: "batch-ece-2024",
+      skills: ["VLSI", "MATLAB"],
+    },
+    {
+      email: "pranav.kale@example.com",
+      firstName: "Pranav",
+      lastName: "Kale",
+      enrollment: "ENR-44560",
+      branchId: "branch-ece",
+      batchId: "batch-ece-2025",
+      skills: ["Embedded C", "RTOS"],
+    },
+    {
+      email: "qiana.bose@example.com",
+      firstName: "Qiana",
+      lastName: "Bose",
+      enrollment: "ENR-44561",
+      branchId: "branch-mba",
+      batchId: "batch-mba-2024",
+      skills: ["Market Research", "Excel"],
+    },
+    {
+      email: "rahul.dev@example.com",
+      firstName: "Rahul",
+      lastName: "Dev",
+      enrollment: "ENR-44562",
+      branchId: "branch-mba",
+      batchId: "batch-mba-2025",
+      skills: ["Business Strategy", "Power BI"],
+    },
+    {
+      email: "sana.iqbal@example.com",
+      firstName: "Sana",
+      lastName: "Iqbal",
+      enrollment: "ENR-44563",
+      branchId: "branch-cse",
+      batchId: "batch-2024",
+      skills: ["Data Science", "Pandas"],
+    },
+    {
+      email: "tanvi.kapoor@example.com",
+      firstName: "Tanvi",
+      lastName: "Kapoor",
+      enrollment: "ENR-44564",
+      branchId: "branch-cse",
+      batchId: "batch-2025",
+      skills: ["Flutter", "Dart"],
+    },
+    {
+      email: "umang.gupta@example.com",
+      firstName: "Umang",
+      lastName: "Gupta",
+      enrollment: "ENR-44565",
+      branchId: "branch-ece",
+      batchId: "batch-ece-2024",
+      skills: ["Signal Processing", "Python"],
+    },
+    {
+      email: "vani.shah@example.com",
+      firstName: "Vani",
+      lastName: "Shah",
+      enrollment: "ENR-44566",
+      branchId: "branch-mba",
+      batchId: "batch-mba-2024",
+      skills: ["Finance", "Operations"],
     },
   ];
 
