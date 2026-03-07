@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StatsCards } from "../components/StatsCards";
 import { FilterAnalytics } from "../components/FilterAnalytics";
 import { EmptyAnalytics } from "../components/EmptyAnalytics";
@@ -20,9 +20,27 @@ export default function Page() {
     placementTier: [],
     compareYears: [],
   });
-  const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({});
-  const [activeView, setActiveView] = useState<"graphical" | "table">("graphical");
+  const [appliedFilters, setAppliedFilters] = useState<
+    Record<string, string[]>
+  >({});
+  const [activeView, setActiveView] = useState<"graphical" | "table">(
+    "graphical",
+  );
   const [filtersApplied, setFiltersApplied] = useState(false);
+
+  // Apply default filter on page load
+  useEffect(() => {
+    const defaultFilters = {
+      dateRange: ["Last 30 Days"],
+      department: [],
+      jobType: [],
+      placementTier: [],
+      compareYears: [],
+    };
+    setFilters(defaultFilters);
+    setAppliedFilters({ dateRange: ["Last 30 Days"] });
+    setFiltersApplied(true);
+  }, []);
 
   const handleFilterChange = (key: FilterKeys, value: string) => {
     setFilters((prev) => {
@@ -30,7 +48,8 @@ export default function Page() {
       if (current.includes(value)) {
         return { ...prev, [key]: current.filter((v) => v !== value) };
       }
-      if (key === "dateRange" || key === "compareYears") return { ...prev, [key]: [value] };
+      if (key === "dateRange" || key === "compareYears")
+        return { ...prev, [key]: [value] };
       return { ...prev, [key]: [...current, value] };
     });
   };
@@ -47,15 +66,16 @@ export default function Page() {
   };
 
   const handleClearAll = () => {
-    setFilters({
-      dateRange: [],
+    const defaultFilters = {
+      dateRange: ["Last 30 Days"],
       department: [],
       jobType: [],
       placementTier: [],
       compareYears: [],
-    });
-    setAppliedFilters({});
-    setFiltersApplied(false);
+    };
+    setFilters(defaultFilters);
+    setAppliedFilters({ dateRange: ["Last 30 Days"] });
+    setFiltersApplied(true);
   };
 
   const handleRemoveFilter = (key: string, value: string) => {
@@ -99,7 +119,11 @@ export default function Page() {
           <ViewToggle activeView={activeView} onViewChange={setActiveView} />
 
           {/* Chart or Table */}
-          {activeView === "graphical" ? <DepartmentChart appliedFilters={appliedFilters} /> : <DepartmentTable appliedFilters={appliedFilters} />}
+          {activeView === "graphical" ? (
+            <DepartmentChart appliedFilters={appliedFilters} />
+          ) : (
+            <DepartmentTable appliedFilters={appliedFilters} />
+          )}
 
           {/* Performance Summary + Recent Activity */}
           <div className="mb-5 grid grid-cols-1 items-stretch gap-4 px-0 md:grid-cols-2 md:px-4">
