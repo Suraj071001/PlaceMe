@@ -11,7 +11,7 @@ export const createAdminUserDAO = async (data: any) => {
             firstName: data.firstName,
             lastName: data.lastName,
             roleId: data.roleId,
-            isActive: true,
+            isActive: false,
         },
         select: {
             id: true,
