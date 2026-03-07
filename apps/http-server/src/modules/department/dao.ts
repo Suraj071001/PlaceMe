@@ -14,6 +14,17 @@ export const getDepartments = async () => {
     where: {
       deletedAt: null,
     },
+    include: {
+      branches: {
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: {
+          name: "asc",
+        },
+      },
+    },
     orderBy: {
       createdAt: "desc",
     },

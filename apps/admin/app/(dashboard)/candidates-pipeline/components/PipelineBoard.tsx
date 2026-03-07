@@ -19,6 +19,8 @@ type PipelineStudent = (typeof initialStudents)[number] & {
   workMode?: string;
   appliedDate?: string;
   appliedAt?: string;
+  department?: string;
+  branch?: string;
 };
 
 const stageStyleMap: Record<string, { label: string; color: string }> = {
@@ -48,40 +50,7 @@ const typeStyleMap: Record<string, string> = {
 export default function PipelineBoard() {
   const [students, setStudents] = useState<PipelineStudent[]>(initialStudents as PipelineStudent[]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // In a real application, jobId would come from router params or props.
-  const jobId = "1"; // Mock job ID for the current "Amazon SDE Intern" context
-
-  // Fetch applications
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/api/v1/admin-applications/job/${jobId}`);
-        const json = await res.json();
-        if (json.success && json.data && json.data.length > 0) {
-          // Map DB applications to UI format
-          const mappedStudents = json.data.map((app: any) => ({
-            id: app.id,
-            name: `${app.student?.user?.firstName || ''} ${app.student?.user?.lastName || ''}`.trim() || 'Student',
-            email: app.student?.user?.email,
-            stage: app.stage?.name.toLowerCase() || app.stageId,
-            branch: app.student?.branch?.name || '',
-            company: "Amazon", // Mocked for UI context
-            role: "SDE Intern",
-            type: "Internship",
-            appliedDate: new Date(app.createdAt).toLocaleDateString(),
-          }));
-          setStudents(mappedStudents);
-        }
-      } catch (err) {
-        console.error("Failed to fetch applications", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchApplications();
-  }, []);
+  const [selectedBranch, setSelectedBranch] = useState<string>("All Branches");
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
@@ -116,17 +85,42 @@ export default function PipelineBoard() {
     setSelected([]);
   };
 
+  const uniqueBranches = Array.from(new Set(students.map((s) => s.branch || s.department || "Other"))).filter(Boolean);
+
+  const filteredStudents = selectedBranch === "All Branches" ? students : students.filter((s) => (s.branch || s.department || "Other") === selectedBranch);
+
   // Stage counts for summary cards
   const stageCounts = stageOrder.reduce(
     (acc, stageId) => {
-      acc[stageId] = students.filter((s) => s.stage === stageId).length;
+      acc[stageId] = filteredStudents.filter((s) => s.stage === stageId).length;
       return acc;
     },
     {} as Record<string, number>,
   );
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Filters */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-b">
+        <div className="flex items-center gap-3">
+          <label htmlFor="branch-filter" className="text-sm font-medium text-gray-700">
+            Branch:
+          </label>
+          <select
+            id="branch-filter"
+            value={selectedBranch}
+            onChange={(e) => setSelectedBranch(e.target.value)}
+            className="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1.5 pl-3 pr-8"
+          >
+            <option value="All Branches">All Branches</option>
+            {uniqueBranches.map((branch) => (
+              <option key={branch} value={branch}>
+                {branch}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       {/* ── Mobile View ── */}
       <div className="flex flex-col h-full md:hidden">
         {/* Summary Cards */}
@@ -159,7 +153,7 @@ export default function PipelineBoard() {
 
             {/* Table Rows */}
             <div className="divide-y divide-gray-100 pb-24">
-              {students.map((s) => {
+              {filteredStudents.map((s) => {
                 const id = String(s.id);
                 const stageStyle = stageStyleMap[s.stage];
                 const isSelected = selected.includes(id);
@@ -227,7 +221,7 @@ export default function PipelineBoard() {
         <div className="h-full w-full overflow-y-hidden overflow-x-hidden">
           <div className="grid h-full grid-cols-6 gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6">
             {stages.map((stage) => {
-              const stageStudents = students.filter((s) => s.stage === stage.id).map((s) => ({ ...s, id: String(s.id) }));
+              const stageStudents = filteredStudents.filter((s) => s.stage === stage.id).map((s) => ({ ...s, id: String(s.id) }));
 
               return <PipelineStage key={stage.id} stage={stage} students={stageStudents} selected={selected} toggleSelect={toggleSelect} />;
             })}

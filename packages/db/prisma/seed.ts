@@ -145,8 +145,7 @@ async function main() {
   ========================
   */
 
-  const getPermission = (name: string) =>
-    permissionRecords.find((p) => p.name === name)!;
+  const getPermission = (name: string) => permissionRecords.find((p) => p.name === name)!;
 
   const rolePermissions = [
     { roleId: studentRole.id, permissionId: getPermission("READ_JOBS").id },

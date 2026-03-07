@@ -55,10 +55,10 @@ export const createJob = async (data: CreateJobPayload) => {
         ...jobData,
         ...(batchIds && batchIds.length > 0
           ? {
-            batches: {
-              connect: batchIds.map((id) => ({ id })),
-            },
-          }
+              batches: {
+                connect: batchIds.map((id) => ({ id })),
+              },
+            }
           : {}),
         ...applicationFormsPayload,
       },
@@ -99,11 +99,7 @@ export const getJobById = async (id: string) => {
   });
 };
 
-export const getJobs = async (
-  skip: number,
-  take: number,
-  filters: any = {},
-) => {
+export const getJobs = async (skip: number, take: number, filters: any = {}) => {
   const where: any = {};
 
   if (filters.companyId) {
@@ -120,6 +116,9 @@ export const getJobs = async (
   }
   if (filters.tier) {
     where.tier = filters.tier;
+  }
+  if (filters.workMode) {
+    where.workMode = filters.workMode;
   }
 
   const [data, total] = await Promise.all([
