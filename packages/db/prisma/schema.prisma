@@ -233,9 +233,7 @@ model Student {
   deletedAt    DateTime?
 
   applications Application[]
-<<<<<<< HEAD
   formResponses FormResponse[]
-=======
   resumes      Resume[]
 }
 
@@ -248,7 +246,6 @@ model Resume {
   createdAt  DateTime @default(now())
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
->>>>>>> 68a0815ea8e6c033939536440a8126e8603c2ca9
 }
 
 model Application {

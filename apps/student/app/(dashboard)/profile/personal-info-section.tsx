@@ -16,10 +16,11 @@ type PersonalInfoData = {
 
 type PersonalInfoSectionProps = {
     data: PersonalInfoData;
+    isEditing?: boolean;
     onChange?: (key: keyof PersonalInfoData, value: string) => void;
 };
 
-export function PersonalInfoSection({ data, onChange }: PersonalInfoSectionProps) {
+export function PersonalInfoSection({ data, isEditing = true, onChange }: PersonalInfoSectionProps) {
     const handleChange = (key: keyof PersonalInfoData) => (e: React.ChangeEvent<HTMLInputElement>) => {
         if (onChange) onChange(key, e.target.value);
     };
@@ -34,41 +35,41 @@ export function PersonalInfoSection({ data, onChange }: PersonalInfoSectionProps
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="mb-1.5 block text-sm font-medium">First Name</label>
-                            <Input value={data.firstName} onChange={handleChange("firstName")} />
+                            <Input value={data.firstName} onChange={handleChange("firstName")} disabled={!isEditing} />
                         </div>
                         <div>
                             <label className="mb-1.5 block text-sm font-medium">Last Name</label>
-                            <Input value={data.lastName} onChange={handleChange("lastName")} />
+                            <Input value={data.lastName} onChange={handleChange("lastName")} disabled={!isEditing} />
                         </div>
                     </div>
                     <div>
                         <label className="mb-1.5 block text-sm font-medium">Address</label>
-                        <Input value={data.address} onChange={handleChange("address")} />
+                        <Input value={data.address} onChange={handleChange("address")} disabled={!isEditing} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="mb-1.5 block text-sm font-medium">Email Address</label>
-                            <Input value={data.email} type="email" onChange={handleChange("email")} />
+                            <Input value={data.email} type="email" onChange={handleChange("email")} disabled={true} />
                         </div>
                         <div>
                             <label className="mb-1.5 block text-sm font-medium">Phone Number</label>
-                            <Input value={data.phone} type="tel" onChange={handleChange("phone")} />
+                            <Input value={data.phone} type="tel" onChange={handleChange("phone")} disabled={!isEditing} />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="mb-1.5 block text-sm font-medium">Enrollment Number</label>
-                            <Input value={data.enrollment} onChange={handleChange("enrollment")} />
+                            <Input value={data.enrollment} onChange={handleChange("enrollment")} disabled={!isEditing} />
                         </div>
                         <div>
                             <label className="mb-1.5 block text-sm font-medium">Branch</label>
-                            <Input value={data.branch} onChange={handleChange("branch")} />
+                            <Input value={data.branch} onChange={handleChange("branch")} disabled={!isEditing} />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="mb-1.5 block text-sm font-medium">Batch</label>
-                            <Input value={data.batch} onChange={handleChange("batch")} />
+                            <Input value={data.batch} onChange={handleChange("batch")} disabled={!isEditing} />
                         </div>
                     </div>
                 </div>
