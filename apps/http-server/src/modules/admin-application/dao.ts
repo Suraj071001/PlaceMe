@@ -32,6 +32,13 @@ export const getJobApplicationsByStageDAO = async (
           department: { select: { name: true } },
         },
       },
+      pipeline: {
+        include: {
+          stages: {
+            orderBy: { sortOrder: "asc" },
+          },
+        },
+      },
       student: {
         include: {
           user: { select: { firstName: true, lastName: true, email: true } },

@@ -80,7 +80,7 @@ export default function ApplyJobPage() {
       try {
         const token = getToken();
         if (!token) {
-          setError("Please login first to continue.");
+          router.replace("/login");
           return;
         }
 
@@ -120,7 +120,10 @@ export default function ApplyJobPage() {
 
     try {
       const token = getToken();
-      if (!token) throw new Error("Please login first to continue.");
+      if (!token) {
+        router.replace("/login");
+        return;
+      }
 
       const missingRequired = allQuestions.find((q) => {
         if (!q.required) return false;
