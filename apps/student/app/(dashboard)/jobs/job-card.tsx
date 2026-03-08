@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
+import { useRouter } from "next/navigation";
 
 type Job = {
   id: string;
@@ -15,6 +16,7 @@ type Job = {
   description: string;
   minCgpa: number;
   eligible: boolean;
+  applied: boolean;
 };
 
 type JobCardProps = {
@@ -22,6 +24,7 @@ type JobCardProps = {
 };
 
 export function JobCard({ job }: JobCardProps) {
+  const router = useRouter();
   const salaryText = job.salary > 0 ? `₹ ${job.salary} LPA` : "Salary not disclosed";
 
   return (
@@ -71,12 +74,20 @@ export function JobCard({ job }: JobCardProps) {
 
           {/* Right actions */}
           <div className="flex shrink-0 flex-col gap-1.5">
-            {job.eligible ? (
-              <Button size="sm" className="min-w-[100px] bg-indigo-600 text-white hover:bg-indigo-700">
+            {job.applied ? (
+              <Button size="sm" className="min-w-[130px] bg-emerald-600 text-white hover:bg-emerald-600" disabled>
+                You Applied
+              </Button>
+            ) : job.eligible ? (
+              <Button
+                size="sm"
+                className="min-w-[130px] bg-indigo-600 text-white hover:bg-indigo-700"
+                onClick={() => router.push(`/apply/${job.id}`)}
+              >
                 Apply Now
               </Button>
             ) : (
-              <Button variant="outline" size="sm" className="min-w-[100px]">
+              <Button variant="outline" size="sm" className="min-w-[130px]">
                 View Details
               </Button>
             )}

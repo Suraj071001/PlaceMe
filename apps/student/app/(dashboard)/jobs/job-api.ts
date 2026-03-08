@@ -10,6 +10,7 @@ export type StudentJob = {
   description: string;
   minCgpa: number;
   eligible: boolean;
+  applied: boolean;
 };
 
 type BackendJob = {
@@ -32,6 +33,15 @@ type BackendJob = {
 
 type JobsResponse = {
   data?: BackendJob[];
+};
+
+type MyApplicationsResponse = {
+  data?: Array<{
+    jobId?: string;
+    job?: {
+      id?: string;
+    };
+  }>;
 };
 
 type StudentProfileResponse = {
@@ -96,7 +106,7 @@ function toNumberCgpa(raw: string | number | null | undefined): number | null {
   return numeric;
 }
 
-function mapJob(job: BackendJob, studentCgpa: number | null): StudentJob {
+function mapJob(job: BackendJob, studentCgpa: number | null, appliedJobIds: Set<string>): StudentJob {
   const minCgpa = job.minimumCGPA ?? 0;
   const eligible = job.minimumCGPA == null ? true : studentCgpa != null ? studentCgpa >= job.minimumCGPA : false;
 
@@ -112,6 +122,7 @@ function mapJob(job: BackendJob, studentCgpa: number | null): StudentJob {
     description: job.description || "No description provided",
     minCgpa,
     eligible,
+    applied: appliedJobIds.has(job.id),
   };
 }
 
@@ -148,10 +159,30 @@ async function fetchJobs(token: string): Promise<BackendJob[]> {
   return body.data ?? [];
 }
 
+async function fetchAppliedJobIds(token: string): Promise<Set<string>> {
+  const res = await fetch(`${API_BASE}/student-application/mine`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) return new Set<string>();
+
+  const body = (await res.json()) as MyApplicationsResponse;
+  const ids = (body.data ?? [])
+    .map((application) => application.jobId ?? application.job?.id)
+    .filter((jobId): jobId is string => Boolean(jobId));
+
+  return new Set(ids);
+}
+
 export async function getStudentJobs(): Promise<StudentJob[]> {
   const token = getToken();
   if (!token) return [];
 
-  const [jobs, studentCgpa] = await Promise.all([fetchJobs(token), fetchStudentCgpa(token)]);
-  return jobs.map((job) => mapJob(job, studentCgpa));
+  const [jobs, studentCgpa, appliedJobIds] = await Promise.all([
+    fetchJobs(token),
+    fetchStudentCgpa(token),
+    fetchAppliedJobIds(token),
+  ]);
+
+  return jobs.map((job) => mapJob(job, studentCgpa, appliedJobIds));
 }

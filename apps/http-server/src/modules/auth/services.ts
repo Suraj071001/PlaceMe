@@ -6,6 +6,42 @@ import logger from "../../utils/logger";
 import JWT_SECRET from "../../config/auth";
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "placementcell@dsadev.me";
+
+const sendOtpEmail = async (to: string, otp: string) => {
+  if (!RESEND_API_KEY) {
+    logger.error("OTP email send failed", {
+      email: to,
+      reason: "RESEND_API_KEY is not configured",
+    });
+    throw new Error("OTP email service is not configured.");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: RESEND_FROM_EMAIL,
+      to: [to],
+      subject: "Your PlaceMe OTP",
+      text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    logger.error("OTP email send failed", {
+      email: to,
+      status: response.status,
+      response: errorBody,
+    });
+    throw new Error("Failed to send OTP email. Please try again.");
+  }
+};
 
 export const otpRequestService = async (payload: OtpRequestPayload) => {
   logger.info("OTP request start", { email: payload.email });
@@ -13,7 +49,7 @@ export const otpRequestService = async (payload: OtpRequestPayload) => {
   const user = await findUserByEmail(payload.email);
   if (!user) {
     logger.warn("OTP request failed", { email: payload.email, reason: ERROR.USER_NOT_FOUND });
-    throw new Error(ERROR.USER_NOT_FOUND);
+    throw new Error("This email is not registered in our institute records. Please contact the placement cell.");
   }
 
   if (user.isActive) {
@@ -23,9 +59,8 @@ export const otpRequestService = async (payload: OtpRequestPayload) => {
 
   const otp = generateOTP();
   await createOTP(payload.email, otp);
-
-  // TODO: Integrate actual email sending logic here
-  logger.info(`[MOCK EMAIL] To: ${payload.email} | OTP: ${otp}`);
+  await sendOtpEmail(payload.email, otp);
+  logger.info("OTP email sent", { email: payload.email });
 
   return { message: "OTP sent successfully" };
 };

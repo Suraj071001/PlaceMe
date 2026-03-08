@@ -20,6 +20,10 @@ type ApplicationItem = {
   status?: string;
   createdAt?: string;
   stage?: { id?: string; name?: string } | null;
+  pipeline?: {
+    id?: string;
+    stages?: Array<{ id: string; name: string; sortOrder: number }>;
+  } | null;
   job?: {
     id?: string;
     title?: string;
@@ -58,7 +62,9 @@ type PipelineStudent = {
   batch: string;
 };
 
-type StageCol = { id: string; title: string; color: string };
+type StageCol = { id: string; title: string; color: string; stageDbId?: string };
+
+type PipelineStageItem = { id: string; name: string; sortOrder: number };
 
 async function safeJson(res: Response) {
   const contentType = res.headers.get("content-type") ?? "";
@@ -67,6 +73,79 @@ async function safeJson(res: Response) {
     throw new Error(`Non-JSON response: ${text.slice(0, 80)}`);
   }
   return res.json();
+}
+
+async function readErrorMessage(res: Response) {
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.toLowerCase().includes("application/json")) {
+    const payload = await res.json();
+    if (typeof payload?.message === "string" && payload.message.length > 0) {
+      return payload.message;
+    }
+    if (payload?.errors) {
+      return `Validation error: ${JSON.stringify(payload.errors)}`;
+    }
+  }
+
+  const text = await res.text();
+  if (text.trim().length > 0) return text;
+  return `Request failed with status ${res.status}`;
+}
+
+async function patchApplicationStage(
+  applicationId: string,
+  stageId: string,
+  token: string,
+) {
+  const patchWithUrl = async (url: string) => {
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ stageId }),
+    });
+
+    if (!response.ok) {
+      const message = await readErrorMessage(response);
+      throw new Error(message);
+    }
+  };
+
+  const directBaseUrls = API_BASE.includes("localhost")
+    ? [API_BASE, API_BASE.replace("localhost", "127.0.0.1")]
+    : [API_BASE];
+
+  const attemptedUrls: string[] = [];
+
+  try {
+    const proxyUrl = `/api/admin-applications/${applicationId}/stage`;
+    attemptedUrls.push(proxyUrl);
+    await patchWithUrl(proxyUrl);
+    return;
+  } catch (proxyError) {
+    if (!(proxyError instanceof TypeError)) {
+      throw proxyError;
+    }
+  }
+
+  for (const baseUrl of directBaseUrls) {
+    const directUrl = `${baseUrl}/admin-applications/${applicationId}/stage`;
+    attemptedUrls.push(directUrl);
+    try {
+      await patchWithUrl(directUrl);
+      return;
+    } catch (directError) {
+      if (!(directError instanceof TypeError)) {
+        throw directError;
+      }
+    }
+  }
+
+  throw new Error(
+    `Network error while updating stage. Tried ${attemptedUrls.join(" and ")}.`,
+  );
 }
 
 const stageStyleMap: Record<string, { label: string; color: string }> = {
@@ -116,6 +195,8 @@ const stagePriority = [
   "archived",
 ];
 
+const MAX_STAGES_PER_JOB = 6;
+
 const toStageKey = (value?: string | null) => {
   if (!value) return "applied";
   return value
@@ -141,6 +222,9 @@ export default function PipelineBoard() {
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [allStudents, setAllStudents] = useState<PipelineStudent[]>([]);
+  const [jobPipelineStages, setJobPipelineStages] = useState<PipelineStageItem[]>(
+    [],
+  );
   const [filteredStudents, setFilteredStudents] = useState<PipelineStudent[]>(
     [],
   );
@@ -166,7 +250,7 @@ export default function PipelineBoard() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res = await fetch(`${API_BASE}/job?page=1&limit=200`, {
+        const res = await fetch(`${API_BASE}/job?page=1&limit=100`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) return;
@@ -208,6 +292,17 @@ export default function PipelineBoard() {
           ? (body.data as ApplicationItem[])
           : [];
 
+        const uniqueStageById: Record<string, PipelineStageItem> = {};
+        for (const item of list) {
+          for (const stage of item.pipeline?.stages ?? []) {
+            uniqueStageById[stage.id] = stage;
+          }
+        }
+        const orderedPipelineStages = Object.values(uniqueStageById).sort(
+          (a, b) => a.sortOrder - b.sortOrder,
+        );
+        setJobPipelineStages(orderedPipelineStages);
+
         const mapped = list.map((item) => {
           const first = item.student?.user?.firstName ?? "";
           const last = item.student?.user?.lastName ?? "";
@@ -236,6 +331,7 @@ export default function PipelineBoard() {
         setAllStudents(mapped);
       } catch {
         setAllStudents([]);
+        setJobPipelineStages([]);
       }
     };
 
@@ -325,62 +421,150 @@ export default function PipelineBoard() {
   }, [allStudents]);
 
   const stageColumns: StageCol[] = useMemo(() => {
-    const stageKeys = Array.from(new Set(filteredStudents.map((s) => s.stage)));
-    stageKeys.sort((a, b) => {
+    const pipelineColumns = jobPipelineStages
+      .slice(0, MAX_STAGES_PER_JOB)
+      .map((stage) => {
+        const key = toStageKey(stage.name);
+        return {
+          id: key,
+          title: toTitle(key),
+          color: stageStyleMap[key]?.color ?? "bg-gray-100",
+          stageDbId: stage.id,
+        };
+      });
+
+    const existingPipelineKeys = new Set(pipelineColumns.map((stage) => stage.id));
+    const extraStageKeys = Array.from(
+      new Set(
+        filteredStudents
+          .map((student) => student.stage)
+          .filter((stage) => !existingPipelineKeys.has(stage)),
+      ),
+    );
+
+    extraStageKeys.sort((a, b) => {
       const ai = stagePriority.indexOf(a);
       const bi = stagePriority.indexOf(b);
       return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
     });
-    return stageKeys.map((key) => ({
-      id: key,
-      title: toTitle(key),
-      color: stageStyleMap[key]?.color ?? "bg-gray-100",
-    }));
-  }, [filteredStudents]);
+
+    const mergedColumns: StageCol[] = [
+      ...pipelineColumns,
+      ...extraStageKeys.map((key) => ({
+        id: key,
+        title: toTitle(key),
+        color: stageStyleMap[key]?.color ?? "bg-gray-100",
+      })),
+    ];
+
+    return mergedColumns.slice(0, MAX_STAGES_PER_JOB);
+  }, [filteredStudents, jobPipelineStages]);
 
   const stageDbIdByKey = useMemo(() => {
     const map: Record<string, string> = {};
+
+    for (const stage of jobPipelineStages) {
+      map[toStageKey(stage.name)] = stage.id;
+    }
+
+    if (Object.keys(map).length > 0) {
+      return map;
+    }
+
     for (const s of allStudents) {
       if (s.stageId && !map[s.stage]) {
         map[s.stage] = s.stageId;
       }
     }
     return map;
-  }, [allStudents]);
+  }, [allStudents, jobPipelineStages]);
 
   const moveSelectedForward = async () => {
-    const originalStudents = [...filteredStudents];
-    const updatedStudents = filteredStudents.map((s) => {
-      if (!selected.includes(s.id)) return s;
-      const currentIndex = stageColumns.findIndex((c) => c.id === s.stage);
-      const nextStage = stageColumns[currentIndex + 1];
-      if (!nextStage) return s;
-      return {
-        ...s,
-        stage: nextStage.id,
-        stageLabel: nextStage.title,
-        stageId: stageDbIdByKey[nextStage.id],
-      };
-    });
-    setFilteredStudents(updatedStudents);
-
     const token = localStorage.getItem("token");
+    if (!token) {
+      window.alert("Please login again to continue.");
+      return;
+    }
+
+    const currentById = new Map(filteredStudents.map((student) => [student.id, student]));
+    const moves: Array<{
+      applicationId: string;
+      name: string;
+      nextStageKey: string;
+      nextStageLabel: string;
+      nextStageDbId: string;
+    }> = [];
+
     for (const applicationId of selected) {
-      const student = updatedStudents.find((s) => s.id === applicationId);
-      if (!student || !token || !student.stageId) continue;
+      const student = currentById.get(applicationId);
+      if (!student) continue;
+
+      const currentIndex = stageColumns.findIndex((column) => column.id === student.stage);
+      const nextStage = stageColumns[currentIndex + 1];
+      if (!nextStage) continue;
+
+      const nextStageDbId = nextStage.stageDbId ?? stageDbIdByKey[nextStage.id];
+      if (!nextStageDbId) {
+        window.alert(
+          `Unable to resolve next stage for ${student.name}. Please refresh and try again.`,
+        );
+        return;
+      }
+
+      moves.push({
+        applicationId,
+        name: student.name,
+        nextStageKey: nextStage.id,
+        nextStageLabel: nextStage.title,
+        nextStageDbId,
+      });
+    }
+
+    if (moves.length === 0) {
+      setSelected([]);
+      return;
+    }
+
+    const successfulMoves = new Map<
+      string,
+      { stage: string; stageLabel: string; stageId: string }
+    >();
+    const failedMessages: string[] = [];
+
+    for (const move of moves) {
       try {
-        await fetch(`${API_BASE}/admin-applications/${applicationId}/stage`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ stageId: student.stageId }),
+        await patchApplicationStage(move.applicationId, move.nextStageDbId, token);
+        successfulMoves.set(move.applicationId, {
+          stage: move.nextStageKey,
+          stageLabel: move.nextStageLabel,
+          stageId: move.nextStageDbId,
         });
-      } catch {
-        setFilteredStudents(originalStudents);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to move candidate.";
+        failedMessages.push(`${move.name}: ${message}`);
       }
     }
+
+    if (successfulMoves.size > 0) {
+      setFilteredStudents((prev) =>
+        prev.map((student) => {
+          const next = successfulMoves.get(student.id);
+          if (!next) return student;
+          return {
+            ...student,
+            stage: next.stage,
+            stageLabel: next.stageLabel,
+            stageId: next.stageId,
+          };
+        }),
+      );
+    }
+
+    if (failedMessages.length > 0) {
+      window.alert(failedMessages.join("\n"));
+    }
+
     setSelected([]);
   };
 
@@ -543,11 +727,11 @@ export default function PipelineBoard() {
       </div>
 
       <div className="relative hidden h-full min-h-0 md:block">
-        <div className="h-full w-full overflow-y-hidden overflow-x-hidden">
+        <div className="h-full w-full overflow-x-auto overflow-y-hidden pb-2">
           <div
-            className="grid h-full gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6"
+            className="grid h-full min-w-max gap-3 px-2 pb-1 sm:gap-4 sm:px-4 lg:px-6"
             style={{
-              gridTemplateColumns: `repeat(${Math.max(stageColumns.length, 1)}, minmax(0, 1fr))`,
+              gridTemplateColumns: `repeat(${Math.max(stageColumns.length, 1)}, minmax(230px, 230px))`,
             }}
           >
             {stageColumns.map((stage) => {

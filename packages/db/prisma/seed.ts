@@ -579,7 +579,165 @@ async function main() {
         },
       ],
     },
+    {
+      name: "Quantum Labs",
+      domain: "quantumlabs.ai",
+      industry: "AI/ML",
+      faculty_coordinator: "Prof Nath",
+      status: "INTERESTED" as const,
+      branchId: "branch-cse",
+      hr: {
+        name: "Saket Jain",
+        email: "saket.hr@quantumlabs.ai",
+        designation: "TECH_RECRUITER" as const,
+      },
+      jobs: [
+        {
+          slug: "quantum-ml-engineer",
+          title: "ML Engineer",
+          role: "ML Engineer",
+          location: "Hyderabad",
+          workMode: "HYBRID",
+          ctc: "20-28 LPA",
+          minimumCGPA: 7.2,
+          passingYear: 2025,
+          batches: ["batch-2024", "batch-2025"],
+        },
+      ],
+    },
+    {
+      name: "BlueOrbit Tech",
+      domain: "blueorbit.tech",
+      industry: "SaaS",
+      faculty_coordinator: "Prof Saha",
+      status: "CONTACTED" as const,
+      branchId: "branch-cse",
+      hr: {
+        name: "Kiran Patel",
+        email: "kiran.hr@blueorbit.tech",
+        designation: "RECRUITER" as const,
+      },
+      jobs: [
+        {
+          slug: "blueorbit-fullstack-engineer",
+          title: "Full Stack Engineer",
+          role: "Full Stack Engineer",
+          location: "Remote",
+          workMode: "REMOTE",
+          ctc: "14-19 LPA",
+          minimumCGPA: 6.8,
+          passingYear: 2026,
+          batches: ["batch-2025", "batch-2026"],
+        },
+      ],
+    },
+    {
+      name: "PixelBridge",
+      domain: "pixelbridge.design",
+      industry: "Design & Product",
+      faculty_coordinator: "Prof Roy",
+      status: "INTERESTED" as const,
+      branchId: "branch-cse",
+      hr: {
+        name: "Ananya Das",
+        email: "ananya.hr@pixelbridge.design",
+        designation: "CAMPUS_RECRUITER" as const,
+      },
+      jobs: [
+        {
+          slug: "pixelbridge-product-designer",
+          title: "Product Designer",
+          role: "Product Designer",
+          location: "Bangalore",
+          workMode: "ONSITE",
+          ctc: "9-13 LPA",
+          minimumCGPA: 6.0,
+          passingYear: 2025,
+          batches: ["batch-2024", "batch-2025"],
+        },
+      ],
+    },
+    {
+      name: "SecureStack",
+      domain: "securestack.dev",
+      industry: "Cyber Security",
+      faculty_coordinator: "Prof Kar",
+      status: "CONTACTED" as const,
+      branchId: "branch-cse",
+      hr: {
+        name: "Farhan Ali",
+        email: "farhan.hr@securestack.dev",
+        designation: "SENIOR_RECRUITER" as const,
+      },
+      jobs: [
+        {
+          slug: "securestack-security-analyst",
+          title: "Security Analyst",
+          role: "Security Analyst",
+          location: "Noida",
+          workMode: "HYBRID",
+          ctc: "11-16 LPA",
+          minimumCGPA: 6.5,
+          passingYear: 2026,
+          batches: ["batch-2025", "batch-2026"],
+        },
+      ],
+    },
+    {
+      name: "GreenGrid Energy",
+      domain: "greengrid.energy",
+      industry: "Energy Tech",
+      faculty_coordinator: "Prof Barman",
+      status: "INTERESTED" as const,
+      branchId: "branch-ece",
+      hr: {
+        name: "Megha Iyer",
+        email: "megha.hr@greengrid.energy",
+        designation: "HR_MANAGER" as const,
+      },
+      jobs: [
+        {
+          slug: "greengrid-iot-engineer",
+          title: "IoT Engineer",
+          role: "IoT Engineer",
+          location: "Chennai",
+          workMode: "ONSITE",
+          ctc: "10-14 LPA",
+          minimumCGPA: 6.2,
+          passingYear: 2025,
+          batches: ["batch-ece-2024", "batch-ece-2025"],
+        },
+      ],
+    },
+    {
+      name: "DataSpring Analytics",
+      domain: "dataspring.io",
+      industry: "Data Analytics",
+      faculty_coordinator: "Prof Khandelwal",
+      status: "CONTACTED" as const,
+      branchId: "branch-mba",
+      hr: {
+        name: "Rohit Khanna",
+        email: "rohit.hr@dataspring.io",
+        designation: "RECRUITER" as const,
+      },
+      jobs: [
+        {
+          slug: "dataspring-operations-analyst",
+          title: "Operations Analyst",
+          role: "Operations Analyst",
+          location: "Kolkata",
+          workMode: "HYBRID",
+          ctc: "8-12 LPA",
+          minimumCGPA: 6.0,
+          passingYear: 2025,
+          batches: ["batch-mba-2024", "batch-mba-2025"],
+        },
+      ],
+    },
   ];
+
+  const seededExtraJobs: { id: string; companyName: string; slug: string }[] = [];
 
   for (const extraCompany of extraCompanies) {
     const createdCompany = await client.company.upsert({
@@ -615,7 +773,7 @@ async function main() {
     }
 
     for (const extraJob of extraCompany.jobs) {
-      await client.job.upsert({
+      const createdJob = await client.job.upsert({
         where: { slug: extraJob.slug },
         update: {},
         create: {
@@ -640,6 +798,12 @@ async function main() {
           google_chat: true,
           email: true,
         },
+      });
+
+      seededExtraJobs.push({
+        id: createdJob.id,
+        companyName: extraCompany.name,
+        slug: extraJob.slug,
       });
     }
   }
@@ -1467,6 +1631,43 @@ async function main() {
           },
         });
       }
+    }
+  }
+
+  // Create applications for extra company jobs
+  for (let jobIndex = 0; jobIndex < seededExtraJobs.length; jobIndex++) {
+    const seededJob = seededExtraJobs[jobIndex];
+    if (!seededJob) continue;
+    const applicants = [
+      getStudentIdAt((jobIndex * 2) % allStudents.length),
+      getStudentIdAt((jobIndex * 2 + 1) % allStudents.length),
+      getStudentIdAt((jobIndex * 2 + 2) % allStudents.length),
+    ];
+
+    const statuses: ApplicationStatus[] = [
+      ApplicationStatus.APPLIED,
+      ApplicationStatus.SCREENING,
+      ApplicationStatus.INTERVIEW,
+    ];
+
+    for (let idx = 0; idx < applicants.length; idx++) {
+      await client.application.upsert({
+        where: {
+          studentId_jobId: {
+            studentId: applicants[idx]!,
+            jobId: seededJob.id,
+          },
+        },
+        update: {},
+        create: {
+          jobId: seededJob.id,
+          studentId: applicants[idx]!,
+          pipelineId: pipeline.id,
+          stageId: updatedStages[idx]?.id,
+          status: statuses[idx]!,
+          createdAt: new Date(Date.now() - Math.random() * 20 * 24 * 60 * 60 * 1000),
+        },
+      });
     }
   }
 
